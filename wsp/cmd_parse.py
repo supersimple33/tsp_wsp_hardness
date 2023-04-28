@@ -35,4 +35,3 @@ def parse_cmd(argv):
             debug = True
     
     return filename, s, wsp_mode, debug, shrink, quadtree, bucket
-

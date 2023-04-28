@@ -1,0 +1,9 @@
+name: /Users/addisonhanrattie/Documents/tsp_wsp_hardness/.conda
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - pylint
+  - numpy
+  - matplotlib
+prefix: /Users/addisonhanrattie/Documents/tsp_wsp_hardness/.conda
