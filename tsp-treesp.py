@@ -1,12 +1,12 @@
+import sys
+import time
+
+import matplotlib.pyplot as plt
+
 from wsp import wsp
 from wsp import ds
 from wsp import util
 from wsp import cmd_parse
-import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 # run algorithm
 # >> python tsp-spop.py <points file> <separation factor> <quadtree:{-pr, -point/-p}> <flags:{-d, -bf}>
@@ -215,7 +215,7 @@ def find_path(start, glist, end, depth=-1, init=False):
     print("start", start, "end", end)
     #print("start_item", start_item, "end_item", end_item)
     #print("glist", glist)
-    
+
     rem = glist.copy()
     if not init and ((isinstance(start_item, list) and end != None and does_list_contain(end, start_item)) or (end_item == start_item)):
         # if start and end in same sublist, disassemble start sublist into rem
@@ -314,7 +314,7 @@ def find_path(start, glist, end, depth=-1, init=False):
                     best_perm = perm
             #else:
                 #print("skipping")
-        
+
         #best_perm
         #print("best perm - depth:", depth, min_d, best_perm)
 
@@ -360,7 +360,7 @@ def find_path(start, glist, end, depth=-1, init=False):
             p_end = p_end2
         trio_path[0] = (p_start, first_trio[1], first_trio[2])
         trio_path[len(trio_path) - 1] = (last_trio[0], last_trio[1], p_end)
-    elif end != None:
+    elif end is not None:
         last_trio = trio_path[len(trio_path) - 1]
         trio_path[len(trio_path) - 1] = (last_trio[0], last_trio[1], end)
 
@@ -373,8 +373,7 @@ def find_path(start, glist, end, depth=-1, init=False):
             if p_A != None:
                 #print("fixing trios", trio[0], trio[2], "=>", p_A)
                 trio_path[i] = (trio[0], trio[1], p_A)
-    for i in range(len(trio_path)):
-        trio = trio_path[i]
+    for i, trio in enumerate(trio_path):
         if not isinstance(trio[1], list):
             trio_path[i] = (trio[1], trio[1], trio[1])
 

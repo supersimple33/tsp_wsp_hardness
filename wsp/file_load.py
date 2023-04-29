@@ -1,7 +1,9 @@
-from wsp import ds
-from random import randrange
-import numpy as np
 import random
+from random import randrange
+
+import numpy as np
+
+from wsp import ds
 
 def loadFromFile(filename, do_offset=False):
     points = []

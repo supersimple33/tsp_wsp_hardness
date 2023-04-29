@@ -1,12 +1,12 @@
+import sys
+import time
+
+import matplotlib.pyplot as plt
+
 from wsp import wsp
 from wsp import ds
 from wsp import util
 from wsp import cmd_parse
-import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 # SPG = sub problem graph
 

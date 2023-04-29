@@ -1,13 +1,12 @@
-from wsp import wsp
-from wsp import ds
-from wsp import util
-from wsp import cmd_parse
-from wsp import wsp_hardness
 import sys
 import math
-import numpy as np
-import matplotlib.pyplot as plt
 import time
+
+from wsp import wsp
+from wsp import ds
+# from wsp import util
+from wsp import cmd_parse
+# from wsp import wsp_hardness
 
 # Brute Force + WSP Pruning
 
@@ -49,7 +48,7 @@ if wsp_mode:
                         ws[b].add(a)
                         ws_orig[a][b] = apoints
                         ws_orig[b][a] = bpoints
-        
+
         if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
             for child in anode.children:
                 q.append(child)
@@ -90,9 +89,9 @@ def buildPerms(perm, rem):
         last_point = perm[len(perm) - 1]
         orig_set_finished = True
         if r in ws[last_point]: # checks if all points in last_point <-> r set have been visited
-            if (r in ws_orig[last_point]):
+            if r in ws_orig[last_point]:
                 for p in ws_orig[last_point][r]:
-                    if (p not in perm):
+                    if p not in perm:
                         orig_set_finished = False
         if (r not in ws[last_point]) or (orig_set_finished):
             new_point_list = perm.copy()

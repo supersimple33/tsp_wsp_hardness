@@ -1,12 +1,12 @@
+import sys
+import time
+
+import matplotlib.pyplot as plt
+
 from wsp import wsp
 from wsp import ds
 from wsp import util
 from wsp import cmd_parse
-import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 # SPG = sub problem graph
 
@@ -55,8 +55,8 @@ build_wsp_graph(wspTreeNode)
 print("graph:", graph)
 
 edge_count_graph = set()
-for p1 in graph:
-    for p2 in graph[p1]:
+for p1, p2_set in graph.items():
+    for p2 in p2_set:
         if (p1, p2) not in edge_count_graph:
             edge_count_graph.add((p1, p2))
             edge_count_graph.add((p2, p1))

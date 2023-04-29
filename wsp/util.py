@@ -1,4 +1,5 @@
 import math
+
 from wsp import ds
 
 def euclidDist(p1, p2):
@@ -112,8 +113,7 @@ def min2_proj(set_A, set_B):
             dist = p_A.distance_to(p_B)
             inserted = False
             if len(rank) > 0:
-                for i in range(len(rank)):
-                    tup = rank[i]
+                for i, tup in enumerate(rank):
                     if dist < tup[2]:
                         rank.insert(i, (p_A, p_B, dist)) 
                         inserted = True
@@ -133,11 +133,11 @@ def min2_proj(set_A, set_B):
     min_p1 = rank[0][0]
     min_p2 = rank[0][1]
     i = 1
-    while i < len(rank) and (sec_p1 == None or sec_p2 == None):
+    while i < len(rank) and (sec_p1 is None or sec_p2 is None):
         #print("searching for", i, rank[i])
-        if sec_p1 == None and rank[i][0] != min_p1:
+        if sec_p1 is None and rank[i][0] != min_p1:
             sec_p1 = rank[i][0]
-        if sec_p2 == None and rank[i][1] != min_p2:
+        if sec_p2 is None and rank[i][1] != min_p2:
             sec_p2 = rank[i][1]
         i += 1
     #print("min proj 2", min_p1, min_p2, sec_p1, sec_p2)

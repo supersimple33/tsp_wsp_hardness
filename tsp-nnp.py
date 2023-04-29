@@ -1,13 +1,13 @@
+import sys
+import time
+
+import matplotlib.pyplot as plt
+
 # from wsp import wsp
 from wsp import ds
 from wsp import util
 from wsp import cmd_parse
 from wsp import wsp_hardness
-import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 # run algorithm
 # >> python tsp-nnp.py <points file> <separation factor> <quadtree:{-pr, -point/-p}> <flags:{-d, -bf}>
@@ -34,7 +34,7 @@ for p in points:
     ws_orig[p] = dict()
 
 q = [wspTreeNode]
-if wsp_mode and False: #  
+if wsp_mode and False: #
     while len(q) > 0:
         anode = q[0]
         q = q[1:]
@@ -56,7 +56,7 @@ if wsp_mode and False: #
             q.append(anode.nw)
             q.append(anode.sw)
             q.append(anode.se)
-            
+
 points = wspTreeNode.get_points()
 num_points = len(points)
 print("___________________________________________________________")
@@ -106,7 +106,7 @@ for p in points:
     path = findPath(p, rem)
     path.append(path[0])
     perms.append(path)
-    
+
 # find shortest permutation
 for perm in perms:
     dist = util.calcDist(perm)

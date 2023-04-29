@@ -1,6 +1,4 @@
 from wsp import ds
-import sys
-
 
 def parse_cmd(argv):
     filename = "data/custom1.txt"
@@ -11,9 +9,9 @@ def parse_cmd(argv):
     quadtree = ds.PMRQuadTree
     bucket = 1
 
-    if (len(argv) >= 2):
+    if len(argv) >= 2:
         filename = "data/" + argv[1]
-    if (len(argv) >= 3):
+    if len(argv) >= 3:
         s = float(argv[2])
     # check flags
     for arg in argv:
@@ -33,5 +31,5 @@ def parse_cmd(argv):
             shrink = True
         if arg == "-d":
             debug = True
-    
+
     return filename, s, wsp_mode, debug, shrink, quadtree, bucket

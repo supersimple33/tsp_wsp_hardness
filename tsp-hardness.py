@@ -1,13 +1,13 @@
+import sys
+import time
+
+import matplotlib.pyplot as plt
+
 # from wsp import wsp
-from wsp import ds
-from wsp import util
+# from wsp import ds
+# from wsp import util
 from wsp import cmd_parse
 from wsp import wsp_hardness
-import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 # run algorithm
 # >> python tsp-nnp.py <points file> <separation factor> <quadtree:{-pr, -point/-p}> <flags:{-d, -bf}>
@@ -106,7 +106,7 @@ wspTreeNode, wsp_count, kurtosis, tailed, avg_metric, var_metric, vals = wsp_har
 #     path = findPath(p, rem)
 #     path.append(path[0])
 #     perms.append(path)
-    
+
 # # find shortest permutation
 # for perm in perms:
 #     dist = util.calcDist(perm)

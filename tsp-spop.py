@@ -1,12 +1,12 @@
+import sys
+import time
+
+import matplotlib.pyplot as plt
+
 from wsp import wsp
 from wsp import ds
 from wsp import util
 from wsp import cmd_parse
-import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 # run algorithm
 # >> python tsp-spop.py <points file> <separation factor> <quadtree:{-pr, -point/-p}> <flags:{-d, -bf}>
@@ -71,10 +71,10 @@ def find_relations(tree_node, add=True):
             if len(splits) == 0:
                 splits.append((node_point_set, sub_relations.copy()))
             else:
-                for i in range(len(splits)):
-                    #print(len(node_point_set), len(splits[i][0]))
+                for i, split in enumerate(splits):
+                    #print(len(node_point_set), len(split[0]))
                     len_score1 = (len(node_point_set) + len(sub_relations)) / 2 - diff_mult * abs(len(node_point_set) - len(sub_relations))
-                    len_score2 = (len(splits[i][0]) + len(splits[i][0])) / 2 - diff_mult * abs(len(splits[i][0]) - len(splits[i][0]))
+                    len_score2 = (len(split[0]) + len(split[0])) / 2 - diff_mult * abs(len(split[0]) - len(split[0]))
                     if len_score1 > len_score2:
                         splits.insert(i, (node_point_set, sub_relations.copy()))
                         break
@@ -165,7 +165,7 @@ def clean_deep_lists(lst):
 
 def find_path(start, glist, end, depth=-1, init=False):
     reverse = False
-    if start == None:
+    if start is None:
         reverse = True
         start = end
         end = None
@@ -213,7 +213,7 @@ def find_path(start, glist, end, depth=-1, init=False):
 
         start_item = start_to_add
         end_item = end_to_add
-    else:    
+    else:
         # regular remove behavior
         rem.remove(start_item) 
     #print("rem", rem)
@@ -285,7 +285,7 @@ def find_path(start, glist, end, depth=-1, init=False):
                     best_perm = perm
             #else:
                 #print("skipping")
-        
+
         #best_perm
         #print("best perm - depth:", depth, min_d, best_perm)
 
@@ -330,7 +330,7 @@ def find_path(start, glist, end, depth=-1, init=False):
             p_end = p_end2
         trio_path[0] = (p_start, first_trio[1], first_trio[2])
         trio_path[len(trio_path) - 1] = (last_trio[0], last_trio[1], p_end)
-    elif end != None:
+    elif end is not None:
         last_trio = trio_path[len(trio_path) - 1]
         trio_path[len(trio_path) - 1] = (last_trio[0], last_trio[1], end)
 
@@ -340,11 +340,10 @@ def find_path(start, glist, end, depth=-1, init=False):
         if trio[0] == trio[2]: # fix if same
             next_trio = trio_path[i + 1]
             _, _, p_A, _ = util.min_proj_set_or_point(trio[1], next_trio[1], True)
-            if p_A != None:
+            if p_A is not None:
                 #print("fixing trios", trio[0], trio[2], "=>", p_A)
                 trio_path[i] = (trio[0], trio[1], p_A)
-    for i in range(len(trio_path)):
-        trio = trio_path[i]
+    for i, trio in enumerate(trio_path):
         if not isinstance(trio[1], list):
             trio_path[i] = (trio[1], trio[1], trio[1])
 

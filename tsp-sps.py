@@ -1,12 +1,12 @@
+import sys
+import time
+
+import matplotlib.pyplot as plt
+
 from wsp import wsp
 from wsp import ds
 from wsp import util
 from wsp import cmd_parse
-import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import time
 
 # run algorithm
 # >> python tsp-sps.py <points file> <separation factor> <quadtree:{-pr, -point/-p}> <flags:{-d, -bf}>
@@ -71,9 +71,9 @@ def find_relations(tree_node, add=True):
             if len(splits) == 0:
                 splits.append((node_point_set, sub_relations.copy()))
             else:
-                for i in range(len(splits)):
-                    #print(len(node_point_set), len(splits[i][0]))
-                    if len(node_point_set) > len(splits[i][0]):
+                for i, split in enumerate(splits):
+                    #print(len(node_point_set), len(split[0]))
+                    if len(node_point_set) > len(split[0]):
                         splits.insert(i, (node_point_set, sub_relations.copy()))
                         break
 
@@ -188,8 +188,8 @@ def find_path(start, glist, end, depth=-1):
         rem += get_points_from_list(start)
         rem.remove(orig_start)
         start = orig_start
-    else:    
-        rem.remove(start) 
+    else:
+        rem.remove(start)
 
     if isinstance(orig_start, list):
         trio_path = [(None, start, None)]
