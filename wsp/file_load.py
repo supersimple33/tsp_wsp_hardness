@@ -6,6 +6,7 @@ import numpy as np
 from wsp import ds
 
 def loadFromFile(filename, do_offset=False):
+    """Read the points from the file, and jiggle the points if do_offset"""
     points = []
     # read points from file
     bounds = []
@@ -52,7 +53,7 @@ def loadFromFile(filename, do_offset=False):
             maxX = p.x
         if p.y > maxY:
             maxY = p.y
-    minX -= 1.1
+    minX -= 1.1 # NOTE: Why are we doing this?
     minY -= 1.1
     maxX += 1.1
     maxY += 1.1

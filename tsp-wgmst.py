@@ -89,7 +89,7 @@ while queue:
     if prev != None and node not in added:
         if prev not in mst:
             mst[prev] = set()
-        
+
         mst[prev].add(node)
     #cost = queue[node]
 

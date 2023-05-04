@@ -1,7 +1,7 @@
 from wsp import ds
 
 def parse_cmd(argv):
-    filename = "data/custom1.txt"
+    filename = "data/custom1.tsp"
     s = 1           # default separation factor
     wsp_mode = True # uses WSPs
     debug = False   # debug info for Quadtree and WSPs
