@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 import numpy as np
 
 from wsp import util
@@ -49,10 +51,10 @@ class Rect:
         return (point_x >= self.xMin and point_x <  self.xMax and
                 point_y >= self.yMin and point_y < self.yMax)
 
-    def diameter(self):
+    def diameter(self) -> np.float_:
         # diagonal
         return np.hypot(self.xMax - self.xMin, self.yMax - self.yMin)
-    def center(self):
+    def center(self) -> tuple:
         return ((self.xMax + self.xMin) / 2, (self.yMax + self.yMin) / 2)
 
 def min_dist(block_A, block_B):
@@ -98,21 +100,71 @@ def shrink_boundaries(block, regular=True):
             shrink_boundaries(child, False)
     return block
 
+# Abstract QUADTREE
+
+class AbstractQuadTree(ABC):
+    """Abstract Quadtree implementation."""
+
+    def __init__(self, boundary : Rect, ax, bucket=-1, depth=0): # ax is for plotting
+        """Initialize this node of the quadtree."""
+        self.boundary = boundary # boundary of current block
+        self.bucket = bucket # PointQT: doesn't use but setting here shouldnt matter
+        self.ax = ax
+        self.depth = depth # mostly for string visualization spacing
+        # self.points = [] # self.point = None
+        self.connection = [] # WSP connection
+        self.divided = False # flag for if divided into 4 child quads
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """Return a string representation of this node, suitably formatted."""
+        pass
+
+    @abstractmethod
+    def str_short(self) -> str: # TODO: default impl?
+        pass
+
+    def diameter(self) -> np.float_:
+        return self.boundary.diameter()
+    def center(self) -> tuple:
+        return self.boundary.center()
+
+    @abstractmethod
+    def divide(self):
+        """Divide (branch) this node by spawning four children nodes around a point."""
+        pass
+
+    @abstractmethod
+    def insert(self, point) -> bool:
+        """Insert the given point into this quadtree."""
+        pass
+
+    @abstractmethod
+    def get_points_rec(self, found_points: list[Point]) -> list[Point]:
+        """Get all points in this quadtree."""
+        pass
+
+    def get_points(self) -> list[Point]:
+        """Get all points in this quadtree."""
+        return self.get_points_rec([])
+    
+    @abstractmethod
+    def __len__(self):
+        """Return the number of points in this quadtree."""
+        pass
+
 # PK PR QUADTREE
 
-class PKPMRQuadTree:
+class PKPMRQuadTree(AbstractQuadTree):
     """Point Region Quadtree implementation."""
 
     def __init__(self, boundary, ax, bucket=1, depth=0):
         """Initialize this node of the quadtree."""
-        self.boundary = boundary # boundary of current block
-        self.bucket = bucket
-        self.ax = ax
-        self.depth = depth # mostly for string visualization spacing
+        super().__init__(boundary, ax, bucket, depth)
+
         self.points = [] # center point
         self.children = [] # includes points and nodes
-        self.connection = [] # WSP connection
-        self.divided = False # flag for if divided into 4 child quads
+
         self.pk_aggregated = False # flag for if aggregated
         self.leaf = False
 
@@ -136,11 +188,6 @@ class PKPMRQuadTree:
 
     def str_short(self):
         return str(self.get_points()) #str(self.boundary) + 
-
-    def diameter(self):
-        return self.boundary.diameter()
-    def center(self):
-        return self.boundary.center()
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
@@ -191,9 +238,6 @@ class PKPMRQuadTree:
             child.get_points_rec(found_points)
           
         return found_points
-
-    def get_points(self):
-        return self.get_points_rec([])
 
     def pk_draw(self):
         for child in self.children:
@@ -260,19 +304,16 @@ class PKPMRQuadTree:
 
 # PK PR QUADTREE
 
-class PKPRQuadTree:
+class PKPRQuadTree(AbstractQuadTree):
     """Point Region Quadtree implementation."""
 
     def __init__(self, boundary, ax, bucket=1, depth=0):
         """Initialize this node of the quadtree."""
-        self.boundary = boundary # boundary of current block
-        self.bucket = bucket
-        self.ax = ax
-        self.depth = depth # mostly for string visualization spacing
+        super().__init__(boundary, ax, bucket, depth)
+
         self.points = [] # center point
         self.children = [] # includes points and nodes
-        self.connection = [] # WSP connection
-        self.divided = False # flag for if divided into 4 child quads
+
         self.pk_aggregated = False # flag for if aggregated
         self.leaf = False
 
@@ -295,12 +336,7 @@ class PKPRQuadTree:
                sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
 
     def str_short(self):
-        return str(self.get_points()) #str(self.boundary) + 
-
-    def diameter(self):
-        return self.boundary.diameter()
-    def center(self):
-        return self.boundary.center()
+        return str(self.get_points()) #str(self.boundary) +
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
@@ -349,9 +385,6 @@ class PKPRQuadTree:
             child.get_points_rec(found_points)
 
         return found_points
-
-    def get_points(self):
-        return self.get_points_rec([])
 
     def pk_draw(self):
         for child in self.children:
@@ -419,18 +452,13 @@ class PKPRQuadTree:
 
 # PMR QUADTREE
 
-class PMRQuadTree:
+class PMRQuadTree(AbstractQuadTree):
     """Point Region Quadtree implementation."""
 
     def __init__(self, boundary, ax, bucket=-1, depth=0):
         """Initialize this node of the quadtree."""
-        self.boundary = boundary # boundary of current block
-        self.bucket = bucket
-        self.ax = ax
-        self.depth = depth # mostly for string visualization spacing
+        super().__init__(boundary, ax, bucket, depth)
         self.points = [] # center point
-        self.connection = [] # WSP connection
-        self.divided = False # flag for if divided into 4 child quads
 
     def __str__(self):
         """Return a string representation of this node, suitably formatted."""
@@ -444,11 +472,6 @@ class PMRQuadTree:
 
     def str_short(self):
         return str(self.boundary)
-
-    def diameter(self):
-        return self.boundary.diameter()
-    def center(self):
-        return self.boundary.center()
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
@@ -502,9 +525,6 @@ class PMRQuadTree:
             self.sw.get_points_rec(found_points)
         return found_points
 
-    def get_points(self):
-        return self.get_points_rec([])
-
     def __len__(self):
         """Return the number of points in the quadtree."""
         npoints = len(self.points)
@@ -515,18 +535,13 @@ class PMRQuadTree:
 
 # POINT REGION QUADTREE
 
-class PRQuadTree:
+class PRQuadTree(AbstractQuadTree):
     """Point Region Quadtree implementation."""
 
     def __init__(self, boundary, ax, bucket=1, depth=0):
         """Initialize this node of the quadtree."""
-        self.boundary = boundary # boundary of current block
-        self.bucket = bucket
-        self.ax = ax
-        self.depth = depth # mostly for string visualization spacing
+        super().__init__(boundary, ax, bucket, depth)
         self.points = [] # center point
-        self.connection = [] # WSP connection
-        self.divided = False # flag for if divided into 4 child quads
 
     def __str__(self):
         """Return a string representation of this node, suitably formatted."""
@@ -539,12 +554,7 @@ class PRQuadTree:
            sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
 
     def str_short(self):
-        return str(self.get_points()) #str(self.boundary) + 
-
-    def diameter(self):
-        return self.boundary.diameter()
-    def center(self):
-        return self.boundary.center()
+        return str(self.get_points()) #str(self.boundary) +
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
@@ -598,9 +608,6 @@ class PRQuadTree:
             self.sw.get_points_rec(found_points)
         return found_points
 
-    def get_points(self):
-      return self.get_points_rec([])
-
     def __len__(self):
         """Return the number of points in the quadtree."""
         npoints = len(self.points)
@@ -609,17 +616,13 @@ class PRQuadTree:
         return npoints
 
 # POINT QUADTREE ##############################################################
-class PointQuadTree:
+class PointQuadTree(AbstractQuadTree):
     """Point Quadtree implementation."""
 
     def __init__(self, boundary, ax, bucket=-1, depth=0):
         """Initialize this node of the quadtree."""
-        self.boundary = boundary # boundary of current block
-        self.ax = ax
-        self.depth = depth # mostly for string visualization spacing
+        super().__init__(boundary, ax, bucket, depth)
         self.point = None # center point
-        self.connection = [] # WSP connection
-        self.divided = False # flag for if divided into 4 child quads
 
     def __str__(self):
         """Return a string representation of this node, suitably formatted."""
@@ -633,11 +636,6 @@ class PointQuadTree:
 
     def str_short(self):
         return str(self.boundary)
-
-    def diameter(self):
-        return self.boundary.diameter()
-    def center(self):
-        return self.boundary.center()
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
@@ -682,9 +680,6 @@ class PointQuadTree:
             self.se.get_points_rec(found_points)
             self.sw.get_points_rec(found_points)
         return found_points
-
-    def get_points(self):
-        return self.get_points_rec([])
 
     def __len__(self):
         """Return the number of points in the quadtree."""
