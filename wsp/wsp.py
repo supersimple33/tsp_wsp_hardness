@@ -6,16 +6,26 @@ import matplotlib.pyplot as plt
 from wsp import file_load
 from wsp import ds
 
+BUFFER = 1.1
+
 # USES PR QUADTREE!
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
+    
 
 def runWSP(filename, s, debug, shrink, quadtree, bucket):
-    points, minX, minY, maxX, maxY = file_load.loadFromFile(filename, False)
-    # build point quadtree, insert in order
-    rootNode = quadtree(ds.Rect(minX,minY,maxX,maxY), ax, bucket)
+    """Runs the WSP algorithm on the given file, with the given separation factor."""
+    points = file_load.load_points(filename, True)
+    return from_points(points, s, debug, shrink, quadtree, bucket)
 
-    xRange = maxX - minX
-    yRange = maxY - minY
+# def from_points(points, s, debug, shrink, quadtree, bucket):
+def from_points(points, s, debug, shrink, quadtree : ds.AbstractQuadTree, bucket: int):
+    minX = min(p.x for p in points) - BUFFER
+    minY = min(p.y for p in points) - BUFFER
+    maxX = max(p.x for p in points) + BUFFER
+    maxY = max(p.y for p in points) + BUFFER
+
+    # build point quadtree, insert in order
+    rootNode = quadtree(ds.Rect(minX, minY, maxX, maxY), ax, bucket)
 
     metric = 0
     total = 0
@@ -29,7 +39,6 @@ def runWSP(filename, s, debug, shrink, quadtree, bucket):
     if debug:
         print(points, "\n")
         print(rootNode, "\n\n")
-
 
 
     wsp_count = 0
