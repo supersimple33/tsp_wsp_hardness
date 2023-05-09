@@ -115,6 +115,11 @@ class AbstractQuadTree(ABC):
         self.connection = [] # WSP connection
         self.divided = False # flag for if divided into 4 child quads
 
+        self.ne = None
+        self.nw = None
+        self.se = None
+        self.sw = None
+
     @abstractmethod
     def __str__(self) -> str:
         """Return a string representation of this node, suitably formatted."""

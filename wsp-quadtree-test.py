@@ -1,7 +1,7 @@
 import sys
 import time
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 
 from wsp import wsp
 from wsp import ds

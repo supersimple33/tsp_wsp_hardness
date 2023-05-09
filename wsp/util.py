@@ -2,16 +2,19 @@ import math
 
 from wsp import ds
 
-def euclidDist(p1, p2):
+def euclidDist(p1 : 'ds.Point', p2: 'ds.Point') -> float:
+    """Euclidean distance between two points"""
     return math.sqrt(((p2.x - p1.x) ** 2) + ((p2.y - p1.y) ** 2))
 
-def calcDist(points):
-    dist = 0
+def calcDist(points : list['ds.Point']) -> float:
+    """Calculate total distance of a path"""
+    dist = 0.0
     for i in range(len(points) - 1):
         dist += euclidDist(points[i], points[i+1])
     return dist
 
-def sublist_get_points(lst):
+def sublist_get_points(lst) -> list['ds.Point']:
+    """Flatten list of arbitrary lists of points to list of points"""
     points = []
     for item in lst:
         if isinstance(item, list):

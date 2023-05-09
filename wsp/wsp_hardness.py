@@ -14,9 +14,6 @@ def hardness(filename, s, debug, shrink, quadtree, bucket):
     # build point quadtree, insert in order
     rootNode = quadtree(ds.Rect(minX,minY,maxX,maxY), ax, bucket)
 
-    xRange = maxX - minX
-    yRange = maxY - minY
-
     metric = 0
     total = 0
     sumsq = 0

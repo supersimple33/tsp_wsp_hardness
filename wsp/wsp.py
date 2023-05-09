@@ -1,7 +1,8 @@
 import math
 import statistics
+from typing import Type
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 
 from wsp import file_load
 from wsp import ds
@@ -12,13 +13,26 @@ BUFFER = 1.1
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
     
 
-def runWSP(filename, s, debug, shrink, quadtree, bucket):
+def runWSP(filename: str, s: float = 1.0, debug: bool = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket: int = 1) -> tuple[ds.AbstractQuadTree, int]:
     """Runs the WSP algorithm on the given file, with the given separation factor."""
     points = file_load.load_points(filename, True)
     return from_points(points, s, debug, shrink, quadtree, bucket)
 
 # def from_points(points, s, debug, shrink, quadtree, bucket):
-def from_points(points, s, debug, shrink, quadtree : ds.AbstractQuadTree, bucket: int):
+def from_points(points: list[ds.Point], s: float = 1.0, debug: bool = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket: int = 1) -> tuple[ds.AbstractQuadTree, int]:
+    """Runs the WSP algorithm on the given list of points, with the given separation factor.
+    
+        Parameters:
+            points (list[ds.Point]): The list of points to run the algorithm on.
+            s (int): The separation factor.
+            debug (bool): Whether to print debug info.
+            shrink (bool): Whether to shrink the quadtree boundaries.
+            quadtree (Type[ds.AbstractQuadTree]): The type of quadtree to use.
+            bucket (int): The bucket size to use.
+
+        Returns:
+            tuple[ds.AbstractQuadTree, int]: The WSP tree and the number of WSPs found.
+    """
     minX = min(p.x for p in points) - BUFFER
     minY = min(p.y for p in points) - BUFFER
     maxX = max(p.x for p in points) + BUFFER
@@ -27,7 +41,7 @@ def from_points(points, s, debug, shrink, quadtree : ds.AbstractQuadTree, bucket
     # build point quadtree, insert in order
     rootNode = quadtree(ds.Rect(minX, minY, maxX, maxY), ax, bucket)
 
-    metric = 0
+    metric = 0.0
     total = 0
     sumsq = 0
     vals = []
@@ -65,7 +79,7 @@ def from_points(points, s, debug, shrink, quadtree : ds.AbstractQuadTree, bucket
         if shrink:
             rootNode = ds.shrink_boundaries(rootNode)
 
-    queue = [(rootNode, rootNode)]
+    queue : list[tuple[ds.AbstractQuadTree, ds.AbstractQuadTree]] = [(rootNode, rootNode)] # (| None) needed for second element?
     while len(queue) > 0:
         pair = queue[0]
         queue = queue[1:]

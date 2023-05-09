@@ -6,7 +6,7 @@ from deprecation import deprecated, fail_if_not_removed
 
 from wsp import ds
 
-def load_points(filename, shuffle=True):
+def load_points(filename: str, shuffle=True) -> list[ds.Point]:
     """Read just the points from the file, don't do anything else. 
     Will shuffle points so the same tree isn't continually generated."""
     points = []
@@ -40,12 +40,12 @@ def load_points(filename, shuffle=True):
                 line = f.readline()
 
     if shuffle:
-        return random.shuffle(points)
-    else:
-        return points
+        random.shuffle(points)
+
+    return points
 
 @deprecated("Use load_points instead")
-def loadFromFile(filename, do_offset=False):
+def loadFromFile(filename: str, do_offset=False) -> list[ds.Point]:
     """Read the points from the file, and jiggle the points if do_offset"""
     print("Deprecated: Use load_points instead")
     points = []
