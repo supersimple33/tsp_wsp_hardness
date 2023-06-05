@@ -70,7 +70,7 @@ def find_relations(tree_node, add=True):
                 splits.append((node_point_set, sub_relations.copy()))
             else:
                 for i, split in enumerate(splits):
-                    #print(len(node_point_set), len(split[0]))
+                    # print(len(node_point_set), len(split[0]))
                     len_score1 = (len(node_point_set) + len(sub_relations)) / 2 - diff_mult * abs(len(node_point_set) - len(sub_relations))
                     len_score2 = (len(split[0]) + len(split[0])) / 2 - diff_mult * abs(len(split[0]) - len(split[0]))
                     if len_score1 > len_score2:
@@ -95,10 +95,10 @@ def apply_split(pair, glist):
         else:
             if item in pair[0]:
                 list1.append(item)
-                #glist.remove(item)
+                # glist.remove(item)
             elif item in pair[1]:
                 list2.append(item)
-                #glist.remove(item)
+                # glist.remove(item)
     for item in (list1 + list2 + to_remove):
         glist.remove(item)
     for item in to_add: # sublists
@@ -119,7 +119,7 @@ grouped_points = points.copy()
 for pair in splits:
     if len(pair[0]) >= 2 or len(pair[1]) >= 2:
         grouped_points = apply_split(pair, grouped_points.copy())
-#print(points)
+# print(points)
 print("grouped_points", grouped_points)
 
 # traversal
@@ -182,11 +182,11 @@ def find_path(start, glist, end, depth=-1, init=False):
             end_item = find_list_with(end, glist)
 
     print("start", start, "end", end)
-    #print("start_item", start_item, "end_item", end_item)
-    #print("glist", glist)
+    # print("start_item", start_item, "end_item", end_item)
+    # print("glist", glist)
     
     rem = glist.copy()
-    if not init and ((isinstance(start_item, list) and end != None and does_list_contain(end, start_item)) or (end_item == start_item)):
+    if not init and ((isinstance(start_item, list) and end is not None and does_list_contain(end, start_item)) or (end_item == start_item)):
         # if start and end in same sublist, disassemble start sublist into rem
         print("BREAKING up dual connection subproblem")
         rem.remove(start_item)
@@ -214,7 +214,7 @@ def find_path(start, glist, end, depth=-1, init=False):
     else:
         # regular remove behavior
         rem.remove(start_item) 
-    #print("rem", rem)
+    # print("rem", rem)
     trio_path = [(start, start_item, None)]
 
     def point_list_contains(pointlist, point):
@@ -241,21 +241,21 @@ def find_path(start, glist, end, depth=-1, init=False):
         return next_perms
 
     # start at points[0]
-    #print("Building perms!", len(rem))
+    # print("Building perms!", len(rem))
     if len(rem) < 10:
         print("BRUTE FORCE depth:", depth)
         perms = buildPerms([start_item], rem)
-        #print("Perms:", len(perms))
+        # print("Perms:", len(perms))
         best_perm = None
         min_d = float('inf')
         for perm in perms:
-            #if end != None and end == orig_start:
-                #perm.append(end)
-                #print("appended perm", perm)
-            #print("Perm:",perm)
-            #print("compare: ", start, perm[0], end, perm[len(perm) - 1], len(perms))
-            #print("inlistL ", does_list_contain(orig_start, perm[0]), does_list_contain(end, perm[len(perm) - 1]))
-            #print(does_list_contain(orig_start, perm[0]), does_list_contain(end, perm[len(perm) - 1]))
+            # if end != None and end == orig_start:
+            #     perm.append(end)
+            #     print("appended perm", perm)
+            # print("Perm:",perm)
+            # print("compare: ", start, perm[0], end, perm[len(perm) - 1], len(perms))
+            # print("inlistL ", does_list_contain(orig_start, perm[0]), does_list_contain(end, perm[len(perm) - 1]))
+            # print(does_list_contain(orig_start, perm[0]), does_list_contain(end, perm[len(perm) - 1]))
             test_perm = init
             if not test_perm:
                 start_cond = False
@@ -266,28 +266,28 @@ def find_path(start, glist, end, depth=-1, init=False):
                     start_cond = start == perm[0]
 
                 if isinstance(perm[len(perm) - 1], list):
-                    end_cond = does_list_contain(end, perm[len(perm) - 1]) or end == None
+                    end_cond = does_list_contain(end, perm[len(perm) - 1]) or end is None
                 else:
-                    end_cond = end == perm[len(perm) - 1] or end == None
+                    end_cond = end == perm[len(perm) - 1] or end is None
 
                 test_perm = start_cond and end_cond
             if init or test_perm:
-                #print("not skip")
+                # print("not skip")
                 dist = 0
                 for i in range(len(perm) - 1):
                     p_A, p_B = util.min_proj_set_or_point(perm[i], perm[i+1])
                     dist += p_A.distance_to(p_B)
-                #print(perm, dist)
+                # print(perm, dist)
                 if dist < min_d:
                     min_d = dist
                     best_perm = perm
-            #else:
-                #print("skipping")
+            # else:
+            #     print("skipping")
 
-        #best_perm
-        #print("best perm - depth:", depth, min_d, best_perm)
+        # best_perm
+        # print("best perm - depth:", depth, min_d, best_perm)
 
-        #trio_path = []
+        # trio_path = []
         for i in range(1,len(best_perm)):
             item = best_perm[i]
             prev_trio = trio_path[len(trio_path) - 1]
@@ -312,7 +312,7 @@ def find_path(start, glist, end, depth=-1, init=False):
                 if dist < minNextDist and (len(rem) == 1 or r != end_item):
                     minNext = (p_A, r, p_B) # (prev point, next item, next point)
                     minNextDist = dist
-            #print("minNext", minNext)
+            # print("minNext", minNext)
             trio_path[len(trio_path) - 1] = (prev_trio[0], prev_trio[1], minNext[0])
             trio_path.append((minNext[2], minNext[1], None))
             rem.remove(minNext[1])
@@ -339,7 +339,7 @@ def find_path(start, glist, end, depth=-1, init=False):
             next_trio = trio_path[i + 1]
             _, _, p_A, _ = util.min_proj_set_or_point(trio[1], next_trio[1], True)
             if p_A is not None:
-                #print("fixing trios", trio[0], trio[2], "=>", p_A)
+                # print("fixing trios", trio[0], trio[2], "=>", p_A)
                 trio_path[i] = (trio[0], trio[1], p_A)
     for i, trio in enumerate(trio_path):
         if not isinstance(trio[1], list):
@@ -352,7 +352,7 @@ def find_path(start, glist, end, depth=-1, init=False):
     for trio in trio_path:
         if isinstance(trio[1], list):
             npath = find_path(trio[0], trio[1], trio[2], depth + 1)
-            #print(npath, trio[0], trio[1], trio[2])
+            # print(npath, trio[0], trio[1], trio[2])
             path += npath
         else:
             path.append(trio[1])
@@ -363,13 +363,13 @@ def find_path(start, glist, end, depth=-1, init=False):
 
 # search for permutations
 rem = grouped_points.copy()
-#print(grouped_points[0])
+# print(grouped_points[0])
 solution = find_path(grouped_points[0], rem, grouped_points[0], 0, True)
 solution.append(solution[0])
-#print(perm)
+# print(perm)
 
 # find shortest permutation
-minDist = util.calcDist(solution)
+minDist = util.calc_dist(solution)
 timeEnd = time.perf_counter()
 
 for i in range(len(solution) - 1):
@@ -380,7 +380,7 @@ wsp.ax[1].set_title(f"TSP Path: n={len(points)}, length={minDist:0.4f}")
 print("")
 print("Solution:", solution)
 print("Solution Distance:", minDist)
-#print(len(perms), "permutations examined")
+# print(len(perms), "permutations examined")
 print(f"Solution found in {timeEnd - timeStart:0.4f} seconds")
 print("___________________________________________________________")
 plt.show()

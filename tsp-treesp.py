@@ -401,7 +401,7 @@ solution.append(solution[0])
 #print(perm)
 
 # find shortest permutation
-minDist = util.calcDist(solution)
+minDist = util.calc_dist(solution)
 timeEnd = time.perf_counter()
 
 for i in range(len(solution) - 1):

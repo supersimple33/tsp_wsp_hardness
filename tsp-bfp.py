@@ -1,10 +1,9 @@
 import sys
-import math
 import time
 
 from wsp import wsp
 from wsp import ds
-# from wsp import util
+from wsp.util import calc_dist
 from wsp import cmd_parse
 # from wsp import wsp_hardness
 
@@ -32,24 +31,23 @@ for p in points:
 
 q = [wspTreeNode]
 if wsp_mode:
-    while len(q) > 0:
+    while len(q) > 0: # BUG: this code seems funky it is not taking in the seperation-factor of the WSP
         anode = q[0]
         q = q[1:]
         # add WSP relationships to ws
-        if len(anode.connection) > 0:
-            for bnode in anode.connection:
-                #wsp_count += 1
-                #bnode = anode.connection
-                apoints = anode.get_points()
-                bpoints = bnode.get_points()
-                for a in apoints:
-                    for b in bpoints:
-                        ws[a].add(b)
-                        ws[b].add(a)
-                        ws_orig[a][b] = apoints
-                        ws_orig[b][a] = bpoints
+        for bnode in anode.connection:
+            #wsp_count += 1
+            #bnode = anode.connection
+            apoints = anode.get_points()
+            bpoints = bnode.get_points()
+            for a in apoints:
+                for b in bpoints:
+                    ws[a].add(b)
+                    ws[b].add(a)
+                    ws_orig[a][b] = apoints
+                    ws_orig[b][a] = bpoints
 
-        if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
+        if issubclass(quadtree, ds.AbstractPKQuadTree):
             for child in anode.children:
                 q.append(child)
         else:
@@ -70,15 +68,6 @@ print(int(wsp_count), "WSPs found")
 solution = []
 minSolution = []
 minDist = float('inf')
-
-def euclidDist(p1, p2):
-    return math.sqrt( ((p2.x - p1.x) ** 2) + ((p2.y - p1.y) ** 2) )
-
-def calcDist(points):
-    dist = 0
-    for i in range(len(points) - 1):
-        dist += euclidDist(points[i], points[i+1])
-    return dist
 
 def buildPerms(perm, rem):
     next_perms = []
@@ -113,15 +102,15 @@ print(len(perms), "permutations examined")
 
 for perm in perms:
     perm.append(perm[0])
-    dist = calcDist(perm)
+    dist = calc_dist(perm)
     if dist < minDist:
         minSolution = perm
         minDist = dist
 
-#for i in range(len(minSolution) - 1):
-#    wsp.ax[1].plot([minSolution[i].x, minSolution[i+1].x],[minSolution[i].y, minSolution[i+1].y], color="red")
-#wsp.ax[0].set_title(f"#WSP={wsp_count}, s={s}")
-#wsp.ax[1].set_title(f"TSP Path: n={len(points)}, length={minDist:0.4f}")
+for i in range(len(minSolution) - 1):
+    wsp.ax[1].plot([minSolution[i].x, minSolution[i+1].x],[minSolution[i].y, minSolution[i+1].y], color="red")
+wsp.ax[0].set_title(f"#WSP={wsp_count}, s={s}")
+wsp.ax[1].set_title(f"TSP Path: n={len(points)}, length={minDist:0.4f}")
 
 print("")
 print("Solution:", minSolution)

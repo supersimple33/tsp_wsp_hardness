@@ -21,7 +21,7 @@ def runWSP(filename: str, s = 1.0, debug = False, shrink = False, quadtree : Typ
 # def from_points(points, s, debug, shrink, quadtree, bucket):
 def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1) -> tuple[ds.AbstractQuadTree, int]:
     """Runs the WSP algorithm on the given list of points, with the given separation factor.
-    
+
         Parameters:
             points (list[ds.Point]): The list of points to run the algorithm on.
             s (int): The separation factor.
@@ -114,7 +114,7 @@ def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, 
 
             continue
 
-        if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
+        if issubclass(quadtree, ds.AbstractPKQuadTree): # PKPR or PKPMR
             if block_A.diameter() > block_B.diameter():
                 for child in block_A.children:
                     queue.append((block_B, child))
@@ -145,6 +145,7 @@ def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, 
     ax[0].scatter(x, y)
     ax[1].scatter(x, y)
 
+    vals = [2, 1] # FIXME: remove this
     avg_metric = sum(vals)/len(vals)
     var_metric = sumsq/len(vals) - (avg_metric*avg_metric)
 

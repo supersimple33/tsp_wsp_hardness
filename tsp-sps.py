@@ -70,24 +70,25 @@ def find_relations(tree_node: ds.AbstractQuadTree, add=True) -> set[ds.Point]:
         for p in to_remove:
             sub_relations.remove(p)
         if add:
-            #print(len(splits))
+            # print(len(splits))
             if len(splits) == 0:
                 splits.append((node_point_set, sub_relations.copy()))
             else:
                 for i, split in enumerate(splits):
-                    #print(len(node_point_set), len(split[0]))
+                    # print(len(node_point_set), len(split[0]))
                     if len(node_point_set) > len(split[0]):
                         splits.insert(i, (node_point_set, sub_relations.copy()))
                         break
 
-            #splits.insert(0, (node_point_set, sub_relations.copy()))
+            # splits.insert(0, (node_point_set, sub_relations.copy()))
 
     return sub_relations
 
 find_relations(wspTreeNode, True)
-#print(splits)
+print(splits)
+# print()
 
-def apply_split(pair, glist):
+def apply_split(pair: tuple[list[ds.Point]], glist: list[ds.Point]):
     list1 = []
     list2 = []    
     to_remove = []
@@ -100,16 +101,16 @@ def apply_split(pair, glist):
         else:
             if item in pair[0]:
                 list1.append(item)
-                #glist.remove(item)
+                # glist.remove(item)
             elif item in pair[1]:
                 list2.append(item)
-                #glist.remove(item)
+                # glist.remove(item)
     for item in (list1 + list2 + to_remove):
         glist.remove(item)
     for item in to_add: # sublists
         glist.append(item)
 
-    if len(list1) == 1:
+    if len(list1) == 1: # FIXME: seems inefficient here
         glist.append(list1[0])
     elif len(list1) > 0:
         glist.append(list1)
@@ -124,8 +125,8 @@ grouped_points = points.copy()
 for pair in splits:
     if len(pair[0]) >= 2 or len(pair[1]) >= 2:
         grouped_points = apply_split(pair, grouped_points.copy())
-#print(points)
-#print("grouped_points", grouped_points)
+# print(points)
+# print("grouped_points", grouped_points)
 
 # traversal
 
@@ -169,18 +170,18 @@ def clean_deep_lists(lst):
 def find_path(start, glist, end, depth=-1):
     loop = start == end # go back to start
 
-    #print(start, end)
+    # print(start, end)
     reverse = False
     if start == None:
         reverse = True
         start = end
         end = None
-        #rem = glist
+        # rem = glist
     orig_start = start
     glist = clean_deep_lists(glist)
 
-    #print("glist:", glist)
-    #print("start:", orig_start, start)
+    # print("glist:", glist)
+    # print("start:", orig_start, start)
     rem = glist.copy()
     if start not in glist:
         start = find_list_with(start, glist)
@@ -199,7 +200,7 @@ def find_path(start, glist, end, depth=-1):
     else:
         trio_path = [(orig_start, start, None)]
     if len(rem) == 0:
-        #print("at the end, trio:",  start)
+        # print("at the end, trio:",  start)
         trio_path = [(orig_start, start, None)]
     def point_list_contains(pointlist, point):
         if isinstance(pointlist, list):
@@ -217,12 +218,12 @@ def find_path(start, glist, end, depth=-1):
             p_A, p_B = util.min_proj_set_or_point(prev_item, r)
             dist = p_A.distance_to(p_B)
             if dist < minNextDist and (len(rem) == 1 or not point_list_contains(r, end)):
-                #if ((not r_is_list and r == end) or (r_is_list and does_list_contain(end, r))):
-                #    print("new min:", r, len(rem), dist)
+                # if ((not r_is_list and r == end) or (r_is_list and does_list_contain(end, r))):
+                #     print("new min:", r, len(rem), dist)
                 minNext = (p_A, r, p_B) # (prev point, next item, next point)
                 minNextDist = dist
         trio_path[len(trio_path) - 1] = (prev_trio[0], prev_trio[1], minNext[0])
-        #print("set prev", trio_path[len(trio_path) - 1])
+        # print("set prev", trio_path[len(trio_path) - 1])
         trio_path.append((minNext[2], minNext[1], None))
         rem.remove(minNext[1])
         '''if len(rem) == 0 and loop:
@@ -231,27 +232,27 @@ def find_path(start, glist, end, depth=-1):
 
     # convert to list, make subcalls
     path = []
-    #print("call info:", start, end)
+    # print("call info:", start, end)
     last_trio = trio_path[len(trio_path) - 1]
     trio_path[len(trio_path) - 1] = (last_trio[0], last_trio[1], end)
-    #if depth < 2 or True:
-    #    print(depth, "trio_path:", trio_path)
+    # if depth < 2 or True:
+    #     print(depth, "trio_path:", trio_path)
     for trio in trio_path:
         #print("trio:", trio)
         if isinstance(trio[1], list):
             npath = find_path(trio[0], trio[1], trio[2], depth + 1)
-            #if depth < 2 or True:
-            #    #print("calling", trio)
-            #    print(depth + 1, "start and ends:", trio[0], trio[2])
-            #    print(depth + 1, "res path:", reverse, npath)
+            # if depth < 2 or True:
+            #     print("calling", trio)
+            #     print(depth + 1, "start and ends:", trio[0], trio[2])
+            #     print(depth + 1, "res path:", reverse, npath)
             path += npath
         else:
-            #print(depth + 1, "res point:", trio[1])
+            # print(depth + 1, "res point:", trio[1])
             path.append(trio[1])
     if reverse:
         path.reverse()
-    #if loop:
-        #path.append(path[0])
+    # if loop:
+    #     path.append(path[0])
     return path
 
 
@@ -268,7 +269,7 @@ solution = []
 minSolution = []
 minDist = float('inf')
 for perm in perms:
-    dist = util.calcDist(perm)
+    dist = util.calc_dist(perm)
     if dist < minDist:
         minSolution = perm
         minDist = dist

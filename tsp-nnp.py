@@ -87,7 +87,7 @@ def findPath(start, rem):
                     if (r in ws_orig[last_point]) and (p in ws_orig[last_point][r]):
                         orig_set_finished = False
             if (r not in ws[last_point]) or (orig_set_finished) or not wsp_mode:
-                curNextDist = util.euclidDist(last_point, r)
+                curNextDist = util.euclid_dist(last_point, r)
                 if curNextDist < minNextDist:
                     minNext = r
                     minNextDist = curNextDist
@@ -109,7 +109,7 @@ for p in points:
 
 # find shortest permutation
 for perm in perms:
-    dist = util.calcDist(perm)
+    dist = util.calc_dist(perm)
     if dist < minDist:
         minSolution = perm
         minDist = dist

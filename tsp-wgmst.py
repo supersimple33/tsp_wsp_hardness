@@ -165,7 +165,7 @@ traverse_mst_for_path(None, points[0])
 # find shortest permutation
 minSolution = path
 minSolution.append(minSolution[0])
-minDist = util.calcDist(path)
+minDist = util.calc_dist(path)
 
 timeEnd = time.perf_counter()
 
