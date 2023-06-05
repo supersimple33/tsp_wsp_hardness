@@ -40,23 +40,26 @@ print(f"Loaded in {timeStart - timeInit:0.4f} seconds")
 # [ ([a,b,c],[d,e,f]) , ([a,b,c],[d,e,f]) ]
 splits = []
 
-def find_relations(tree_node, add=True):
+def find_relations(tree_node: ds.AbstractQuadTree, add=True) -> set[ds.Point]:
     sub_relations = set()
 
-    if len(tree_node.connection) > 0:
-        for node in tree_node.connection:
-            for p in node.get_points():
-                sub_relations.add(p)
+    for well_seperated_node in tree_node.connection: # loop through each node which is Well Seperated
+        sub_relations.update(well_seperated_node.get_points())
 
     if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
         for child in tree_node.children:
-            sub_relations.union(find_relations(child, True))
+            # sub_relations.union(find_relations(child, True))
+            find_relations(child, add) # FIXME: should we use the return value?
     else:
         if tree_node.divided:
-            sub_relations.union(find_relations(tree_node.ne, True))
-            sub_relations.union(find_relations(tree_node.nw, True))
-            sub_relations.union(find_relations(tree_node.sw, True))
-            sub_relations.union(find_relations(tree_node.se, True))
+            # sub_relations.union(find_relations(tree_node.ne, True))
+            # sub_relations.union(find_relations(tree_node.nw, True))
+            # sub_relations.union(find_relations(tree_node.sw, True))
+            # sub_relations.union(find_relations(tree_node.se, True))
+            find_relations(tree_node.ne, add) # FIXME: here as well
+            find_relations(tree_node.nw, add)
+            find_relations(tree_node.sw, add)
+            find_relations(tree_node.se, add)
 
     node_point_set = set(tree_node.get_points())
     to_remove = []

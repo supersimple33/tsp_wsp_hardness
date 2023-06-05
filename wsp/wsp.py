@@ -11,15 +11,15 @@ BUFFER = 1.1
 
 # USES PR QUADTREE!
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
-    
 
-def runWSP(filename: str, s: float = 1.0, debug: bool = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket: int = 1) -> tuple[ds.AbstractQuadTree, int]:
+
+def runWSP(filename: str, s = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1) -> tuple[ds.AbstractQuadTree, int]:
     """Runs the WSP algorithm on the given file, with the given separation factor."""
     points = file_load.load_points(filename, True)
     return from_points(points, s, debug, shrink, quadtree, bucket)
 
 # def from_points(points, s, debug, shrink, quadtree, bucket):
-def from_points(points: list[ds.Point], s: float = 1.0, debug: bool = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket: int = 1) -> tuple[ds.AbstractQuadTree, int]:
+def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1) -> tuple[ds.AbstractQuadTree, int]:
     """Runs the WSP algorithm on the given list of points, with the given separation factor.
     
         Parameters:
@@ -157,3 +157,5 @@ def from_points(points: list[ds.Point], s: float = 1.0, debug: bool = False, shr
     tailed = (statistics.median(vals) - avg_metric)/(max(vals)-min(vals))
 
     return rootNode, wsp_count
+
+# def plot_wsp

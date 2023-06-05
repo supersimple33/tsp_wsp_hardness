@@ -1,5 +1,6 @@
 import math
 import statistics
+from typing import Type
 
 import matplotlib.pyplot as plt
 
@@ -9,7 +10,7 @@ from wsp import ds
 # USES PR QUADTREE!
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
 
-def hardness(filename, s, debug, shrink, quadtree, bucket):
+def hardness(filename: str, s: float = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1) -> tuple[ds.AbstractQuadTree, int]:
     points, minX, minY, maxX, maxY = file_load.loadFromFile(filename, False)
     # build point quadtree, insert in order
     rootNode = quadtree(ds.Rect(minX,minY,maxX,maxY), ax, bucket)

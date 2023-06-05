@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Tuple, Type
 
 import numpy as np
 
@@ -34,14 +35,14 @@ class Rect:
         self.xMax = xMax
         self.yMax = yMax
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str((self.xMin,self.yMin, self.xMax, self.yMax))
 
-    def __str__(self):
-        return '({:.2f}, {:.2f}, {:.2f}, {:.2f})'.format(self.xMin, 
+    def __str__(self) -> str:
+        return '({:.2f}, {:.2f}, {:.2f}, {:.2f})'.format(self.xMin,
                                                          self.yMin, self.xMax, self.yMax)
 
-    def contains(self, point):
+    def contains(self, point: Point) -> bool:
         """Is point (a Point object or (x,y) tuple) inside this Rect?"""
         try:
             point_x, point_y = point.x, point.y
@@ -50,6 +51,9 @@ class Rect:
 
         return (point_x >= self.xMin and point_x <  self.xMax and
                 point_y >= self.yMin and point_y < self.yMax)
+
+    def __contains__(self, point: Point | Tuple[int, int]) -> bool:
+        return self.contains(point)
 
     def diameter(self) -> np.float_:
         # diagonal
@@ -112,7 +116,7 @@ class AbstractQuadTree(ABC):
         self.ax = ax
         self.depth = depth # mostly for string visualization spacing
         # self.points = [] # self.point = None
-        self.connection = [] # WSP connection
+        self.connection : list[AbstractQuadTree] = [] # WSP connections
         self.divided = False # flag for if divided into 4 child quads
 
         self.ne = None
@@ -152,7 +156,7 @@ class AbstractQuadTree(ABC):
     def get_points(self) -> list[Point]:
         """Get all points in this quadtree."""
         return self.get_points_rec([])
-    
+
     @abstractmethod
     def __len__(self):
         """Return the number of points in this quadtree."""

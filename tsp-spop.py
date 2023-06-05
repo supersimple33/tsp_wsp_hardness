@@ -44,10 +44,8 @@ splits = []
 def find_relations(tree_node, add=True):
     sub_relations = set()
 
-    if len(tree_node.connection) > 0:
-        for node in tree_node.connection:
-            for p in node.get_points():
-                sub_relations.add(p)
+    for node in tree_node.connection:
+        sub_relations.update(node.get_points()) # TODO: check memory practices
 
     if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
         for child in tree_node.children:
