@@ -1,4 +1,5 @@
 import math
+import random
 
 from wsp import ds
 
@@ -145,3 +146,10 @@ def min2_proj(set_A, set_B):
         i += 1
     #print("min proj 2", min_p1, min_p2, sec_p1, sec_p2)
     return min_p1, min_p2, sec_p1, sec_p2
+
+def generate_points(n: int, generator = lambda: (random.uniform(-100, 100), random.uniform(-100, 100))) -> list['ds.Point']:
+    """Generate n random points"""
+    points = []
+    for i in range(n):
+        points.append(ds.Point(*generator()))
+    return points

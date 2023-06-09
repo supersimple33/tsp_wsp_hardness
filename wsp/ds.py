@@ -19,8 +19,10 @@ class Point:
         return Point(self.x - o.x, self.y - o.y)
     def __truediv__(self, o):
         return Point(self.x / o, self.y / o)
-    def to_list(self):
+    def to_list(self): # could make this lazy
         return [self.x, self.y]
+    def to_tuple(self): # could make this lazy
+        return (self.x, self.y)
     def distance_to(self, other):
         try:
             other_x, other_y = other.x, other.y
@@ -145,8 +147,8 @@ class AbstractQuadTree(ABC):
 
     @abstractmethod
     def insert(self, point) -> bool:
-        """Insert the given point into this quadtree."""
-        pass
+        """Insert the given point into this quadtree. This implementation is abstract and has no consequences."""
+        return point in self.boundary
 
     @abstractmethod
     def get_points_rec(self, found_points: list[Point]) -> list[Point]:
@@ -162,160 +164,20 @@ class AbstractQuadTree(ABC):
         """Return the number of points in this quadtree."""
         pass
 
-# PK PR QUADTREE
-
-class PKPMRQuadTree(AbstractQuadTree):
-    """Point Region Quadtree implementation."""
-
-    def __init__(self, boundary, ax, bucket=1, depth=0):
-        """Initialize this node of the quadtree."""
-        super().__init__(boundary, ax, bucket, depth)
-
-        self.points = [] # center point
-        self.children = [] # includes points and nodes
-
-        self.pk_aggregated = False # flag for if aggregated
-        self.leaf = False
-
-    def __str__(self):
-        """Return a string representation of this node, suitably formatted."""
-        if self.pk_aggregated:
-            sp = ' ' * self.depth * 2
-            s = str(self.boundary) + ' --> ' + str(self.points) 
-            #print(self.depth, len(self.children))
-            for c in self.children:
-                s += '\n' + sp + 'child:' + str(c)
-            return s
-        else:
-            sp = ' ' * self.depth * 2
-            s = str(self.boundary) + ' --> ' + str(self.points) 
-            if not self.divided:
-                return s
-            return s + '\n' + '\n'.join([
-                sp + 'nw: ' + str(self.nw), sp + 'ne: ' + str(self.ne),
-                sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
-
-    def str_short(self):
-        return str(self.get_points()) #str(self.boundary) + 
-
-    def divide(self):
-        """Divide (branch) this node by spawning four children nodes around a point."""
-        mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
-        self.nw = PKPMRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
-        self.ne = PKPMRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
-        self.se = PKPMRQuadTree(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
-        self.sw = PKPMRQuadTree(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
-        self.divided = True
-        # reinsert point
-        points_to_reinsert = self.points
-        self.points = []
-        for p in points_to_reinsert:
-            #self.insert(p, True)
-            self.ne.insert(p, True)
-            self.nw.insert(p, True)
-            self.se.insert(p, True)
-            self.sw.insert(p, True)
-        # draw
-        self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
-        self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="lightgray")
-        self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="lightgray")
-
-    def insert(self, point, no_divide=False):
-        """Try to insert Point point into this QuadTree."""
-        if not self.boundary.contains(point):
-            # The point does not lie inside boundary: bail.
-            return False
-
-        if not self.divided:
-            self.points.append(point)
-            if not no_divide and len(self.points) > 1:
-                self.divide()
-
-            return True
-
-        return (self.ne.insert(point) or self.nw.insert(point) or
-                self.se.insert(point) or self.sw.insert(point))
-
-    def get_points_rec(self, found_points):
-        """Find the points in the quadtree that lie within boundary."""
-        for point in self.points:
-            found_points.append(point)
-
-        # if this node has children, search them too.
-        for child in self.children:
-            child.get_points_rec(found_points)
-          
-        return found_points
-
-    def pk_draw(self):
-        for child in self.children:
-            if len(child) > 1:
-                child.pk_draw()
-            #elif child.leaf:
-            self.ax[1].plot([child.boundary.xMin, child.boundary.xMax],[child.boundary.yMin, child.boundary.yMin], color="blue")
-            self.ax[1].plot([child.boundary.xMin, child.boundary.xMax],[child.boundary.yMax, child.boundary.yMax], color="blue")
-            self.ax[1].plot([child.boundary.xMin, child.boundary.xMin],[child.boundary.yMin, child.boundary.yMax], color="blue")
-            self.ax[1].plot([child.boundary.xMax, child.boundary.xMax],[child.boundary.yMin, child.boundary.yMax], color="blue")
-
-    def pk_aggregate(self, k, parent=None):
-        # removes k-empty nodes and reassigns to grandparents
-        self.pk_aggregated = True
-
-        if self.divided:
-            rec_children = []
-            rec_children.append(self.nw.pk_aggregate(k, self))
-            rec_children.append(self.ne.pk_aggregate(k, self))
-            rec_children.append(self.se.pk_aggregate(k, self))
-            rec_children.append(self.sw.pk_aggregate(k, self))
-            for c in rec_children:
-                if c != None:
-                    self.children.append(c)
-
-            #print(len(self.children), rec_children)
-            if len(self.children) == 0:
-                self.divided = False
-
-            self.nw = None
-            self.ne = None
-            self.se = None
-            self.sw = None
-
-            if parent != None:
-                if len(self) < k:
-                    # pass children upwards
-                    #print("len", len(self), k)
-                    parent.children += self.children
-                    return None
-                else:
-                    return self
-        else:
-            #print("leaf node", len(self.points))
-            self.leaf = True
-            if len(self.points) > 0:
-                return self
-            else:
-                return None
+    def draw_points(self, color='black'):
+        """Draw all points in this quadtree."""
+        if self.ax is None:
+            return
         
-        return self
+        x = []
+        y = []
+        for p in self.get_points():
+            x.append(p.x)
+            y.append(p.y)
+        self.ax[0].scatter(x, y, color=color)
+        self.ax[1].scatter(x, y, color=color)
 
-    def __len__(self):
-        """Return the number of points in the quadtree."""
-        npoints = len(self.points)
-        if self.divided:
-            npoints += len(self.nw) if self.nw != None else 0
-            npoints += len(self.ne) if self.ne != None else 0
-            npoints += len(self.se) if self.se != None else 0
-            npoints += len(self.sw) if self.sw != None else 0
-        for c in self.children:
-            npoints += len(c)
-        return npoints
-
-# PK PR QUADTREE
-
-class PKPRQuadTree(AbstractQuadTree):
-    """Point Region Quadtree implementation."""
-
+class AbstractPKQuadTree(AbstractQuadTree):
     def __init__(self, boundary, ax, bucket=1, depth=0):
         """Initialize this node of the quadtree."""
         super().__init__(boundary, ax, bucket, depth)
@@ -341,50 +203,38 @@ class PKPRQuadTree(AbstractQuadTree):
             if not self.divided:
                 return s
             return s + '\n' + '\n'.join([
-               sp + 'nw: ' + str(self.nw), sp + 'ne: ' + str(self.ne),
-               sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
+                sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
 
     def str_short(self):
         return str(self.get_points()) #str(self.boundary) +
 
-    def divide(self):
-        """Divide (branch) this node by spawning four children nodes around a point."""
-        mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
-        self.nw = PKPRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
-        self.ne = PKPRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
-        self.se = PKPRQuadTree(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
-        self.sw = PKPRQuadTree(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
-        self.divided = True
-        # reinsert point
-        points_to_reinsert = self.points
-        self.points = []
-        for p in points_to_reinsert:
-            self.insert(p)
-        # draw
-        self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
-        self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="lightgray")
-        self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="lightgray")
+    # @abstractmethod # NOTE: I would like to merge the divide methods due to their similarity but want to get some advice here first
+    # def divide(self, subclass: Type['AbstractPKQuadTree']):
+    #     """Divide (branch) this node by spawning four children nodes around a point."""
+    #     mid = Point(*self.boundary.center())
+    #     self.nw = subclass(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth+1)
+    #     self.ne = subclass(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket, self.depth+1)
+    #     self.se = subclass(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth+1)
+    #     self.sw = subclass(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth+1)
+    #     self.divided = True
 
-    def insert(self, point):
-        """Try to insert Point point into this QuadTree."""
-        if not self.boundary.contains(point):
-            # The point does not lie inside boundary: bail.
-            return False
+    #     # # reinsert point, based on subclass # NOTE: I could just comment out and let each impl decide how to insert
+    #     # points_to_reinsert = self.points
+    #     # self.points = []
+    #     # for p in points_to_reinsert: # NOTE: unsure of correct impl here can i use the first line or do i need the others
+    #     #     # self.insert(p, True)
+    #     #     self.ne.insert(p, True)
+    #     #     self.nw.insert(p, True)
+    #     #     self.se.insert(p, True)
+    #     #     self.sw.insert(p, True)
 
-        if not self.divided:
-            if len(self.points) < self.bucket:
-                # Node doesn't have a point yet.
-                self.points.append(point)
-                return True
+    #     if self.ax is not None:
+    #         self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+    #         self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+    #         self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="lightgray")
+    #         self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="lightgray")
 
-            # Already leaf: divide if necessary, then try the sub-quads.
-            self.divide()
-
-        return (self.ne.insert(point) or self.nw.insert(point) or
-                self.se.insert(point) or self.sw.insert(point))
-
-    def get_points_rec(self, found_points):
+    def get_points_rec(self, found_points: list[Point]) -> list[Point]:
         """Find the points in the quadtree that lie within boundary."""
         for point in self.points:
             found_points.append(point)
@@ -394,16 +244,6 @@ class PKPRQuadTree(AbstractQuadTree):
             child.get_points_rec(found_points)
 
         return found_points
-
-    def pk_draw(self):
-        for child in self.children:
-            if len(child) > 1:
-                child.pk_draw()
-            #elif child.leaf:
-            self.ax[1].plot([child.boundary.xMin, child.boundary.xMax],[child.boundary.yMin, child.boundary.yMin], color="blue")
-            self.ax[1].plot([child.boundary.xMin, child.boundary.xMax],[child.boundary.yMax, child.boundary.yMax], color="blue")
-            self.ax[1].plot([child.boundary.xMin, child.boundary.xMin],[child.boundary.yMin, child.boundary.yMax], color="blue")
-            self.ax[1].plot([child.boundary.xMax, child.boundary.xMax],[child.boundary.yMin, child.boundary.yMax], color="blue")
 
     def pk_aggregate(self, k, parent=None):
         # removes k-empty nodes and reassigns to grandparents
@@ -446,18 +286,128 @@ class PKPRQuadTree(AbstractQuadTree):
 
         return self
 
+    def pk_draw(self): # TODO: add none check
+        if self.ax is None:
+            return
+
+        for child in self.children:
+            if len(child) > 1:
+                child.pk_draw()
+            #elif child.leaf:
+            self.ax[1].plot([child.boundary.xMin, child.boundary.xMax],[child.boundary.yMin, child.boundary.yMin], color="blue")
+            self.ax[1].plot([child.boundary.xMin, child.boundary.xMax],[child.boundary.yMax, child.boundary.yMax], color="blue")
+            self.ax[1].plot([child.boundary.xMin, child.boundary.xMin],[child.boundary.yMin, child.boundary.yMax], color="blue")
+            self.ax[1].plot([child.boundary.xMax, child.boundary.xMax],[child.boundary.yMin, child.boundary.yMax], color="blue")
+
     def __len__(self):
         """Return the number of points in the quadtree."""
         npoints = len(self.points)
         if self.divided:
-            npoints += len(self.nw) if self.nw != None else 0
-            npoints += len(self.ne) if self.ne != None else 0
-            npoints += len(self.se) if self.se != None else 0
-            npoints += len(self.sw) if self.sw != None else 0
+            npoints += len(self.nw) if self.nw is not None else 0
+            npoints += len(self.ne) if self.ne is not None else 0
+            npoints += len(self.se) if self.se is not None else 0
+            npoints += len(self.sw) if self.sw is not None else 0
         for c in self.children:
             npoints += len(c)
         return npoints
 
+# PK PR QUADTREE
+
+class PKPMRQuadTree(AbstractPKQuadTree):
+    """Point Region Quadtree implementation."""
+
+    def __init__(self, boundary, ax, bucket=1, depth=0):
+        """Initialize this node of the quadtree."""
+        super().__init__(boundary, ax, bucket, depth) 
+
+    def divide(self):
+        """Divide (branch) this node by spawning four children nodes around a point."""
+        mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
+        self.nw = PKPMRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
+        self.ne = PKPMRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
+        self.se = PKPMRQuadTree(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.sw = PKPMRQuadTree(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.divided = True
+        # reinsert point
+        points_to_reinsert = self.points
+        self.points = []
+        for p in points_to_reinsert: 
+            # FIXME: I could use some clarification on whether the first line or following lines should be commented in or out
+            # self.insert(p, True)
+
+            self.ne.insert(p, True)
+            self.nw.insert(p, True)
+            self.se.insert(p, True)
+            self.sw.insert(p, True)
+        # draw
+        if self.ax is not None:
+            self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+            self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="lightgray")
+            self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="lightgray")
+
+    def insert(self, point, no_divide=False) -> bool:
+        """Try to insert Point point into this QuadTree."""
+        if not super().insert(point):
+            # The point does not lie inside boundary: bail.
+            return False
+
+        if not self.divided:
+            self.points.append(point)
+            if not no_divide and len(self.points) > 1:
+                self.divide()
+
+            return True
+
+        return (self.ne.insert(point) or self.nw.insert(point) or
+                self.se.insert(point) or self.sw.insert(point))
+
+# PK PR QUADTREE
+
+class PKPRQuadTree(AbstractPKQuadTree):
+    """Point Region Quadtree implementation."""
+
+    def __init__(self, boundary, ax, bucket=1, depth=0):
+        """Initialize this node of the quadtree."""
+        super().__init__(boundary, ax, bucket, depth)
+
+    def divide(self):
+        """Divide (branch) this node by spawning four children nodes around a point."""
+        mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
+        self.nw = PKPRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
+        self.ne = PKPRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
+        self.se = PKPRQuadTree(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.sw = PKPRQuadTree(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.divided = True
+        # reinsert point
+        points_to_reinsert = self.points
+        self.points = []
+        for p in points_to_reinsert:
+            self.insert(p)
+        # draw
+        if self.ax is not None:
+            self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+            self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="lightgray")
+            self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="lightgray")
+
+    def insert(self, point):
+        """Try to insert Point point into this QuadTree."""
+        if not super().insert(point):
+            # The point does not lie inside boundary: bail.
+            return False
+
+        if not self.divided:
+            if len(self.points) < self.bucket:
+                # Node doesn't have a point yet.
+                self.points.append(point)
+                return True
+
+            # Already leaf: divide if necessary, then try the sub-quads.
+            self.divide()
+
+        return (self.ne.insert(point) or self.nw.insert(point) or
+                self.se.insert(point) or self.sw.insert(point))
 
 # PMR QUADTREE
 
@@ -500,14 +450,15 @@ class PMRQuadTree(AbstractQuadTree):
             self.se.insert(p, True)
             self.sw.insert(p, True)
         # draw
-        self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
-        self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+        if self.ax is not None:
+            self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+            self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
 
     def insert(self, point, no_divide=False):
         """Try to insert Point point into this QuadTree."""
-        if not self.boundary.contains(point):
+        if not super().insert(point):
             # The point does not lie inside boundary: bail.
             return False
 
@@ -579,14 +530,15 @@ class PRQuadTree(AbstractQuadTree):
         for p in points_to_reinsert:
             self.insert(p)
         # draw
-        self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
-        self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+        if self.ax is not None:
+            self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+            self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
 
     def insert(self, point):
         """Try to insert Point point into this QuadTree."""
-        if not self.boundary.contains(point):
+        if not super().insert(point):
             # The point does not lie inside boundary: bail.
             return False
 
@@ -654,14 +606,15 @@ class PointQuadTree(AbstractQuadTree):
         self.sw = PointQuadTree(Rect(self.boundary.xMin, self.boundary.yMin, self.point.x, self.point.y), self.ax, self.depth + 1)
         self.divided = True
         # draw
-        self.ax[0].plot([self.point.x, self.point.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[self.point.y, self.point.y], color="gray")
-        self.ax[1].plot([self.point.x, self.point.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
-        self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[self.point.y, self.point.y], color="gray")
+        if self.ax is not None:
+            self.ax[0].plot([self.point.x, self.point.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[self.point.y, self.point.y], color="gray")
+            self.ax[1].plot([self.point.x, self.point.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
+            self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[self.point.y, self.point.y], color="gray")
 
     def insert(self, point):
         """Try to insert Point point into this QuadTree."""
-        if not self.boundary.contains(point):
+        if not super().insert(point):
             # The point does not lie inside boundary: bail.
             return False
 
