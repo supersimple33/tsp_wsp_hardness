@@ -28,7 +28,7 @@ timeStart = time.perf_counter()
 # calculate well separated dictionary
 ws = dict() # point -> set of well separated points (far away by WSP)
 ws_orig = dict() # point a -> dict( WSP point b -> WSP set containing point a )
-points = wspTreeNode.get_points()
+points = wspTreeNode.covered_points
 for p in points:
     ws[p] = set()
     ws_orig[p] = dict()
@@ -43,8 +43,8 @@ if wsp_mode and False: #
             for bnode in anode.connection:
                 #wsp_count += 1
                 #bnode = anode.connection
-                apoints = anode.get_points()
-                bpoints = bnode.get_points()
+                apoints = anode.covered_points
+                bpoints = bnode.covered_points
                 for a in apoints:
                     for b in bpoints:
                         ws[a].add(b)
@@ -57,7 +57,7 @@ if wsp_mode and False: #
             q.append(anode.sw)
             q.append(anode.se)
 
-points = wspTreeNode.get_points()
+points = wspTreeNode.covered_points
 num_points = len(points)
 print("___________________________________________________________")
 print(num_points, "points")

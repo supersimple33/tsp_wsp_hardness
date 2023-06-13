@@ -25,12 +25,12 @@ timeStart = time.perf_counter()
 # calculate well separated dictionary
 ws = dict() # point -> set of well separated points (far away by WSP)
 ws_orig = dict() # point a -> dict( WSP point b -> WSP set containing point a )
-points = wspTreeNode.get_points()
+points = wspTreeNode.covered_points
 for p in points:
     ws[p] = set()
     ws_orig[p] = dict()
 
-points = wspTreeNode.get_points()
+points = wspTreeNode.covered_points
 num_points = len(points)
 print("___________________________________________________________")
 print(num_points, "points")
@@ -44,7 +44,7 @@ def find_relations(tree_node: ds.AbstractQuadTree, add=True) -> set[ds.Point]:
     sub_relations = set()
 
     for well_seperated_node in tree_node.connection: # loop through each node which is Well Seperated
-        sub_relations.update(well_seperated_node.get_points())
+        sub_relations.update(well_seperated_node.covered_points)
 
     if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
         for child in tree_node.children:
@@ -61,7 +61,7 @@ def find_relations(tree_node: ds.AbstractQuadTree, add=True) -> set[ds.Point]:
             find_relations(tree_node.sw, add)
             find_relations(tree_node.se, add)
 
-    node_point_set = set(tree_node.get_points())
+    node_point_set = set(tree_node.covered_points)
     to_remove = []
     if len(sub_relations) > 0:
         for p in sub_relations:

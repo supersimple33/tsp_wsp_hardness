@@ -40,8 +40,11 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
         # Populating the quadtree and drawing the points
         for point in points:
+            self.quadtree.covered_points
             success = self.quadtree.insert(point)
+            print(len(self.quadtree))
             assert success
+        print(len(self.quadtree))
 
         if issubclass(treeType, ds.AbstractPKQuadTree):
             self.quadtree.pk_aggregate(2)

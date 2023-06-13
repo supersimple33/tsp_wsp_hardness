@@ -63,8 +63,8 @@ def hardness(filename: str, s: float = 1.0, debug = False, shrink = False, quadt
         if block_A is None or block_B is None or len(block_A) == 0 or len(block_B) == 0:
             continue
         
-        points_A = block_A.get_points()
-        points_B = block_B.get_points()
+        points_A = block_A.covered_points
+        points_B = block_B.covered_points
         if debug:
             print("considering WSP: ", block_A.str_short(), " <~~~~~> ", block_B.str_short(), (len(points_A) == 1 and len(points_B) == 1))
         if ds.min_dist(block_A, block_B) >= s * block_A.diameter() or (len(points_A) == 1 and len(points_B) == 1 and not block_A.divided  and not block_B.divided and points_A[0] != points_B[0]):

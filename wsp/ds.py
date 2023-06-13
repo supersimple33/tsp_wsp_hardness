@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Type
+from typing import Tuple
+from functools import cached_property
 
 import numpy as np
 
@@ -69,13 +70,13 @@ def min_dist(block_A, block_B):
 
 def min_proj(block_A, block_B):
     """Min dist between points from Quadtree block_A and Quadtree block_B"""
-    set_A = block_A.get_points()
-    set_B = block_B.get_points()
+    set_A = block_A.covered_points
+    set_B = block_B.covered_points
     #print(set_A, set_B)
     return util.min_proj(set_A, set_B)#min_p1, min_p2
 
 def shrink_boundaries(block, regular=True):
-    points = block.get_points()
+    points = block.covered_points
     minX = float('inf')
     minY = float('inf')
     maxX = float('-inf')
@@ -140,38 +141,54 @@ class AbstractQuadTree(ABC):
     def center(self) -> tuple:
         return self.boundary.center()
 
+    def clear_cache(self) -> None:
+        if "_length" in self.__dict__:
+            del self.__dict__["_length"] # invalidate cached property since we added a point
+        if "covered_points" in self.__dict__:
+            del self.__dict__["covered_points"]
+
     @abstractmethod
     def divide(self):
-        """Divide (branch) this node by spawning four children nodes around a point."""
-        pass
+        """Divide (branch) this node by spawning four children nodes around a point.
+        This method has no consequences and only works to destroy cache's if the exist"""
+        self.clear_cache() # NOTE: Best practice is to call the super to destroy cache
 
     @abstractmethod
     def insert(self, point) -> bool:
-        """Insert the given point into this quadtree. This implementation is abstract and has no consequences."""
+        """Insert the given point into this quadtree. This implementation is abstract. Nevertheless
+        it is important that this super method is called so that the quadtree destroys its cache."""
+        self.clear_cache() # NOTE: again THIS SUPER METHOD MUST BE CALLED, so we can destroy
+
         return point in self.boundary
 
     @abstractmethod
     def get_points_rec(self, found_points: list[Point]) -> list[Point]:
         """Get all points in this quadtree."""
-        pass
+        raise
 
-    def get_points(self) -> list[Point]:
+    @cached_property
+    def covered_points(self) -> list[Point]:
         """Get all points in this quadtree."""
         return self.get_points_rec([])
 
     @abstractmethod
+    @cached_property
+    def _length(self) -> int:
+        """Return the number of points in this quadtree."""
+        return 0
+
     def __len__(self):
         """Return the number of points in this quadtree."""
-        pass
+        return self._length
 
     def draw_points(self, color='black'):
         """Draw all points in this quadtree."""
         if self.ax is None:
             return
-        
+
         x = []
         y = []
-        for p in self.get_points():
+        for p in self.covered_points:
             x.append(p.x)
             y.append(p.y)
         self.ax[0].scatter(x, y, color=color)
@@ -192,7 +209,7 @@ class AbstractPKQuadTree(AbstractQuadTree):
         """Return a string representation of this node, suitably formatted."""
         if self.pk_aggregated:
             sp = ' ' * self.depth * 2
-            s = str(self.boundary) + ' --> ' + str(self.points) 
+            s = str(self.boundary) + ' --> ' + str(self.points)
             #print(self.depth, len(self.children))
             for c in self.children:
                 s += '\n' + sp + 'child:' + str(c)
@@ -206,11 +223,13 @@ class AbstractPKQuadTree(AbstractQuadTree):
                 sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
 
     def str_short(self):
-        return str(self.get_points()) #str(self.boundary) +
+        return str(self.covered_points) #str(self.boundary) +
 
     # @abstractmethod # NOTE: I would like to merge the divide methods due to their similarity but want to get some advice here first
     # def divide(self, subclass: Type['AbstractPKQuadTree']):
     #     """Divide (branch) this node by spawning four children nodes around a point."""
+    #     super.divide()
+
     #     mid = Point(*self.boundary.center())
     #     self.nw = subclass(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth+1)
     #     self.ne = subclass(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket, self.depth+1)
@@ -299,7 +318,8 @@ class AbstractPKQuadTree(AbstractQuadTree):
             self.ax[1].plot([child.boundary.xMin, child.boundary.xMin],[child.boundary.yMin, child.boundary.yMax], color="blue")
             self.ax[1].plot([child.boundary.xMax, child.boundary.xMax],[child.boundary.yMin, child.boundary.yMax], color="blue")
 
-    def __len__(self):
+    @cached_property
+    def _length(self):
         """Return the number of points in the quadtree."""
         npoints = len(self.points)
         if self.divided:
@@ -322,6 +342,8 @@ class PKPMRQuadTree(AbstractPKQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
+        super.divide()
+
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PKPMRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
         self.ne = PKPMRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
@@ -373,6 +395,8 @@ class PKPRQuadTree(AbstractPKQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
+        super.divide()
+
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PKPRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
         self.ne = PKPRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
@@ -434,6 +458,8 @@ class PMRQuadTree(AbstractQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
+        super.divide()
+
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PMRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
         self.ne = PMRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
@@ -514,10 +540,12 @@ class PRQuadTree(AbstractQuadTree):
            sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
 
     def str_short(self):
-        return str(self.get_points()) #str(self.boundary) +
+        return str(self.covered_points) #str(self.boundary) +
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
+        super.divide()
+
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
         self.ne = PRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
@@ -600,6 +628,8 @@ class PointQuadTree(AbstractQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
+        super.divide()
+
         self.nw = PointQuadTree(Rect(self.boundary.xMin, self.point.y, self.point.x, self.boundary.yMax), self.ax, self.depth + 1)
         self.ne = PointQuadTree(Rect(self.point.x, self.point.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.depth + 1)
         self.se = PointQuadTree(Rect(self.point.x, self.boundary.yMin, self.boundary.xMax, self.point.y), self.ax, self.depth + 1)

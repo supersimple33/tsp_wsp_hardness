@@ -27,9 +27,9 @@ wspTreeNode, wsp_count = wsp.runWSP(filename, s, debug, shrink, quadtree, bucket
 timeEnd = time.perf_counter()
 
 # calculate well separated dictionary
-points = wspTreeNode.get_points()
+points = wspTreeNode.covered_points
 
-points = wspTreeNode.get_points()
+points = wspTreeNode.covered_points
 num_points = len(points)
 
 print("___________________________________________________________")

@@ -36,7 +36,7 @@ def min_proj_set_or_point(item_A, item_B, min2=False):
         return min2_proj(item_A, item_B)
     return min_proj(item_A, item_B)
 
-def min_proj(set_A, set_B):
+def min_proj(set_A: list['ds.Point'], set_B: list['ds.Point']):
     """Min pair between points from set_A and set_B"""
     '''avg_A = ds.Point(0,0)
     avg_B = ds.Point(0,0)
@@ -59,6 +59,10 @@ def min_proj(set_A, set_B):
         if dist < min_d2:
             min_p2 = p_B
             min_d2 = dist'''
+
+    if len(set_A) == 0 or len(set_B) == 0:
+        raise ValueError("Empty Quadtree block")
+
     mind = 99999999
     min_p1 = None
     min_p2 = None
