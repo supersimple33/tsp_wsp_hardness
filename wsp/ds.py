@@ -228,7 +228,7 @@ class AbstractPKQuadTree(AbstractQuadTree):
     # @abstractmethod # NOTE: I would like to merge the divide methods due to their similarity but want to get some advice here first
     # def divide(self, subclass: Type['AbstractPKQuadTree']):
     #     """Divide (branch) this node by spawning four children nodes around a point."""
-    #     super.divide()
+    #     super().divide()
 
     #     mid = Point(*self.boundary.center())
     #     self.nw = subclass(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth+1)
@@ -342,7 +342,7 @@ class PKPMRQuadTree(AbstractPKQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
-        super.divide()
+        super().divide()
 
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PKPMRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
@@ -395,7 +395,7 @@ class PKPRQuadTree(AbstractPKQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
-        super.divide()
+        super().divide()
 
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PKPRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
@@ -458,7 +458,7 @@ class PMRQuadTree(AbstractQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
-        super.divide()
+        super().divide()
 
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PMRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
@@ -544,7 +544,7 @@ class PRQuadTree(AbstractQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
-        super.divide()
+        super().divide()
 
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
         self.nw = PRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
@@ -628,7 +628,7 @@ class PointQuadTree(AbstractQuadTree):
 
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point."""
-        super.divide()
+        super().divide()
 
         self.nw = PointQuadTree(Rect(self.boundary.xMin, self.point.y, self.point.x, self.boundary.yMax), self.ax, self.depth + 1)
         self.ne = PointQuadTree(Rect(self.point.x, self.point.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.depth + 1)

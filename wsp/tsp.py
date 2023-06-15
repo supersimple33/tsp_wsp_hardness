@@ -42,9 +42,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         for point in points:
             self.quadtree.covered_points
             success = self.quadtree.insert(point)
-            print(len(self.quadtree))
             assert success
-        print(len(self.quadtree))
 
         if issubclass(treeType, ds.AbstractPKQuadTree):
             self.quadtree.pk_aggregate(2)
@@ -63,9 +61,9 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         for i in range(len(path) - 1):
             self.ax[1].plot((path[i].x, path[i + 1].x), (path[i].y, path[i + 1].y), color=color, linestyle=linestyle)
 
-    # def run_wsp_setup(self):
-    #     """Runs the WSP setup algorithm"""
-    #     raise NotImplementedError
+    def run_wsp_setup(self):
+        """Runs the WSP setup algorithm"""
+        raise NotImplementedError
 
     @cached_property #@property # if timeit
     def brute_force_path(self) -> tuple[list[ds.Point], tuple]:
@@ -73,13 +71,13 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         min_solution = []
         min_dist = float('inf')
 
-        perms = permutations(self.points)
+        perms = permutations(self.points[1:])
         num_perms = 0
         for perm in perms:
             num_perms += 1
-            dist = calc_dist(perm) + euclid_dist(perm[-1], perm[0])
+            dist = euclid_dist(self.points[0], perm[0]) + calc_dist(perm) + euclid_dist(perm[-1], self.points[0])
             if dist < min_dist:
-                min_solution = perm + (perm[0],)
+                min_solution = (self.points[0],) + perm + (self.points[0],)
                 min_dist = dist
 
         return min_solution, (min_dist, num_perms)
@@ -120,3 +118,74 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         path = [self.points[e] for e in path]
 
         return (path, (calc_dist(path), None))
+
+    @cached_property
+    def ishan_bfp_path(self) -> tuple[list[ds.Point], tuple]:
+        """Ishan's implementation of using WSPs to prune brute force paths"""
+        ws = dict() # point -> set of well separated points (far away by WSP)
+        ws_orig = dict() # point a -> dict( WSP point b -> WSP set containing point a )
+        points = self.quadtree.covered_points
+        for p in points:
+            ws[p] = set()
+            ws_orig[p] = dict()
+        
+        queue = [self.quadtree]
+        while len(queue) > 0:
+            anode = queue.pop(0)
+            for bnode in anode.connection:
+                apoints = anode.covered_points
+                bpoints = bnode.covered_points
+                for a in apoints:
+                    for b in bpoints:
+                        # INVESIGATE: what are the consequences of this logic?
+                        ws[a].add(b)
+                        ws[b].add(a)
+                        ws_orig[a][b] = anode
+                        ws_orig[b][a] = bnode
+
+            if issubclass(type(self.quadtree), ds.AbstractPKQuadTree):
+                queue.extend(anode.children)
+            else:
+                if anode.divided:
+                    queue.append(anode.ne)
+                    queue.append(anode.nw)
+                    queue.append(anode.sw)
+                    queue.append(anode.se)
+
+        def buildPerms(perm, rem):
+            next_perms = []
+            if len(perm) == len(self.points):
+                return [perm]
+            #print(len(rem))
+            for r in rem:
+                last_point = perm[len(perm) - 1]
+                orig_set_finished = True
+                if r in ws[last_point]: # checks if all points in last_point <-> r set have been visited
+                    if r in ws_orig[last_point]:
+                        for p in ws_orig[last_point][r]:
+                            if p not in perm:
+                                orig_set_finished = False
+                if (r not in ws[last_point]) or (orig_set_finished):
+                    new_point_list = perm.copy()
+                    new_point_list.append(r)
+                    new_rem = rem.copy()
+                    new_rem.remove(r)
+                    if len(new_point_list) == len(self.points):
+                        next_perms.append(new_point_list)
+                    else:
+                        next_perms.extend(buildPerms(new_point_list, new_rem))
+            return next_perms
+
+        rem = points.copy()
+        rem.remove(points[0])
+        perms = buildPerms([points[0]], rem)
+
+        min_solution = []
+        min_dist = float('inf')
+        for perm in perms:
+            dist = calc_dist(perm) + euclid_dist(perm[-1], perm[0])
+            if dist < min_dist:
+                min_solution = perm + [perm[0]]
+                min_dist = dist
+
+        return min_solution, (min_dist, len(perms))
