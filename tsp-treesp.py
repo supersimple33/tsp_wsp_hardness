@@ -126,7 +126,7 @@ def find_subproblems(tree_node, add=True):
     if len(tree_node.points) > 0:
         subproblems = tree_node.points
 
-    if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
+    if issubclass(quadtree, ds.AbstractPKQuadTree):
         for child in tree_node.children:
             subproblems.append(find_subproblems(child, True))
     else:
@@ -416,3 +416,5 @@ print("Solution Distance:", minDist)
 print(f"Solution found in {timeEnd - timeStart:0.4f} seconds")
 print("___________________________________________________________")
 plt.show()
+
+print()

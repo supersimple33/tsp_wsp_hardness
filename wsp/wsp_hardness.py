@@ -67,21 +67,21 @@ def hardness(filename: str, s: float = 1.0, debug = False, shrink = False, quadt
         points_B = block_B.covered_points
         if debug:
             print("considering WSP: ", block_A.str_short(), " <~~~~~> ", block_B.str_short(), (len(points_A) == 1 and len(points_B) == 1))
-        if ds.min_dist(block_A, block_B) >= s * block_A.diameter() or (len(points_A) == 1 and len(points_B) == 1 and not block_A.divided  and not block_B.divided and points_A[0] != points_B[0]):
+        if ds.min_dist(block_A, block_B) >= s * block_A.diameter or (len(points_A) == 1 and len(points_B) == 1 and not block_A.divided  and not block_B.divided and points_A[0] != points_B[0]):
             if debug:
                 print("found a WSP: ", block_A.str_short(), " <~~~~~> ", block_B.str_short())
             wsp_count += 1
             block_A.connection.append(block_B)
             block_B.connection.append(block_A)
-            circle1 = plt.Circle(block_A.center(), block_A.diameter() / 2, color='r', fill=False)
-            circle2 = plt.Circle(block_B.center(), block_B.diameter() / 2, color='r', fill=False)
+            circle1 = plt.Circle(block_A.center, block_A.diameter / 2, color='r', fill=False)
+            circle2 = plt.Circle(block_B.center, block_B.diameter / 2, color='r', fill=False)
             ax[0].add_patch(circle1)
             ax[0].add_patch(circle2)
             #line
-            ax[0].plot([block_A.center()[0], block_B.center()[0]],[block_A.center()[1], block_B.center()[1]])
+            ax[0].plot([block_A.center[0], block_B.center[0]],[block_A.center[1], block_B.center[1]])
 
-            metric = (math.sqrt(((block_A.center()[0] - block_B.center()[0]) ** 2) + \
-                                ((block_A.center()[1] - block_B.center()[1]) ** 2))) #
+            metric = (math.sqrt(((block_A.center[0] - block_B.center[0]) ** 2) + \
+                                ((block_A.center[1] - block_B.center[1]) ** 2))) #
 
             vals.append(metric)
             total += metric
@@ -90,14 +90,14 @@ def hardness(filename: str, s: float = 1.0, debug = False, shrink = False, quadt
             continue
 
         if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
-            if block_A.diameter() > block_B.diameter():
+            if block_A.diameter > block_B.diameter:
                 for child in block_A.children:
                     queue.append((block_B, child))
             else:
                 for child in block_B.children:
                     queue.append((block_A, child))
         else:
-            if block_A.diameter() > block_B.diameter():
+            if block_A.diameter > block_B.diameter:
                 if block_A.divided:
                     queue.append((block_B, block_A.nw))
                     queue.append((block_B, block_A.ne))

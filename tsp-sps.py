@@ -85,7 +85,7 @@ def find_relations(tree_node: ds.AbstractQuadTree, add=True) -> set[ds.Point]:
     return sub_relations
 
 find_relations(wspTreeNode, True)
-print(splits)
+print("splits", splits)
 # print()
 
 def apply_split(pair: tuple[list[ds.Point]], glist: list[ds.Point]):
@@ -126,7 +126,7 @@ for pair in splits:
     if len(pair[0]) >= 2 or len(pair[1]) >= 2:
         grouped_points = apply_split(pair, grouped_points.copy())
 # print(points)
-# print("grouped_points", grouped_points)
+print("grouped_points", grouped_points)
 
 # traversal
 
@@ -288,3 +288,5 @@ print(len(perms), "permutations examined")
 print(f"Solution found in {timeEnd - timeStart:0.4f} seconds")
 print("___________________________________________________________")
 plt.show()
+
+print()

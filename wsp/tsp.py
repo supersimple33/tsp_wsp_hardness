@@ -87,7 +87,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         """Returns a solution using dynamic programming based on held-karp"""
         n = len(self.points)
         arr = np.full((2**n, n), float('inf'))
-        parent = np.full((2**n, n), -1) # record the parent node of each path so we can rebuild later
+        parent = np.full((2**n, n), -1) # record the parent node of each path so we can make later
 
         arr[0][0] = 0
         for i in range(1,n):
@@ -108,6 +108,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         path = [0]  # Start with the starting point
         mask = (2 ** n) - 1  # Initialize mask to represent all points
 
+        # Rebuild the path
         while mask != 0:
             last_point = path[-1]
             next_point = parent[mask][last_point]

@@ -24,6 +24,8 @@ class Point:
         return [self.x, self.y]
     def to_tuple(self): # could make this lazy
         return (self.x, self.y)
+    def magnitude(self):
+        return np.hypot(self.x, self.y)
     def distance_to(self, other):
         try:
             other_x, other_y = other.x, other.y
@@ -61,6 +63,10 @@ class Rect:
     def diameter(self) -> np.float_:
         # diagonal
         return np.hypot(self.xMax - self.xMin, self.yMax - self.yMin)
+
+    def radius(self) -> np.float_:
+        return self.diameter() / 2
+
     def center(self) -> tuple:
         return ((self.xMax + self.xMin) / 2, (self.yMax + self.yMin) / 2)
 
@@ -136,9 +142,17 @@ class AbstractQuadTree(ABC):
     def str_short(self) -> str: # TODO: default impl?
         pass
 
+    @cached_property
     def diameter(self) -> np.float_:
+        """Return the diameter of this node's boundary."""
         return self.boundary.diameter()
+    @cached_property
+    def radius(self) -> np.float_:
+        """Return the radius of this node's boundary."""
+        return self.boundary.radius()
+    @cached_property
     def center(self) -> tuple:
+        """Return the center of this node's boundary."""
         return self.boundary.center()
 
     def clear_cache(self) -> None:

@@ -80,7 +80,7 @@ def find_relations(tree_node, add=True):
     return sub_relations
 
 find_relations(wspTreeNode, True)
-print(splits)
+print("splits", splits)
 
 def apply_split(pair, glist):
     list1 = []
@@ -384,3 +384,5 @@ print("Solution Distance:", minDist)
 print(f"Solution found in {timeEnd - timeStart:0.4f} seconds")
 print("___________________________________________________________")
 plt.show()
+
+print()
