@@ -127,8 +127,9 @@ class AbstractQuadTree(ABC):
         # self.points = [] # self.point = None
         self.connection : list[AbstractQuadTree] = [] # WSP connections
         self.divided = False # flag for if divided into 4 child quads
+        self.TreeType = type(self)
 
-        self.ne = None
+        self.ne = None # FIXME: these should be moved or should they?
         self.nw = None
         self.se = None
         self.sw = None
@@ -155,7 +156,7 @@ class AbstractQuadTree(ABC):
         """Return the center of this node's boundary."""
         return self.boundary.center()
 
-    def clear_cache(self) -> None:
+    def _clear_cache(self) -> None:
         if "_length" in self.__dict__:
             del self.__dict__["_length"] # invalidate cached property since we added a point
         if "covered_points" in self.__dict__:
@@ -165,20 +166,20 @@ class AbstractQuadTree(ABC):
     def divide(self):
         """Divide (branch) this node by spawning four children nodes around a point.
         This method has no consequences and only works to destroy cache's if the exist"""
-        self.clear_cache() # NOTE: Best practice is to call the super to destroy cache
+        self._clear_cache() # NOTE: Best practice is to call the super to destroy cache
 
     @abstractmethod
     def insert(self, point) -> bool:
         """Insert the given point into this quadtree. This implementation is abstract. Nevertheless
         it is important that this super method is called so that the quadtree destroys its cache."""
-        self.clear_cache() # NOTE: again THIS SUPER METHOD MUST BE CALLED, so we can destroy
+        self._clear_cache() # NOTE: again THIS SUPER METHOD MUST BE CALLED, so we can destroy
 
         return point in self.boundary
 
     @abstractmethod
     def get_points_rec(self, found_points: list[Point]) -> list[Point]:
         """Get all points in this quadtree."""
-        raise
+        pass
 
     @cached_property
     def covered_points(self) -> list[Point]:
@@ -278,7 +279,8 @@ class AbstractPKQuadTree(AbstractQuadTree):
 
         return found_points
 
-    def pk_aggregate(self, k, parent=None):
+    def pk_aggregate(self, k, _parent=None):
+        """Aggregate k-empty nodes into their grandparents. This should also path compress the tree."""
         # removes k-empty nodes and reassigns to grandparents
         self.pk_aggregated = True
 
@@ -301,11 +303,11 @@ class AbstractPKQuadTree(AbstractQuadTree):
             self.se = None
             self.sw = None
 
-            if parent is not None:
+            if _parent is not None:
                 if len(self) < k:
                     # pass children upwards
                     #print("len", len(self), k)
-                    parent.children += self.children
+                    _parent.children += self.children
                     return None
                 else:
                     return self
@@ -318,6 +320,16 @@ class AbstractPKQuadTree(AbstractQuadTree):
                 return None
 
         return self
+    
+    def path_compress(self):
+        if self.leaf: # if leaf node, return self
+            return self
+        if len(self.children) == 1: # if only one child, prune itself by returning path compress of child
+            return self.children[0].path_compress()
+        else:
+            for i, child in enumerate(self.children):
+                self.children[i] = child.path_compress()
+            return self
 
     def pk_draw(self): # TODO: add none check
         if self.ax is None:
@@ -336,7 +348,7 @@ class AbstractPKQuadTree(AbstractQuadTree):
     def _length(self):
         """Return the number of points in the quadtree."""
         npoints = len(self.points)
-        if self.divided:
+        if self.divided: # TODO: reevaluate this these checks may not be necessary based on aggregated status.
             npoints += len(self.nw) if self.nw is not None else 0
             npoints += len(self.ne) if self.ne is not None else 0
             npoints += len(self.se) if self.se is not None else 0
@@ -412,10 +424,10 @@ class PKPRQuadTree(AbstractPKQuadTree):
         super().divide()
 
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
-        self.nw = PKPRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
-        self.ne = PKPRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
-        self.se = PKPRQuadTree(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
-        self.sw = PKPRQuadTree(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.nw = self.TreeType(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
+        self.ne = self.TreeType(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
+        self.se = self.TreeType(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.sw = self.TreeType(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
         self.divided = True
         # reinsert point
         points_to_reinsert = self.points
@@ -525,7 +537,8 @@ class PMRQuadTree(AbstractQuadTree):
             self.sw.get_points_rec(found_points)
         return found_points
 
-    def __len__(self):
+    @cached_property
+    def _length(self):
         """Return the number of points in the quadtree."""
         npoints = len(self.points)
         if self.divided:
@@ -534,7 +547,6 @@ class PMRQuadTree(AbstractQuadTree):
 
 
 # POINT REGION QUADTREE
-
 class PRQuadTree(AbstractQuadTree):
     """Point Region Quadtree implementation."""
 
@@ -561,10 +573,10 @@ class PRQuadTree(AbstractQuadTree):
         super().divide()
 
         mid = Point((self.boundary.xMin + self.boundary.xMax) / 2, (self.boundary.yMin + self.boundary.yMax) / 2)
-        self.nw = PRQuadTree(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
-        self.ne = PRQuadTree(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
-        self.se = PRQuadTree(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
-        self.sw = PRQuadTree(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.nw = self.TreeType(Rect(self.boundary.xMin, mid.y, mid.x, self.boundary.yMax), self.ax, self.bucket, self.depth + 1)
+        self.ne = self.TreeType(Rect(mid.x, mid.y, self.boundary.xMax, self.boundary.yMax), self.ax, self.bucket,  self.depth + 1)
+        self.se = self.TreeType(Rect(mid.x, self.boundary.yMin, self.boundary.xMax, mid.y), self.ax, self.bucket, self.depth + 1)
+        self.sw = self.TreeType(Rect(self.boundary.xMin, self.boundary.yMin, mid.x, mid.y), self.ax, self.bucket, self.depth + 1)
         self.divided = True
         # reinsert point
         points_to_reinsert = self.points
@@ -611,7 +623,8 @@ class PRQuadTree(AbstractQuadTree):
             self.sw.get_points_rec(found_points)
         return found_points
 
-    def __len__(self):
+    @cached_property
+    def _length(self):
         """Return the number of points in the quadtree."""
         npoints = len(self.points)
         if self.divided:
@@ -687,7 +700,8 @@ class PointQuadTree(AbstractQuadTree):
             self.sw.get_points_rec(found_points)
         return found_points
 
-    def __len__(self):
+    @cached_property
+    def _length(self):
         """Return the number of points in the quadtree."""
         if self.point != None:
             npoints = 1

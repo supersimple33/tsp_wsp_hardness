@@ -48,6 +48,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
             self.quadtree.pk_aggregate(2)
             self.quadtree.pk_draw()
 
+        self.quadtree = self.quadtree.path_compress()
         self.quadtree.draw_points()
 
         self.splits = []
