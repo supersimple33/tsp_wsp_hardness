@@ -24,7 +24,7 @@ class Point:
         return [self.x, self.y]
     def to_tuple(self): # could make this lazy
         return (self.x, self.y)
-    def magnitude(self):
+    def mag(self):
         return np.hypot(self.x, self.y)
     def distance_to(self, other):
         try:
@@ -67,8 +67,9 @@ class Rect:
     def radius(self) -> np.float_:
         return self.diameter() / 2
 
-    def center(self) -> tuple:
-        return ((self.xMax + self.xMin) / 2, (self.yMax + self.yMin) / 2)
+    def center(self) -> Point:
+        """Return the center Point of this Rect."""
+        return Point((self.xMax + self.xMin) / 2, (self.yMax + self.yMin) / 2)
 
 def min_dist(block_A, block_B):
     min_p1, min_p2 = min_proj(block_A, block_B)
@@ -128,6 +129,8 @@ class AbstractQuadTree(ABC):
         self.connection : list[AbstractQuadTree] = [] # WSP connections
         self.divided = False # flag for if divided into 4 child quads
         self.TreeType = type(self)
+        
+        # self.repr = None # for wsp
 
         self.ne = None # FIXME: these should be moved or should they?
         self.nw = None
@@ -172,9 +175,15 @@ class AbstractQuadTree(ABC):
     def insert(self, point) -> bool:
         """Insert the given point into this quadtree. This implementation is abstract. Nevertheless
         it is important that this super method is called so that the quadtree destroys its cache."""
+        if point not in self.boundary:
+            return False
+
         self._clear_cache() # NOTE: again THIS SUPER METHOD MUST BE CALLED, so we can destroy
 
-        return point in self.boundary
+        # if self.repr is None or (self.repr - self.center).mag() > (point - self.center).mag():
+        #     self.repr = point
+
+        return True
 
     @abstractmethod
     def get_points_rec(self, found_points: list[Point]) -> list[Point]:

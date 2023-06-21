@@ -98,15 +98,15 @@ def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, 
             wsp_count += 1
             block_A.connection.append(block_B)
             block_B.connection.append(block_A)
-            circle1 = plt.Circle(block_A.center, block_A.diameter / 2, color='r', fill=False)
-            circle2 = plt.Circle(block_B.center, block_B.diameter / 2, color='r', fill=False)
+            circle1 = plt.Circle(block_A.center.to_tuple(), block_A.diameter / 2, color='r', fill=False)
+            circle2 = plt.Circle(block_B.center.to_tuple(), block_B.diameter / 2, color='r', fill=False)
             ax[0].add_patch(circle1)
             ax[0].add_patch(circle2)
             #line
-            ax[0].plot([block_A.center[0], block_B.center[0]],[block_A.center[1], block_B.center[1]])
+            ax[0].plot([block_A.center.x, block_B.center.x],[block_A.center.y, block_B.center.y])
 
-            metric = (math.sqrt(((block_A.center[0] - block_B.center[0]) ** 2) + \
-             ((block_A.center[1] - block_B.center[1]) ** 2))) #
+            metric = (math.sqrt(((block_A.center.x - block_B.center.x) ** 2) + \
+             ((block_A.center.y - block_B.center.y) ** 2))) #
 
             vals.append(metric)
             total += metric

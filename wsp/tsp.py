@@ -1,7 +1,8 @@
 from functools import cached_property
 from typing import Generic, TypeVar, Type
-from itertools import permutations
+from itertools import permutations, combinations
 
+import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 import numpy as np
 
@@ -14,8 +15,11 @@ TreeType = TypeVar('TreeType', bound=ds.AbstractQuadTree)
 
 class TravellingSalesmanProblem(Generic[TreeType]):
 
-    def __init__(self, treeType: Type[TreeType], points: list[ds.Point], ax : None | list[Axes]) -> None:
+    def __init__(self, treeType: Type[TreeType], points: list[ds.Point], ax : None | list[Axes], s = 1.0) -> None:
         """Initializes the TravellingSalesmanProblem"""
+
+        assert s >= 1.0, "Separation factor must be greater than or equal to 1.0" # make stricter later?
+        self._s = s
 
         # Setting/drawing the boundaries and initializing the quadtree
         minX = min(p.x for p in points) - BUFFER
@@ -45,7 +49,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
             assert success
 
         if issubclass(treeType, ds.AbstractPKQuadTree):
-            self.quadtree.pk_aggregate(2)
+            self.quadtree.pk_aggregate(1) # REVIEW: 1 or 2 or more?
             self.quadtree.pk_draw()
 
         self.quadtree = self.quadtree.path_compress()
@@ -57,14 +61,52 @@ class TravellingSalesmanProblem(Generic[TreeType]):
     def draw_path(self, path: list[ds.Point], color='r', linestyle='-'):
         """Draws a path on the matplotlib axes"""
         if self.ax is None:
-            print()
+            print("No axes to draw on")
             return
         for i in range(len(path) - 1):
             self.ax[1].plot((path[i].x, path[i + 1].x), (path[i].y, path[i + 1].y), color=color, linestyle=linestyle)
 
-    def run_wsp_setup(self):
-        """Runs the WSP setup algorithm"""
-        raise NotImplementedError
+    @cached_property
+    def wspd(self) -> list[tuple[ds.AbstractQuadTree, ds.AbstractQuadTree]]:
+        """Returns the well-seperated pair decomposition of the underlying quadtree, based on """
+        ws_pairs = []
+        is_pk = issubclass(type(self.quadtree), ds.AbstractPKQuadTree)
+
+        def recurssive_wspd(node_A: ds.AbstractQuadTree, node_B: ds.AbstractQuadTree): # could be stricter with typing
+            if len(node_A) == 0 or len(node_B) == 0 or (node_A.leaf and node_B.leaf and node_A == node_B):
+                return
+            big_radius = max(0 if node_A.leaf else node_A.radius, 0 if node_B.leaf else node_B.radius) # REVIEW: or just node_A.radius?
+            if (node_A.center - node_B.center).mag() - (2*big_radius) >= self._s * big_radius: # node_A guaranteed to be bigger
+                if (node_B, node_A) not in ws_pairs: # prevent dups
+                    ws_pairs.append((node_A, node_B))
+                return
+            else:
+                pass
+            if (float("-inf") if node_A.leaf else node_A.radius) < (float("-inf") if node_B.leaf else node_B.radius): # REVIEW: correct comparator?
+                # pull the most splittable node to the front
+                node_A, node_B = node_B, node_A
+            for child in node_A.children:
+                recurssive_wspd(child, node_B)
+
+        recurssive_wspd(self.quadtree, self.quadtree)
+        
+        return ws_pairs
+    
+    def draw_wspd(self):
+        if self.ax is None:
+            print("No axes to draw on")
+            return
+        for node_A, node_B in self.wspd:
+            point_A = node_A.points[0] if node_A.leaf else node_A.center
+            point_B = node_B.points[0] if node_B.leaf else node_B.center
+
+            self.ax[0].plot((point_A.x, point_B.x), (point_A.y, point_B.y), linestyle= '--' if node_A.leaf and node_B.leaf else '-')
+            big_radius = max(node_A.radius, node_B.radius) * (0.5 if node_A.leaf and node_B.leaf else 1)
+            circle1 = plt.Circle((point_A.x, point_A.y), big_radius, color='r', fill=False)
+            circle2 = plt.Circle((point_B.x, point_B.y), big_radius, color='r', fill=False)
+            self.ax[0].add_artist(circle1) # add_patch
+            self.ax[0].add_artist(circle2)
+
 
     @cached_property #@property # if timeit
     def brute_force_path(self) -> tuple[list[ds.Point], tuple]:

@@ -18,8 +18,8 @@ QTREE = ds.PKPRQuadTree
 
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
 
-# points = file_load.load_points("data/custom3.tsp", False)
-points = util.generate_points(11)
+points = file_load.load_points("data/custom1.tsp", False)
+# points = util.generate_points(11)
 
 tsp = tsp.TravellingSalesmanProblem[QTREE](QTREE, points, ax)
 
@@ -46,5 +46,8 @@ tsp.draw_path(tsp.ishan_bfp_path[0], 'g', '-.')
 print(tsp.dp_path[1][0]) 
 print(tsp.brute_force_path[1][0])
 print(tsp.ishan_bfp_path[1][0])
+
+tsp.wspd
+tsp.draw_wspd()
 
 print()
