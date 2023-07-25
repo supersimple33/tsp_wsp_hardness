@@ -72,40 +72,57 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         ws_pairs = []
         is_pk = issubclass(type(self.quadtree), ds.AbstractPKQuadTree)
 
-        def recurssive_wspd(node_A: ds.AbstractQuadTree, node_B: ds.AbstractQuadTree): # could be stricter with typing
+        def recursive_wspd(node_A: ds.AbstractQuadTree, node_B: ds.AbstractQuadTree): # could be stricter with typing
             if len(node_A) == 0 or len(node_B) == 0 or (node_A.leaf and node_B.leaf and node_A == node_B):
                 return
+
             big_radius = max(0 if node_A.leaf else node_A.radius, 0 if node_B.leaf else node_B.radius) # REVIEW: or just node_A.radius?
-            if (node_A.center - node_B.center).mag() - (2*big_radius) >= self._s * big_radius: # node_A guaranteed to be bigger
+            # REVIEW: This property for Well Separation is subjective, is it the best option?
+            if (node_A.center - node_B.center).mag() - (big_radius + small_radius) >= self._s * big_radius: # node_A guaranteed to be bigger
                 if (node_B, node_A) not in ws_pairs: # prevent dups
                     ws_pairs.append((node_A, node_B))
                 return
-            else:
-                pass
+            # else:
+            #     pass # ??
             if (float("-inf") if node_A.leaf else node_A.radius) < (float("-inf") if node_B.leaf else node_B.radius): # REVIEW: correct comparator?
                 # pull the most splittable node to the front
                 node_A, node_B = node_B, node_A
             for child in node_A.children:
-                recurssive_wspd(child, node_B)
+                recursive_wspd(child, node_B)
 
-        recurssive_wspd(self.quadtree, self.quadtree)
-        
+        recursive_wspd(self.quadtree, self.quadtree)
+
         return ws_pairs
-    
-    def draw_wspd(self):
+
+    def draw_wspd(self, no_leaves=False):
         if self.ax is None:
             print("No axes to draw on")
             return
         for node_A, node_B in self.wspd:
-            point_A = node_A.points[0] if node_A.leaf else node_A.center
+            point_A = node_A.points[0] if node_A.leaf else node_A.center # REVIEW: points[0] or mean point?
             point_B = node_B.points[0] if node_B.leaf else node_B.center
 
-            self.ax[0].plot((point_A.x, point_B.x), (point_A.y, point_B.y), linestyle= '--' if node_A.leaf and node_B.leaf else '-')
+            if no_leaves and node_A.leaf and node_B.leaf:
+                continue
+
+            ls = '--' if node_A.leaf and node_B.leaf else '-'
+            self.ax[0].plot((point_A.x, point_B.x), (point_A.y, point_B.y), linestyle= ls)
+
             big_radius = max(node_A.radius, node_B.radius) * (0.5 if node_A.leaf and node_B.leaf else 1)
-            circle1 = plt.Circle((point_A.x, point_A.y), big_radius, color='r', fill=False)
-            circle2 = plt.Circle((point_B.x, point_B.y), big_radius, color='r', fill=False)
+            ls_A, ls_B = ':' if node_A.leaf else '-', ':' if node_B.leaf else '-'
+
+            circle1 = plt.Circle((point_A.x, point_A.y), big_radius, color='r', fill=False, linestyle=ls_A)
+            circle2 = plt.Circle((point_B.x, point_B.y), big_radius, color='r', fill=False, linestyle=ls_B)
             self.ax[0].add_artist(circle1) # add_patch
             self.ax[0].add_artist(circle2)
+
+    def print_wspd(self, mode="center"):
+        if mode == "center":
+            for node_A, node_B in self.wspd:
+                print(node_A.center, node_B.center)
+        elif mode == "points":
+            for node_A, node_B in self.wspd:
+                print(node_A.covered_points, node_B.covered_points)
 
 
     @cached_property #@property # if timeit

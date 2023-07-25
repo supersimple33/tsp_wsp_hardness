@@ -11,15 +11,26 @@ class Point:
     def __init__(self, x, y):
         self.x, self.y = x, y
     def __repr__(self):
-        return '{}'.format(str((self.x, self.y)))
+        return f'{self.x}, {self.y}'
     def __str__(self):
         return 'P({:.2f}, {:.2f})'.format(self.x, self.y)
+
     def __add__(self, o):
         return Point(self.x + o.x, self.y + o.y)
     def __sub__(self, o):
         return Point(self.x - o.x, self.y - o.y)
+    def __mul__(self, o):
+        return Point(self.x * o, self.y * o)
     def __truediv__(self, o):
         return Point(self.x / o, self.y / o)
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, Point):
+            return self.x == __value.x and self.y == __value.y
+        elif isinstance(__value, (tuple, list)):
+            return self.x == __value[0] and self.y == __value[1]
+        else:
+            return False
+
     def to_list(self): # could make this lazy
         return [self.x, self.y]
     def to_tuple(self): # could make this lazy
@@ -32,6 +43,9 @@ class Point:
         except AttributeError:
             other_x, other_y = other
         return np.hypot(self.x - other_x, self.y - other_y)
+    @staticmethod
+    def origin():
+        return Point(0, 0)
 
 class Rect:
     def __init__(self, xMin, yMin, xMax, yMax):
@@ -60,15 +74,14 @@ class Rect:
     def __contains__(self, point: Point | Tuple[int, int]) -> bool:
         return self.contains(point)
 
-    def diameter(self) -> np.float_:
+    def diameter(self) -> np.float_: # TODO: convert to cached property
         # diagonal
         return np.hypot(self.xMax - self.xMin, self.yMax - self.yMin)
 
-    def radius(self) -> np.float_:
+    def radius(self) -> np.float_: # TODO: convert to cached property
         return self.diameter() / 2
 
-    def center(self) -> Point:
-        """Return the center Point of this Rect."""
+    def center(self) -> Point: # TODO: convert to cached property
         return Point((self.xMax + self.xMin) / 2, (self.yMax + self.yMin) / 2)
 
 def min_dist(block_A, block_B):
@@ -136,6 +149,8 @@ class AbstractQuadTree(ABC):
         self.nw = None
         self.se = None
         self.sw = None
+        
+        assert bucket == 1, "non-singular buckets are not ready yet"
 
     @abstractmethod
     def __str__(self) -> str:
@@ -228,6 +243,8 @@ class AbstractPKQuadTree(AbstractQuadTree):
 
         self.pk_aggregated = False # flag for if aggregated
         self.leaf = False
+        
+        self._radius = None # Experimental
 
     def __str__(self):
         """Return a string representation of this node, suitably formatted."""
@@ -248,6 +265,35 @@ class AbstractPKQuadTree(AbstractQuadTree):
 
     def str_short(self):
         return str(self.covered_points) #str(self.boundary) +
+
+
+    # MARK: comment this block out to return to default behavior
+    @cached_property
+    def diameter(self) -> np.float_:
+        """Return the diameter of this node's boundary."""
+        # return 0 if self.leaf else self.boundary.diameter()
+        return 2 * self.radius
+    @cached_property
+    def radius(self) -> np.float_:
+        """Return the radius of this node's boundary."""
+        # return 0 if self.leaf else self.boundary.radius()
+        return max((p - self.center).mag() for p in self.covered_points) # return the distance to the furthest point
+    @cached_property
+    def center(self) -> tuple:
+        """Return the center of this node's boundary or the stored point if a leaf."""
+        # return self.points[0] if self.leaf else self.boundary.center()
+        return sum(self.covered_points, Point.origin()) / len(self.covered_points)
+    def _clear_cache(self) -> None:
+        super()._clear_cache()
+        self._clear_pk_cache()
+    def _clear_pk_cache(self) -> None:
+        """Clear the cache to allow for new values now that self.leaf has been set."""
+        if "diameter" in self.__dict__:
+            del self.__dict__["diameter"]
+        if "radius" in self.__dict__:
+            del self.__dict__["radius"]
+        if "center" in self.__dict__:
+            del self.__dict__["center"]
 
     # @abstractmethod # NOTE: I would like to merge the divide methods due to their similarity but want to get some advice here first
     # def divide(self, subclass: Type['AbstractPKQuadTree']):
@@ -323,7 +369,9 @@ class AbstractPKQuadTree(AbstractQuadTree):
         else:
             #print("leaf node", len(self.points))
             self.leaf = True
+            self._clear_pk_cache()
             if len(self.points) > 0:
+                assert len(self.points) == 1, "buckets are all size 1"
                 return self
             else:
                 return None
