@@ -6,14 +6,17 @@ import numpy as np
 
 from wsp import util
 
+# @dataclass
 class Point:
-    #A point located at (x,y) in 2D space.
+    """A point located at (x,y) in 2D space."""
     def __init__(self, x, y):
         self.x, self.y = x, y
     def __repr__(self):
         return f'{self.x}, {self.y}'
     def __str__(self):
         return 'P({:.2f}, {:.2f})'.format(self.x, self.y)
+    def __iter__(self):
+        return iter(self.to_tuple())
 
     def __add__(self, o):
         return Point(self.x + o.x, self.y + o.y)

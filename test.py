@@ -18,7 +18,7 @@ QTREE = ds.PKPRQuadTree
 
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
 
-points = file_load.load_points("data/custom0.tsp", False)
+points = file_load.load_points("data/custom3.tsp", False)
 # points = file_load.load_points("data/custom754.tsp", False)
 # points = util.generate_points(40)
 
@@ -49,7 +49,7 @@ start = time()
 # print(tsp.ishan_bfp_path[1][0])
 
 tsp.wspd
-tsp.draw_wspd(no_leaves=False)
+tsp.draw_wspd(no_leaves=False, use_boundary=True, no_circles=True)
 tsp.print_wspd("points")
 
 plt.show()

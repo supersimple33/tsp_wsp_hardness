@@ -94,27 +94,35 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
         return ws_pairs
 
-    def draw_wspd(self, no_leaves=False):
+    def draw_wspd(self, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0):
         if self.ax is None:
             print("No axes to draw on")
             return
+        # iterate through each wsp pair
         for node_A, node_B in self.wspd:
-            point_A = node_A.points[0] if node_A.leaf else node_A.center # REVIEW: points[0] or mean point?
-            point_B = node_B.points[0] if node_B.leaf else node_B.center
+            point_A = node_A.boundary.center() if use_boundary else (node_A.points[0] if node_A.leaf else node_A.center) # REVIEW: points[0] or mean point?
+            point_B =  node_B.boundary.center() if use_boundary else (node_B.points[0] if node_B.leaf else node_B.center)
+            midpoint = (point_A + point_B) / 2
 
             if no_leaves and node_A.leaf and node_B.leaf:
                 continue
 
+            # draw the lines
             ls = '--' if node_A.leaf and node_B.leaf else '-'
-            self.ax[0].plot((point_A.x, point_B.x), (point_A.y, point_B.y), linestyle= ls)
+            nudge = np.random.uniform(-1 * adjust * midpoint.mag(), adjust * midpoint.mag())
+            color = np.random.rand(3)
+            self.ax[0].plot((point_A.x, midpoint.x + nudge), (point_A.y, midpoint.y + nudge), linestyle=ls, color=color, linewidth=linewidth)
+            self.ax[0].plot((midpoint.x + nudge, point_B.x), (midpoint.y + nudge, point_B.y), linestyle=ls, color=color, linewidth=linewidth)
 
-            big_radius = max(node_A.radius, node_B.radius) * (0.5 if node_A.leaf and node_B.leaf else 1)
-            ls_A, ls_B = ':' if node_A.leaf else '-', ':' if node_B.leaf else '-'
+            # draw the circles
+            if not no_circles:
+                big_radius = max(node_A.radius, node_B.radius) * (0.5 if node_A.leaf and node_B.leaf else 1)
+                ls_A, ls_B = ':' if node_A.leaf else '-', ':' if node_B.leaf else '-'
 
-            circle1 = plt.Circle((point_A.x, point_A.y), big_radius, color='r', fill=False, linestyle=ls_A)
-            circle2 = plt.Circle((point_B.x, point_B.y), big_radius, color='r', fill=False, linestyle=ls_B)
-            self.ax[0].add_artist(circle1) # add_patch
-            self.ax[0].add_artist(circle2)
+                circle1 = plt.Circle((point_A.x, point_A.y), big_radius, color='r', fill=False, linestyle=ls_A)
+                circle2 = plt.Circle((point_B.x, point_B.y), big_radius, color='r', fill=False, linestyle=ls_B)
+                self.ax[0].add_artist(circle1) # add_patch
+                self.ax[0].add_artist(circle2)
 
     def print_wspd(self, mode="center"):
         if mode == "center":
