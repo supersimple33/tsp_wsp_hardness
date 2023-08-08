@@ -1,0 +1,3 @@
+deprecation==2.1.0
+matplotlib==3.7.1
+tsplib95==0.7.1

@@ -1,43 +1,18 @@
 import random
 from random import randrange
 
-import numpy as np
 from deprecation import deprecated, fail_if_not_removed
+import tsplib95
 
 from wsp import ds
 
 def load_points(filename: str, shuffle=True) -> list[ds.Point]:
     """Read just the points from the file, don't do anything else. 
     Will shuffle points so the same tree isn't continually generated."""
-    points = []
 
-    with open(filename, 'r') as f: # reads .TSP files
-        line = f.readline()
-        mode = "start"
-        while line != '':  # The EOF char is an empty string
-            if line == "EOF\n":
-                break
-            if mode == "start": # Read in metadata from the file
-                if line[len(line) - 1] == "\n":
-                    line = line[:-1]
-                if len(line) > 7 and line[:7] == "bounds:":
-                    bounds = [int(i) for i in line[7:].split()]
-                if line == "NODE_COORD_SECTION":
-                    mode = "node"
-                #if len(line) == 0 or line[0] == '#': # ignores empty lines and #comments
-                line = f.readline()
-                continue
-            # start reading node coords
-            if mode == "node":
-                if line == "TOUR_SECTION\n":
-                    mode = "tour"
-                    break
-                splitLine = line.split()
-                if len(splitLine) == 3:
-                    splitLine = splitLine[1:]
-                p = ds.Point(float(splitLine[0].strip()), float(splitLine[1].strip()))
-                points.append(p)
-                line = f.readline()
+    problem = tsplib95.load(filename)
+    # assert not problem.is_special(), "Special problems not supported for now"
+    points = [ds.Point(*problem.node_coords[i]) for i in problem.get_nodes()]
 
     if shuffle:
         random.shuffle(points)
@@ -45,7 +20,7 @@ def load_points(filename: str, shuffle=True) -> list[ds.Point]:
     return points
 
 @deprecated("Use load_points instead")
-def loadFromFile(filename: str, do_offset=False) -> list[ds.Point]:
+def loadFromFile(filename: str, do_offset=False):
     """Read the points from the file, and jiggle the points if do_offset"""
     print("Deprecated: Use load_points instead")
     points = []
