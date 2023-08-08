@@ -17,6 +17,8 @@ class Point:
         return 'P({:.2f}, {:.2f})'.format(self.x, self.y)
     def __iter__(self):
         return iter(self.to_tuple())
+    def __hash__(self) -> int:
+        return hash(self.to_tuple())
 
     def __add__(self, o):
         return Point(self.x + o.x, self.y + o.y)

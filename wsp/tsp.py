@@ -66,6 +66,8 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         for i in range(len(path) - 1):
             self.ax[1].plot((path[i].x, path[i + 1].x), (path[i].y, path[i + 1].y), color=color, linestyle=linestyle)
 
+    # MARK: WSP
+
     @cached_property
     def wspd(self) -> list[tuple[ds.AbstractQuadTree, ds.AbstractQuadTree]]:
         """Returns the well-seperated pair decomposition of the underlying quadtree, based on """
@@ -132,9 +134,15 @@ class TravellingSalesmanProblem(Generic[TreeType]):
             for node_A, node_B in self.wspd:
                 print(node_A.covered_points, node_B.covered_points)
 
+    # MARK: Paths
+
+    @cached_property
+    def untouched_path(self) -> tuple[list[ds.Point], float, tuple]:
+        return self.points + [self.points[0]], calc_dist(self.points), None
+
 
     @cached_property #@property # if timeit
-    def brute_force_path(self) -> tuple[list[ds.Point], tuple]:
+    def brute_force_path(self) -> tuple[list[ds.Point], float, tuple]:
         """Returns the brute force path"""
         min_solution = []
         min_dist = float('inf')
@@ -148,10 +156,10 @@ class TravellingSalesmanProblem(Generic[TreeType]):
                 min_solution = (self.points[0],) + perm + (self.points[0],)
                 min_dist = dist
 
-        return min_solution, (min_dist, num_perms)
+        return min_solution, min_dist, (num_perms,)
 
     @cached_property #@property # if timeit
-    def dp_path(self) -> tuple[list[ds.Point], tuple]:
+    def dp_path(self) -> tuple[list[ds.Point], float, tuple]:
         """Returns a solution using dynamic programming based on held-karp"""
         n = len(self.points)
         arr = np.full((2**n, n), float('inf'))
@@ -161,11 +169,13 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         for i in range(1,n):
             arr[2 ** i][i] = euclid_dist(self.points[0], self.points[i])
 
+        perms = 0
         for mask in range(2**n):
-            for i in range(n):
+            for i in range(n): # TODO: check out that itertools.product thing
                 if arr[mask][i] == float('inf'): # ensure that the path being travelled makes sense
                     continue
                 for j in range(n):
+                    perms += 1
                     if mask & (2 ** j) != 0: # ensure we are travelling to a new node
                         continue
                     new_mask = mask | (2 ** j)
@@ -186,10 +196,10 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         path[-1] = 0  # End with the starting point
         path = [self.points[e] for e in path]
 
-        return (path, (calc_dist(path), None))
+        return path, calc_dist(path), (perms,) # TODO: de onionize this
 
     @cached_property
-    def ishan_bfp_path(self) -> tuple[list[ds.Point], tuple]:
+    def ishan_bfp_path(self) -> tuple[list[ds.Point], float, tuple]:
         """Ishan's implementation of using WSPs to prune brute force paths"""
         ws = dict() # point -> set of well separated points (far away by WSP)
         ws_orig = dict() # point a -> dict( WSP point b -> WSP set containing point a )
@@ -197,7 +207,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         for p in points:
             ws[p] = set()
             ws_orig[p] = dict()
-        
+
         queue = [self.quadtree]
         while len(queue) > 0:
             anode = queue.pop(0)
@@ -257,4 +267,32 @@ class TravellingSalesmanProblem(Generic[TreeType]):
                 min_solution = perm + [perm[0]]
                 min_dist = dist
 
-        return min_solution, (min_dist, len(perms))
+        return min_solution, min_dist, (len(perms),)
+
+    @cached_property
+    def nnn_path(self) -> tuple[list[ds.Point], float, tuple]:
+        """Returns a solution using the naive nearest neighbor"""
+        path = [self.points[0]]
+        rem = self.points[1:]
+        while len(rem) > 0:
+            min_dist = float('inf')
+            min_point = None
+            for p in rem: # TODO: make faster, refactor out
+                dist = euclid_dist(path[-1], p)
+                if dist < min_dist:
+                    min_dist = dist
+                    min_point = p
+            path.append(min_point)
+            rem.remove(min_point)
+        path.append(self.points[0])
+        return path, calc_dist(path), None
+
+
+
+    # MARK: Testing
+
+    def check_path(self, path: list[ds.Point]) -> bool:
+        """Checks if the path is valid for the tsp"""
+        return (path[0] == path[-1] and (len(path) == len(self.points) + 1)
+                and set(path) == set(self.points))
+        
