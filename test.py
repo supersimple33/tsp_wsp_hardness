@@ -13,8 +13,7 @@ QTREE = ds.PKPRQuadTree
 # QTREE = ds.PRQuadTree
 # QTREE = ds.PointQuadTree
 
-# points = points = util.generate_points(20)
-# print(tsp.quadtree)
+DRAW_WSPD_ARGS = {'no_leaves' : False, 'use_boundary' : True, 'no_circles' : False, 'adjust' : 0.0}
 
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
 
@@ -23,6 +22,7 @@ points = file_load.load_points("data/custom3.tsp", False)
 # points = util.generate_points(40)
 
 ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, points, ax, s=1.0)
+fig.canvas.mpl_connect('button_press_event', lambda event: ts_problem.on_click(event, **DRAW_WSPD_ARGS)) # hook up interactions
 
 print(len(ts_problem.quadtree))
 
@@ -58,9 +58,9 @@ print(ts_problem.nnn_path[1])
 print("NN was off by:", ts_problem.nnn_path[1] / ts_problem.dp_path[1])
 
 ts_problem.wspd
-ts_problem.draw_wspd(no_leaves=False, use_boundary=False, no_circles=False)
-assert ts_problem.check_path(ts_problem.dp_path[0])
-assert ts_problem.check_path(ts_problem.nnn_path[0])
+ts_problem.draw_wspd(**DRAW_WSPD_ARGS)
+assert ts_problem.check_tour(ts_problem.dp_path[0])
+assert ts_problem.check_tour(ts_problem.nnn_path[0])
 # tsp.print_wspd("points")
 
 plt.show()

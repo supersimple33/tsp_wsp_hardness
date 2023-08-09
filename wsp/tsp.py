@@ -3,6 +3,7 @@ from typing import Generic, TypeVar, Type
 from itertools import permutations, combinations
 
 import matplotlib.pyplot as plt
+from matplotlib import patches
 from matplotlib.axes import Axes
 import numpy as np
 
@@ -41,6 +42,8 @@ class TravellingSalesmanProblem(Generic[TreeType]):
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMax, self.quadtree.boundary.yMax], color="gray")
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMin],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
             ax[1].plot([self.quadtree.boundary.xMax, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
+            
+            self.current_screen = -1
 
         # Populating the quadtree and drawing the points
         for point in points:
@@ -96,35 +99,65 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
         return ws_pairs
 
+    # MARK: Drawing WSPs
+    
+    def draw_wsp_pair(self, node_A: ds.AbstractQuadTree, node_B: ds.AbstractQuadTree, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0): # pretty sure the kwargs are safe to be extracted
+        """Draws a single WSP pair on the matplotlib axes"""
+        point_A = node_A.boundary.center() if use_boundary else (node_A.points[0] if node_A.leaf else node_A.center) # REVIEW: points[0] or mean point?
+        point_B =  node_B.boundary.center() if use_boundary else (node_B.points[0] if node_B.leaf else node_B.center)
+        midpoint = (point_A + point_B) / 2
+
+        if no_leaves and node_A.leaf and node_B.leaf:
+            return
+
+        # draw the lines
+        ls = '--' if node_A.leaf and node_B.leaf else '-'
+        nudge = np.random.uniform(-1 * adjust * midpoint.mag(), adjust * midpoint.mag())
+        color = np.random.rand(3)
+        line = patches.PathPatch(patches.Path([(point_A.x, point_A.y),
+                                                (midpoint.x + nudge, midpoint.y + nudge), # helpful in big picture mode to add curvature
+                                                (point_B.x, point_B.y)]),
+                                    linestyle=ls, linewidth=linewidth, zorder=5, color=color, facecolor=color, edgecolor=color)
+        self.ax[0].add_patch(line)
+
+        # draw the circles
+        if not no_circles:
+            big_radius = max(node_A.radius, node_B.radius) * (1 if node_A.leaf and node_B.leaf else 1)
+            ls_A, ls_B = ':' if node_A.leaf else '-', ':' if node_B.leaf else '-'
+
+            circle1 = patches.Circle((point_A.x, point_A.y), big_radius, color='r', fill=False, linestyle=ls_A)
+            circle2 = patches.Circle((point_B.x, point_B.y), big_radius, color='r', fill=False, linestyle=ls_B)
+            self.ax[0].add_artist(circle1) # calling add_artist instead of add_patch will cut off big circles
+            self.ax[0].add_artist(circle2) # this is a god enough fix for now and circles still end up in patches
+
     def draw_wspd(self, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0):
+        """Draws the WSPD on the matplotlib axes by looping through each pair"""
         if self.ax is None:
             print("No axes to draw on")
             return
         # iterate through each wsp pair
         for node_A, node_B in self.wspd:
-            point_A = node_A.boundary.center() if use_boundary else (node_A.points[0] if node_A.leaf else node_A.center) # REVIEW: points[0] or mean point?
-            point_B =  node_B.boundary.center() if use_boundary else (node_B.points[0] if node_B.leaf else node_B.center)
-            midpoint = (point_A + point_B) / 2
+            self.draw_wsp_pair(node_A, node_B, no_leaves, use_boundary, no_circles, adjust, linewidth)
 
-            if no_leaves and node_A.leaf and node_B.leaf:
-                continue
+    def on_click(self, event, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0): # TODO: extract args?
+        """If left click cycle wsps if right click return to normal"""
+        if len(self.wspd) == 0:
+            print("No WSPs to show")
+            return
 
-            # draw the lines
-            ls = '--' if node_A.leaf and node_B.leaf else '-'
-            nudge = np.random.uniform(-1 * adjust * midpoint.mag(), adjust * midpoint.mag())
-            color = np.random.rand(3)
-            self.ax[0].plot((point_A.x, midpoint.x + nudge), (point_A.y, midpoint.y + nudge), linestyle=ls, color=color, linewidth=linewidth)
-            self.ax[0].plot((midpoint.x + nudge, point_B.x), (midpoint.y + nudge, point_B.y), linestyle=ls, color=color, linewidth=linewidth)
-
-            # draw the circles
-            if not no_circles:
-                big_radius = max(node_A.radius, node_B.radius) * (0.5 if node_A.leaf and node_B.leaf else 1)
-                ls_A, ls_B = ':' if node_A.leaf else '-', ':' if node_B.leaf else '-'
-
-                circle1 = plt.Circle((point_A.x, point_A.y), big_radius, color='r', fill=False, linestyle=ls_A)
-                circle2 = plt.Circle((point_B.x, point_B.y), big_radius, color='r', fill=False, linestyle=ls_B)
-                self.ax[0].add_artist(circle1) # add_patch
-                self.ax[0].add_artist(circle2)
+        # clear all the patches
+        for patch in self.ax[0].patches:
+            patch.remove()
+        if event.button == 1: # cycle
+            self.current_screen = (self.current_screen + 1) % len(self.wspd)
+            node_A, node_B = self.wspd[self.current_screen]
+            while no_leaves and node_A.leaf and node_B.leaf: # DANGER: infinite loop if only leaves
+                self.current_screen = (self.current_screen + 1) % len(self.wspd)
+                node_A, node_B = self.wspd[self.current_screen]
+            self.draw_wsp_pair(node_A, node_B, no_leaves, use_boundary, no_circles, adjust, linewidth)
+        elif event.button == 3: # display all
+            self.draw_wspd(no_leaves, use_boundary, no_circles, adjust, linewidth)
+        self.ax[0].figure.canvas.draw()
 
     def print_wspd(self, mode="center"):
         if mode == "center":
@@ -291,7 +324,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
     # MARK: Testing
 
-    def check_path(self, path: list[ds.Point]) -> bool:
+    def check_tour(self, path: list[ds.Point]) -> bool:
         """Checks if the path is valid for the tsp"""
         return (path[0] == path[-1] and (len(path) == len(self.points) + 1)
                 and set(path) == set(self.points))

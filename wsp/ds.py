@@ -137,7 +137,7 @@ def shrink_boundaries(block, regular=True):
 class AbstractQuadTree(ABC):
     """Abstract Quadtree implementation."""
 
-    def __init__(self, boundary : Rect, ax, bucket=-1, depth=0): # ax is for plotting
+    def __init__(self, boundary : Rect, ax, bucket=-1, depth=0): # TODO: add parents
         """Initialize this node of the quadtree."""
         self.boundary = boundary # boundary of current block
         self.bucket = bucket # PointQT: doesn't use but setting here shouldnt matter
