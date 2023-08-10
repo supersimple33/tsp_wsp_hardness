@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Tuple
 from functools import cached_property
 
@@ -12,7 +13,7 @@ class Point:
     def __init__(self, x, y):
         self.x, self.y = x, y
     def __repr__(self):
-        return f'({self.x}, {self.y})'
+        return f'P({self.x}, {self.y})'
     def __str__(self):
         return 'P({:.2f}, {:.2f})'.format(self.x, self.y)
     def __iter__(self):
@@ -51,6 +52,22 @@ class Point:
     @staticmethod
     def origin():
         return Point(0, 0)
+
+@dataclass(order=True, frozen=True)
+class SpecialDist:
+    """This class adds support for ranking different distances between WSPs and tracks both the distance and the separation between the WSPs."""
+    # sep: float
+    dist: float
+    sep: float
+
+    def __repr__(self) -> str:
+        return f'D({self.sep:.4f}, {self.dist:.4f})'
+
+    @classmethod
+    def from_radius(cls, dist, rel_radius):
+        sep = float('inf') if rel_radius == 0 else dist / rel_radius
+        # return cls(sep, dist)
+        return cls(dist, sep)
 
 class Rect:
     def __init__(self, xMin, yMin, xMax, yMax):
@@ -215,6 +232,9 @@ class AbstractQuadTree(ABC):
         """Get all points in this quadtree."""
         return self.get_points_rec([])
 
+    def __contains__(self, point: Point | Tuple[int, int]) -> bool:
+        return point in self.covered_points
+
     @abstractmethod
     @cached_property
     def _length(self) -> int:
@@ -247,7 +267,9 @@ class AbstractPKQuadTree(AbstractQuadTree):
         self.children = [] # includes points and nodes
 
         self.pk_aggregated = False # flag for if aggregated
+        self.path_compressed = False # flag for if path compressed
         self.leaf = False
+        self.last_branch = False # this is the last branch before a bunch of leaves
         
         self._radius = None # Experimental
 
@@ -270,7 +292,6 @@ class AbstractPKQuadTree(AbstractQuadTree):
 
     def str_short(self):
         return str(self.covered_points) #str(self.boundary) +
-
 
     # MARK: comment this block out to return to default behavior
     @cached_property
@@ -353,6 +374,8 @@ class AbstractPKQuadTree(AbstractQuadTree):
             for c in rec_children:
                 if c is not None:
                     self.children.append(c)
+            
+            self.last_branch = all(child.leaf for child in self.children)
 
             #print(len(self.children), rec_children)
             if len(self.children) == 0:
@@ -384,6 +407,8 @@ class AbstractPKQuadTree(AbstractQuadTree):
         return self
     
     def path_compress(self):
+        self.path_compressed = True
+        
         if self.leaf: # if leaf node, return self
             return self
         if len(self.children) == 1: # if only one child, prune itself by returning path compress of child

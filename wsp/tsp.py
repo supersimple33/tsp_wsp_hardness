@@ -1,24 +1,57 @@
 from functools import cached_property
-from typing import Generic, TypeVar, Type
+from typing import Generic, TypeVar, Optional
 from itertools import permutations, combinations
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
 from matplotlib.axes import Axes
 import numpy as np
+from multimethod import multimethod
 
 from wsp import ds
+from wsp import util
 from wsp.util import calc_dist, euclid_dist
 
 BUFFER = 1.1
 
-TreeType = TypeVar('TreeType', bound=ds.AbstractQuadTree)
+# QuadTreeType = TypeVar('QuadTreeType', bound=ds.AbstractQuadTree)
+QuadTreeType = TypeVar('QuadTreeType', bound=ds.AbstractPKQuadTree)
 
-class TravellingSalesmanProblem(Generic[TreeType]):
+class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of generics
 
-    def __init__(self, treeType: Type[TreeType], points: list[ds.Point], ax : None | list[Axes], s = 1.0) -> None:
-        """Initializes the TravellingSalesmanProblem"""
+    @multimethod
+    def __init__(self, quadtree: ds.AbstractQuadTree, ax : Optional[np.ndarray[Axes]], s = 1.0, wspd = None): # TODO: utilize WSPD?
+        """Initializes the TravellingSalesmanProblem, takes in an already built quadtree"""
+        assert s >= 1.0, "Separation factor must be greater than or equal to 1.0"
+        self._s = s
 
+        self.quadtree = quadtree
+
+        self.ax = ax
+        if ax is not None:
+            ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMin], color="gray")
+            ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMax, self.quadtree.boundary.yMax], color="gray")
+            ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMin],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
+            ax[0].plot([self.quadtree.boundary.xMax, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
+            ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMin], color="gray")
+            ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMax, self.quadtree.boundary.yMax], color="gray")
+            ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMin],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
+            ax[1].plot([self.quadtree.boundary.xMax, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
+            
+            self.current_screen = -1
+
+        if isinstance(quadtree, ds.AbstractPKQuadTree) and not self.quadtree.pk_aggregated:
+            self.quadtree.pk_aggregate(1) # REVIEW: 1 or 2 or more?
+            self.quadtree.pk_draw()
+
+        if not self.quadtree.path_compressed:
+            self.quadtree = self.quadtree.path_compress() # TODO: Ensure these are inconsequential/not slow
+            # REVIEW: is setter needed?
+        self.quadtree.draw_points()
+
+    @multimethod # wrenching multimethod is faster than overloading
+    def __init__(self, treeType, points: list[ds.Point], ax : Optional[np.ndarray[Axes]], s = 1.0):
+        """Initializes the TravellingSalesmanProblem, the base case version which builds its own quadtree"""
         assert s >= 1.0, "Separation factor must be greater than or equal to 1.0" # make stricter later?
         self._s = s
 
@@ -30,7 +63,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
         boundary = ds.Rect(minX, minY, maxX, maxY)
 
-        self.quadtree : TreeType = treeType(boundary, ax)
+        self.quadtree : QuadTreeType = treeType(boundary, ax)
 
         self.ax = ax
         if ax is not None:
@@ -47,7 +80,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
         # Populating the quadtree and drawing the points
         for point in points:
-            self.quadtree.covered_points
+            self.quadtree.covered_points # REVIEW: can we remove this line?
             success = self.quadtree.insert(point)
             assert success
 
@@ -58,34 +91,46 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         self.quadtree = self.quadtree.path_compress()
         self.quadtree.draw_points()
 
-        self.splits = []
-        self.points = points
+    @property
+    def points(self) -> list[ds.Point]:
+        return self.quadtree.covered_points # REVIEW: is this slow?
 
-    def draw_path(self, path: list[ds.Point], color='r', linestyle='-'):
+    def draw_tour(self, tour: list[ds.Point], color='r', linestyle='-', label=None):
         """Draws a path on the matplotlib axes"""
         if self.ax is None:
             print("No axes to draw on")
             return
-        for i in range(len(path) - 1):
-            self.ax[1].plot((path[i].x, path[i + 1].x), (path[i].y, path[i + 1].y), color=color, linestyle=linestyle)
+
+        path = patches.PathPatch(patches.Path([point.to_tuple() for point in tour]), facecolor='none', edgecolor=color, linestyle=linestyle, label=label)
+        self.ax[1].add_artist(path)
 
     # MARK: WSP
 
     @cached_property
-    def wspd(self) -> list[tuple[ds.AbstractQuadTree, ds.AbstractQuadTree]]:
+    def wspd(self) -> list[tuple[QuadTreeType, QuadTreeType]]:
         """Returns the well-seperated pair decomposition of the underlying quadtree, based on """
         ws_pairs = []
         is_pk = issubclass(type(self.quadtree), ds.AbstractPKQuadTree)
 
-        def recursive_wspd(node_A: ds.AbstractQuadTree, node_B: ds.AbstractQuadTree): # could be stricter with typing
+        def recursive_wspd(node_A: QuadTreeType, node_B: QuadTreeType): # could be stricter with typing
             if len(node_A) == 0 or len(node_B) == 0 or (node_A.leaf and node_B.leaf and node_A == node_B):
                 return
 
             big_radius = max(0 if node_A.leaf else node_A.radius, 0 if node_B.leaf else node_B.radius) # REVIEW: or just node_A.radius?
+            small_radius = min(0 if node_A.leaf else node_A.radius, 0 if node_B.leaf else node_B.radius)
+
+            # if node_A.points == [ds.Point(12.0, 17.0)] or node_B.points == [ds.Point(12.0, 17.0)]:
+            #     if node_A.boundary.center().to_tuple() == (7.225, 16.700000000000003) or node_B.boundary.center().to_tuple() == (7.225, 16.700000000000003):
+            #         pass
+
             # REVIEW: This property for Well Separation is subjective, is it the best option?
-            if (node_A.center - node_B.center).mag() - (big_radius + small_radius) >= self._s * big_radius: # node_A guaranteed to be bigger
-                if (node_B, node_A) not in ws_pairs: # prevent dups
-                    ws_pairs.append((node_A, node_B))
+            # REVIEW: 2 * big_radius or big_radius * small_radius? REVIEW REVIEW REVIEW
+            bubble_dist = (node_A.center - node_B.center).mag() - (big_radius + small_radius)
+            if bubble_dist >= self._s * big_radius: # node_A guaranteed to be bigger
+                special_dist = ds.SpecialDist.from_radius(bubble_dist, self._s * big_radius)
+                if (node_B, node_A, special_dist) not in ws_pairs and (node_A, node_B, special_dist) not in ws_pairs: # prevent dups in list
+                    # assert (node_A, node_B) not in ws_pairs, "Duplicate pair found"
+                    ws_pairs.append((node_A, node_B, special_dist))
                 return
             # else:
             #     pass # ??
@@ -98,10 +143,21 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         recursive_wspd(self.quadtree, self.quadtree)
 
         return ws_pairs
+        # return np.random.shuffle(ws_pairs)
+
+    @cached_property
+    def single_indexable_wspd(self): # TODO: have this take over the old wspd property
+        reflected_wspd = self.wspd + [(b, a, s) for a, b, s in self.wspd]
+        single_indexable : dict[QuadTreeType, list[QuadTreeType]] = dict.fromkeys({a for a, _, _ in reflected_wspd}, [])
+        for a in single_indexable:
+            single_indexable[a] = sorted([(b, s) for _, b, s in filter(lambda x: x[0] == a, reflected_wspd)], key=lambda x: x[1])
+
+        return single_indexable
+
 
     # MARK: Drawing WSPs
     
-    def draw_wsp_pair(self, node_A: ds.AbstractQuadTree, node_B: ds.AbstractQuadTree, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0): # pretty sure the kwargs are safe to be extracted
+    def draw_wsp_pair(self, node_A: QuadTreeType, node_B: QuadTreeType, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0): # pretty sure the kwargs are safe to be extracted
         """Draws a single WSP pair on the matplotlib axes"""
         point_A = node_A.boundary.center() if use_boundary else (node_A.points[0] if node_A.leaf else node_A.center) # REVIEW: points[0] or mean point?
         point_B =  node_B.boundary.center() if use_boundary else (node_B.points[0] if node_B.leaf else node_B.center)
@@ -117,7 +173,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         line = patches.PathPatch(patches.Path([(point_A.x, point_A.y),
                                                 (midpoint.x + nudge, midpoint.y + nudge), # helpful in big picture mode to add curvature
                                                 (point_B.x, point_B.y)]),
-                                    linestyle=ls, linewidth=linewidth, zorder=5, color=color, facecolor=color, edgecolor=color)
+                                    linestyle=ls, linewidth=linewidth, zorder=5, facecolor='none', edgecolor=color)
         self.ax[0].add_patch(line)
 
         # draw the circles
@@ -135,8 +191,9 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         if self.ax is None:
             print("No axes to draw on")
             return
+        self.ax[0].set_title(f"#WSP={len(self.wspd)}")
         # iterate through each wsp pair
-        for node_A, node_B in self.wspd:
+        for node_A, node_B, _ in self.wspd:
             self.draw_wsp_pair(node_A, node_B, no_leaves, use_boundary, no_circles, adjust, linewidth)
 
     def on_click(self, event, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0): # TODO: extract args?
@@ -150,10 +207,11 @@ class TravellingSalesmanProblem(Generic[TreeType]):
             patch.remove()
         if event.button == 1: # cycle
             self.current_screen = (self.current_screen + 1) % len(self.wspd)
-            node_A, node_B = self.wspd[self.current_screen]
+            node_A, node_B, _ = self.wspd[self.current_screen]
             while no_leaves and node_A.leaf and node_B.leaf: # DANGER: infinite loop if only leaves
                 self.current_screen = (self.current_screen + 1) % len(self.wspd)
-                node_A, node_B = self.wspd[self.current_screen]
+                node_A, node_B, _ = self.wspd[self.current_screen]
+            self.ax[0].set_title(f"Showing WSP#{self.current_screen + 1}/{len(self.wspd)}")
             self.draw_wsp_pair(node_A, node_B, no_leaves, use_boundary, no_circles, adjust, linewidth)
         elif event.button == 3: # display all
             self.draw_wspd(no_leaves, use_boundary, no_circles, adjust, linewidth)
@@ -161,11 +219,11 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
     def print_wspd(self, mode="center"):
         if mode == "center":
-            for node_A, node_B in self.wspd:
-                print(node_A.center, node_B.center)
+            for node_A, node_B, actual_s in self.wspd:
+                print(node_A.center, node_B.center, actual_s)
         elif mode == "points":
-            for node_A, node_B in self.wspd:
-                print(node_A.covered_points, node_B.covered_points)
+            for node_A, node_B, actual_s in self.wspd:
+                print(node_A.covered_points, node_B.covered_points, actual_s)
 
     # MARK: Paths
 
@@ -173,10 +231,10 @@ class TravellingSalesmanProblem(Generic[TreeType]):
     def untouched_path(self) -> tuple[list[ds.Point], float, tuple]:
         return self.points + [self.points[0]], calc_dist(self.points), None
 
-
     @cached_property #@property # if timeit
     def brute_force_path(self) -> tuple[list[ds.Point], float, tuple]:
-        """Returns the brute force path"""
+        """Returns the brute force path, set return_to_start to False for shortest path between
+        all points not returning, used for nwsp"""
         min_solution = []
         min_dist = float('inf')
 
@@ -229,7 +287,7 @@ class TravellingSalesmanProblem(Generic[TreeType]):
         path[-1] = 0  # End with the starting point
         path = [self.points[e] for e in path]
 
-        return path, calc_dist(path), (perms,) # TODO: de onionize this
+        return path, calc_dist(path), (perms,)
 
     @cached_property
     def ishan_bfp_path(self) -> tuple[list[ds.Point], float, tuple]:
@@ -322,10 +380,195 @@ class TravellingSalesmanProblem(Generic[TreeType]):
 
 
 
+
+    def generate_sub_problem_order(self, start, t=5) -> list[QuadTreeType]:
+        if start is None:
+            start = max(self.single_indexable_wspd.keys(), key=len)
+
+        collected_points : set[ds.Point] = set() # track which points we still need
+        sub_problem_order : list[QuadTreeType] = [] # order in which to visit subproblems
+
+        def try_to_add(subtree: QuadTreeType) -> bool:
+            if subtree in sub_problem_order:
+                return False
+            elif any(point in collected_points for point in subtree.covered_points):
+                return False # TODO: better handling
+                # raise NotImplementedError("This should never happen")
+            assert all(
+                point not in collected_points for point in subtree.covered_points
+            ), "This should never happen"
+            if len(subtree) <= t:
+                collected_points.update(subtree.covered_points)
+                sub_problem_order.append(subtree)
+                return True
+            else:
+                sub_tsp = TravellingSalesmanProblem(subtree, None, self._s, None)
+                sub_sub_order = sub_tsp.generate_sub_problem_order(None, t)
+                sub_problem_order.extend(sub_sub_order)
+                collected_points.update(subtree.covered_points) # REVIEW: Potentially dangerous
+                return True
+            return False
+
+
+        current_subtree = start # node is a bad name for this
+        assert try_to_add(current_subtree), "Should be guaranteed to insert the first one"
+        while len(collected_points) < len(self.points):
+            for problem in self.single_indexable_wspd[current_subtree]:
+                if try_to_add(problem[0]):
+                    current_subtree = problem[0]
+                    break
+            else:
+                jumpable = min(filter(lambda a: all(point not in collected_points for point in a.covered_points), self.single_indexable_wspd.keys()), key=lambda b: (b.center - current_subtree.center).mag())
+                assert try_to_add(jumpable), "Should have selected a guaranteed jumpable node"
+        return sub_problem_order
+
+    @cached_property
+    def nwsp_path(self, t=5) -> tuple[list[ds.Point], float, tuple]:
+        biggest = max(self.single_indexable_wspd.keys(), key=len) # start with the subproblem with most points -> it should be the biggest
+        # biggest = max(self.single_indexable_wspd[biggest], key=lambda x: x.radius) # choose the biggest radius ie what must be the most seperated
+        # biggest = max(self.single_indexable_wspd.values(), key=lambda x: len(x[1]))[0] # choose the wsp with the most options
+        
+        sub_problem_order = self.generate_sub_problem_order(biggest, t=t)
+
+        
+        # MARK: Connect the subproblems
+        tour : list[ds.Point] = []
+
+        start, entry_point = util.min_proj(sub_problem_order[0].covered_points, sub_problem_order[1].covered_points)
+        tour.append(start)
+        for i in range(1, len(sub_problem_order) - 1):
+            exit_point, next_entry = util.min_proj(sub_problem_order[i].covered_points, sub_problem_order[i + 1].covered_points)
+            if sub_problem_order[i].leaf: # If we only have one point don't run bfp
+                tour.append(sub_problem_order[i].covered_points[0])
+                entry_point = next_entry
+                continue
+            elif entry_point == exit_point: # entry and exit may not be equal, TODO: make this better
+                popped = tuple(filter(lambda x: x != entry_point, sub_problem_order[i].covered_points))
+                exit_point, next_entry = util.min_proj(popped, sub_problem_order[i + 1].covered_points)
+                # TODO: choose whichever new point is less costly
+                # alt_prev, alt_entry = util.min_proj(sub_problem_order[i - 1].covered_points, popped)
+                # alt_exit, alt_next_entry = util.min_proj(popped, sub_problem_order[i + 1].covered_points)
+                # exit_added_cost = None
+            tour.extend(util.hamiltonian_path(entry_point, exit_point, sub_problem_order[i].covered_points))
+            entry_point = next_entry
+
+        if sub_problem_order[-1].leaf and sub_problem_order[0].leaf:
+            tour.extend((entry_point, start))
+            return tour, calc_dist(tour), None # TODO: fill in None
+        elif sub_problem_order[-1].leaf:
+            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[0].covered_points + [entry_point,]))
+            return tour, calc_dist(tour), None # TODO: fill in None
+        elif sub_problem_order[0].leaf:
+            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[-1].covered_points + [start,]))
+            return tour, calc_dist(tour), None # TODO: fill in None
+
+        exit_point, next_entry = util.min_proj(sub_problem_order[-1].covered_points, sub_problem_order[0].covered_points)
+        if entry_point == exit_point or next_entry == start: # entry and exit may not be equal, TODO: make this better
+            popped_end = tuple(filter(lambda x: x != entry_point, sub_problem_order[-1].covered_points)) if entry_point == exit_point else sub_problem_order[-1].covered_points
+            popped_start = tuple(filter(lambda x: x != start, sub_problem_order[0].covered_points)) if next_entry == start else sub_problem_order[0].covered_points
+            exit_point, next_entry = util.min_proj(popped_end, popped_start)
+        tour.extend(util.hamiltonian_path(entry_point, exit_point, sub_problem_order[-1].covered_points))
+        tour.extend(util.hamiltonian_path(next_entry, start, sub_problem_order[0].covered_points))
+
+        return tour, calc_dist(tour), None # TODO: fill in None
+                        
+        
+        
+
+    @cached_property
+    def test_path(self, t = 8) -> tuple[list[ds.Point], float, tuple]:
+        """Reimplementation my take on Ishan's Nearest WSP algorithm, t is threshold for brute force"""
+        # small_big_sort = sorted(sorted(self.wspd, key=lambda x: len(x[1].covered_points), reverse=True), key=lambda x: len(x[0].covered_points))
+
+        collected_points : set[ds.Point] = set() # track which points we still need
+        sub_problem_order : list[QuadTreeType] = [] # order in which to visit subproblems
+
+        reflected_wspd = self.wspd + [(b, a, s) for a, b, s in self.wspd]
+
+        single_indexable_wspd : dict[QuadTreeType, list[QuadTreeType]] = dict.fromkeys({a for a, _, _ in reflected_wspd}, [])
+        for a in single_indexable_wspd:
+            single_indexable_wspd[a] = [(b, s) for _, b, s in filter(lambda x: x[0] == a, reflected_wspd)]
+
+        # root_node = sorted(single_indexable_wspd.items(), key=lambda y: len(y[1][0]), reverse=True)[0][0]
+        # root_node = sorted(filter(lambda x: x[0].leaf, single_indexable_wspd.items()), key=lambda y: len(y[1][0]), reverse=True)[0][0]
+        root_node = sorted(sorted(single_indexable_wspd.items(), key=lambda y: len(y[1][0]), reverse=True), key=lambda y: len(y[0].covered_points), reverse=True)[0][0]
+
+        # assert(len(root_node) == 1 and root_node.leaf)
+        current_node = root_node
+        collected_points.update(current_node.covered_points)
+        sub_problem_order.append(current_node)
+
+        # MARK: Order the subproblems
+        while len(collected_points) < len(self.points):
+            # REVIEW: use actual_s or dist?
+            closest_problems = sorted(single_indexable_wspd[current_node], key=lambda x: x[1], reverse=True)
+            for problem in closest_problems:
+                # TODO/REVIEW: investigate implementation and logic, ??? any or all ???  REVIEW
+                if problem[0] in sub_problem_order:
+                    continue
+                elif any(point in collected_points for point in problem[0].covered_points):
+                    if all(point in collected_points for point in problem[0].covered_points):
+                        continue
+                    current_node = problem[0]
+                    needed_points = current_node.covered_points - collected_points
+                    sub_tsp = TravellingSalesmanProblem(problem[0], None, self._s)
+                    raise NotImplementedError("Not yet implemented partial capturing")
+                else:
+                    current_node = problem[0]
+                    sub_problem_order.append(current_node)
+                    collected_points.update(current_node.covered_points)
+                    break
+            else:
+                raise RuntimeError("This should never happen")
+
+        # MARK: Connect the subproblems
+        tour : list[ds.Point] = []
+
+        start, entry_point = util.min_proj(sub_problem_order[0].covered_points, sub_problem_order[1].covered_points)
+        tour.append(start)
+        for i in range(1, len(sub_problem_order) - 1):
+            exit_point, next_entry = util.min_proj(sub_problem_order[i].covered_points, sub_problem_order[i + 1].covered_points)
+            if sub_problem_order[i].leaf: # If we only have one point don't run bfp
+                tour.append(sub_problem_order[i].covered_points[0])
+                entry_point = next_entry
+                continue
+            elif entry_point == exit_point: # entry and exit may not be equal, TODO: make this better
+                popped = tuple(filter(lambda x: x != entry_point, sub_problem_order[i].covered_points))
+                exit_point, next_entry = util.min_proj(popped, sub_problem_order[i + 1].covered_points)
+                # TODO: choose whichever new point is less costly
+                # alt_prev, alt_entry = util.min_proj(sub_problem_order[i - 1].covered_points, popped)
+                # alt_exit, alt_next_entry = util.min_proj(popped, sub_problem_order[i + 1].covered_points)
+                # exit_added_cost = None
+            tour.extend(util.hamiltonian_path(entry_point, exit_point, sub_problem_order[i].covered_points))
+            entry_point = next_entry
+
+        if sub_problem_order[-1].leaf and sub_problem_order[0].leaf:
+            tour.extend((entry_point, start))
+            return tour, calc_dist(tour), None # TODO: fill in None
+        elif sub_problem_order[-1].leaf:
+            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[0].covered_points + [entry_point,]))
+            return tour, calc_dist(tour), None # TODO: fill in None
+        elif sub_problem_order[0].leaf:
+            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[-1].covered_points + [start,]))
+            return tour, calc_dist(tour), None # TODO: fill in None
+
+        exit_point, next_entry = util.min_proj(sub_problem_order[-1].covered_points, sub_problem_order[0].covered_points)
+        if entry_point == exit_point or next_entry == start: # entry and exit may not be equal, TODO: make this better
+            popped_end = tuple(filter(lambda x: x != entry_point, sub_problem_order[-1].covered_points)) if entry_point == exit_point else sub_problem_order[-1].covered_points
+            popped_start = tuple(filter(lambda x: x != start, sub_problem_order[0].covered_points)) if next_entry == start else sub_problem_order[0].covered_points
+            exit_point, next_entry = util.min_proj(popped_end, popped_start)
+        tour.extend(util.hamiltonian_path(entry_point, exit_point, sub_problem_order[-1].covered_points))
+        tour.extend(util.hamiltonian_path(next_entry, start, sub_problem_order[0].covered_points))
+
+        return tour, calc_dist(tour), None # TODO: fill in None
+
     # MARK: Testing
 
     def check_tour(self, path: list[ds.Point]) -> bool:
         """Checks if the path is valid for the tsp"""
         return (path[0] == path[-1] and (len(path) == len(self.points) + 1)
                 and set(path) == set(self.points))
-        
+
+    def hk_lower_bound(self) -> tuple[list[ds.Point], float, tuple]:
+        "Calculates the held karp lower bound based on Valenzuela's algorithm"
+        raise NotImplementedError("Not yet implemented")

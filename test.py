@@ -15,22 +15,31 @@ QTREE = ds.PKPRQuadTree
 
 DRAW_WSPD_ARGS = {'no_leaves' : False, 'use_boundary' : True, 'no_circles' : False, 'adjust' : 0.0}
 
-fig, ax = plt.subplots(1, 2, figsize=(12,6))
+fig, ax = plt.subplots(1, 2, figsize=(18,9)) #12, 6
 
-points = file_load.load_points("data/custom3.tsp", False)
-# points = file_load.load_points("data/custom754.tsp", False)
-# points = util.generate_points(40)
+# points = file_load.load_points("data/pka379.tsp", False)
+# points = file_load.load_points("data/custom3.tsp", False)
+# points = util.generate_points(2) + util.circle_points(5, 4.0, ds.Point(15,-1))
+# points = util.circle_points(5, 3.0, None) + util.circle_points(5, 4.0, ds.Point(15,-1)) + [ds.Point(20,20)]
+# points = util.circle_points(5, 2.0, None) + util.circle_points(4, 2.0, ds.Point(15,0)) + util.circle_points(5, 2.0, ds.Point(15,15)) + util.circle_points(4, 2.0, ds.Point(0,15)) #+ [ds.Point(12,16)]
+points = util.generate_points(16)
 
 ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, points, ax, s=1.0)
 fig.canvas.mpl_connect('button_press_event', lambda event: ts_problem.on_click(event, **DRAW_WSPD_ARGS)) # hook up interactions
+
+start = time()
+ts_problem.wspd
+ts_problem.draw_wspd(**DRAW_WSPD_ARGS)
+print("WSP took", time() - start)
 
 print(len(ts_problem.quadtree))
 
 # dynamic programming
 start = time()
-print(ts_problem.dp_path)
+print(ts_problem.dp_path[1])
 print("Test took", time() - start, end='\n')
-ts_problem.draw_path(ts_problem.dp_path[0], '#FFC0CB')
+ts_problem.draw_tour(ts_problem.dp_path[0], '#FFC0CB', label="DP")
+assert ts_problem.check_tour(ts_problem.dp_path[0])
 
 # brute force
 # start = time()
@@ -45,23 +54,27 @@ ts_problem.draw_path(ts_problem.dp_path[0], '#FFC0CB')
 # tsp.draw_path(tsp.ishan_bfp_path[0], 'g', '-.')
 
 # naive nearest neighbor
-start = time()
-print(ts_problem.nnn_path)
-print("Test took", time() - start, end='\n')
-ts_problem.draw_path(ts_problem.nnn_path[0], 'y', '-.')
+# start = time()
+# print(ts_problem.nnn_path[1])
+# print("Test took", time() - start, end='\n')
+# ts_problem.draw_tour(ts_problem.nnn_path[0], 'y', '-.', label="NNN")
+# assert ts_problem.check_tour(ts_problem.nnn_path[0])
 
-print(ts_problem.dp_path[1])
-# print(tsp.brute_force_path[1])
-# print(tsp.ishan_bfp_path[1])
-print(ts_problem.nnn_path[1])
+# smart nearest neighbor
+start = time()
+print(ts_problem.nwsp_path[1])
+print("Test took", time() - start, end='\n')
+ts_problem.draw_tour(ts_problem.nwsp_path[0], 'g', '--', label="NWSP")
+assert ts_problem.check_tour(ts_problem.nwsp_path[0])
 
 print("NN was off by:", ts_problem.nnn_path[1] / ts_problem.dp_path[1])
+print("NWSP was off by:", ts_problem.nwsp_path[1] / ts_problem.dp_path[1])
+ax[1].legend()
 
-ts_problem.wspd
-ts_problem.draw_wspd(**DRAW_WSPD_ARGS)
-assert ts_problem.check_tour(ts_problem.dp_path[0])
-assert ts_problem.check_tour(ts_problem.nnn_path[0])
+plt.show()
+
 # tsp.print_wspd("points")
+
 
 plt.show()
 print()

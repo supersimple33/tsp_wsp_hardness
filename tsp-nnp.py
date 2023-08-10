@@ -3,11 +3,11 @@ import time
 
 import matplotlib.pyplot as plt
 
-# from wsp import wsp
+from wsp import wsp
 from wsp import ds
 from wsp import util
 from wsp import cmd_parse
-from wsp import wsp_hardness
+# from wsp import wsp_hardness
 
 # run algorithm
 # >> python tsp-nnp.py <points file> <separation factor> <quadtree:{-pr, -point/-p}> <flags:{-d, -bf}>
@@ -19,9 +19,9 @@ timeInit = time.perf_counter()
 
 filename, s, wsp_mode, debug, shrink, quadtree, bucket = cmd_parse.parse_cmd(sys.argv)
 # build WSP tree
-# wspTreeNode, wsp_count = wsp.runWSP(filename, s, debug, shrink, quadtree, bucket)
+wspTreeNode, wsp_count = wsp.runWSP(filename, s, debug, shrink, quadtree, bucket)
 
-wspTreeNode, wsp_count, kurtosis, tailed, avg_metric, var_metric, vals = wsp_hardness.hardness(filename, s, debug, shrink, quadtree, bucket)
+# wspTreeNode, wsp_count, kurtosis, tailed, avg_metric, var_metric, vals = wsp_hardness.hardness(filename, s, debug, shrink, quadtree, bucket)
 
 timeStart = time.perf_counter()
 
@@ -117,9 +117,9 @@ for perm in perms:
 timeEnd = time.perf_counter()
 
 for i in range(len(minSolution) - 1):
-    wsp_hardness.ax[1].plot([minSolution[i].x, minSolution[i+1].x],[minSolution[i].y, minSolution[i+1].y], color="red")
-wsp_hardness.ax[0].set_title(f"#WSP={wsp_count}, s={s}")
-wsp_hardness.ax[1].set_title(f"TSP Path: n={len(points)}, length={minDist:0.4f}")
+    wsp.ax[1].plot([minSolution[i].x, minSolution[i+1].x],[minSolution[i].y, minSolution[i+1].y], color="red")
+wsp.ax[0].set_title(f"#WSP={wsp_count}, s={s}")
+wsp.ax[1].set_title(f"TSP Path: n={len(points)}, length={minDist:0.4f}")
 
 print("")
 print("Solution:", minSolution)

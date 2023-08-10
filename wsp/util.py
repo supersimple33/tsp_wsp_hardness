@@ -1,7 +1,11 @@
 import math
 import random
+from typing import Optional
+from itertools import permutations
 
 from wsp import ds
+
+# MARK: Distances
 
 def euclid_dist(p1 : 'ds.Point', p2: 'ds.Point') -> float:
     """Euclidean distance between two points"""
@@ -13,6 +17,8 @@ def calc_dist(points : list['ds.Point']) -> float:
     for i in range(len(points) - 1):
         dist += euclid_dist(points[i], points[i+1])
     return dist
+
+# MARK: Projection
 
 def sublist_get_points(lst) -> list['ds.Point']:
     """Flatten list of arbitrary lists of points to list of points"""
@@ -36,7 +42,7 @@ def min_proj_set_or_point(item_A, item_B, min2=False):
         return min2_proj(item_A, item_B)
     return min_proj(item_A, item_B)
 
-def min_proj(set_A: list['ds.Point'], set_B: list['ds.Point']):
+def min_proj(set_A: list['ds.Point'], set_B: list['ds.Point']) -> tuple['ds.Point', 'ds.Point']:
     """Min pair between points from set_A and set_B"""
     '''avg_A = ds.Point(0,0)
     avg_B = ds.Point(0,0)
@@ -63,7 +69,7 @@ def min_proj(set_A: list['ds.Point'], set_B: list['ds.Point']):
     if len(set_A) == 0 or len(set_B) == 0:
         raise ValueError("Empty Quadtree block")
 
-    mind = 99999999
+    mind = 9999999999
     min_p1 = None
     min_p2 = None
     for p_A in set_A:
@@ -151,9 +157,45 @@ def min2_proj(set_A, set_B):
     #print("min proj 2", min_p1, min_p2, sec_p1, sec_p2)
     return min_p1, min_p2, sec_p1, sec_p2
 
+# MARK: Point Generation
+
 def generate_points(n: int, generator = lambda: (random.uniform(-100, 100), random.uniform(-100, 100))) -> list['ds.Point']:
     """Generate n random points"""
     points = []
     for i in range(n):
         points.append(ds.Point(*generator()))
     return points
+
+def circle_points(n: int, radius: float, center: Optional['ds.Point'], rad_offset = 0.79) -> list['ds.Point']:
+    """Generate n points on a circle"""
+
+    if center is None: # avoids circular import
+        center = ds.Point(0,0)
+
+    points = []
+    for i in range(n):
+        points.append(ds.Point(center.x + radius * math.cos(rad_offset + (2 * math.pi * i / n)),
+                               center.y + radius * math.sin(rad_offset + (2 * math.pi * i / n))))
+    return points
+
+# MARK: Path identification
+
+# TODO: Convert to DP implementation
+def hamiltonian_path(start: 'ds.Point', end: 'ds.Point', points: list['ds.Point']) -> list['ds.Point']:
+    """Finds the shortest path between start and end which visits every point exactly once"""
+    assert start in points and end in points and start != end and len(points) >= 2
+
+    if len(points) == 2:
+        return (start, end)
+
+    min_path = []
+    min_dist = float('inf')
+
+    for perm in permutations(filter(lambda p: p not in (start, end), points)):
+        dist = euclid_dist(start, perm[0]) + calc_dist(perm) + euclid_dist(perm[-1], end)
+        if dist < min_dist:
+            min_dist = dist
+            min_path = (start,) + perm + (end,)
+
+    assert min_path is not None and len(min_path) == len(points) and min_path[0] == start and min_path[-1] == end
+    return min_path

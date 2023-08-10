@@ -1,16 +1,15 @@
-name: /Users/addisonhanrattie/Documents/tsp_wsp_hardness/.conda
+name: tsp_wsp_hardness
 channels:
   - defaults
 dependencies:
+  - scipy
+  - deprecation
   - python=3.11
+  - mypy
   - pylint
   - numpy
-  - matplotlib
-  - deprecation
   - ipykernel
-  - mypy
-  - scipy
   - pip
-  - pip:
-    - -r requirements.txt
-prefix: /Users/addisonhanrattie/Documents/tsp_wsp_hardness/.conda
+  - matplotlib
+  - multimethod
+prefix: .conda
