@@ -2,11 +2,11 @@ from wsp import ds
 
 def parse_cmd(argv):
     filename = "data/custom1.tsp"
-    s = 1           # default separation factor
+    s = 1.5           # default separation factor
     wsp_mode = True # uses WSPs
     debug = False   # debug info for Quadtree and WSPs
     shrink = False  # shrink quadtree boundaries
-    quadtree = ds.PMRQuadTree
+    quadtree = ds.PKPRQuadTree
     bucket = 1
 
     if len(argv) >= 2:

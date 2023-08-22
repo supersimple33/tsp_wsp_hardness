@@ -1,9 +1,9 @@
-from functools import cached_property
+from functools import cache, cached_property
 from typing import Generic, TypeVar, Optional
 from itertools import permutations, combinations
 
 import matplotlib.pyplot as plt
-from matplotlib import patches
+from matplotlib import patches, cm
 from matplotlib.axes import Axes
 import numpy as np
 from multimethod import multimethod
@@ -381,7 +381,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
 
 
-    def generate_sub_problem_order(self, start, t=5) -> list[QuadTreeType]:
+    def generate_sub_problem_order(self, start, t) -> list[QuadTreeType]:
         if start is None:
             start = max(self.single_indexable_wspd.keys(), key=len)
 
@@ -422,8 +422,8 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
                 assert try_to_add(jumpable), "Should have selected a guaranteed jumpable node"
         return sub_problem_order
 
-    @cached_property
-    def nwsp_path(self, t=5) -> tuple[list[ds.Point], float, tuple]:
+    @cache
+    def nwsp_path(self, t=8) -> tuple[list[ds.Point], float, tuple]:
         biggest = max(self.single_indexable_wspd.keys(), key=len) # start with the subproblem with most points -> it should be the biggest
         # biggest = max(self.single_indexable_wspd[biggest], key=lambda x: x.radius) # choose the biggest radius ie what must be the most seperated
         # biggest = max(self.single_indexable_wspd.values(), key=lambda x: len(x[1]))[0] # choose the wsp with the most options
@@ -471,96 +471,17 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         tour.extend(util.hamiltonian_path(next_entry, start, sub_problem_order[0].covered_points))
 
         return tour, calc_dist(tour), None # TODO: fill in None
-                        
-        
-        
 
-    @cached_property
-    def test_path(self, t = 8) -> tuple[list[ds.Point], float, tuple]:
-        """Reimplementation my take on Ishan's Nearest WSP algorithm, t is threshold for brute force"""
-        # small_big_sort = sorted(sorted(self.wspd, key=lambda x: len(x[1].covered_points), reverse=True), key=lambda x: len(x[0].covered_points))
+    def draw_ordering(self, sub_problem_order: list[QuadTreeType]) -> None:
+        """Draw the sub-tree ordering"""
+        if self.ax is None:
+            return
+        n = len(sub_problem_order)
+        color_map = cm.get_cmap('gist_rainbow', n)
 
-        collected_points : set[ds.Point] = set() # track which points we still need
-        sub_problem_order : list[QuadTreeType] = [] # order in which to visit subproblems
-
-        reflected_wspd = self.wspd + [(b, a, s) for a, b, s in self.wspd]
-
-        single_indexable_wspd : dict[QuadTreeType, list[QuadTreeType]] = dict.fromkeys({a for a, _, _ in reflected_wspd}, [])
-        for a in single_indexable_wspd:
-            single_indexable_wspd[a] = [(b, s) for _, b, s in filter(lambda x: x[0] == a, reflected_wspd)]
-
-        # root_node = sorted(single_indexable_wspd.items(), key=lambda y: len(y[1][0]), reverse=True)[0][0]
-        # root_node = sorted(filter(lambda x: x[0].leaf, single_indexable_wspd.items()), key=lambda y: len(y[1][0]), reverse=True)[0][0]
-        root_node = sorted(sorted(single_indexable_wspd.items(), key=lambda y: len(y[1][0]), reverse=True), key=lambda y: len(y[0].covered_points), reverse=True)[0][0]
-
-        # assert(len(root_node) == 1 and root_node.leaf)
-        current_node = root_node
-        collected_points.update(current_node.covered_points)
-        sub_problem_order.append(current_node)
-
-        # MARK: Order the subproblems
-        while len(collected_points) < len(self.points):
-            # REVIEW: use actual_s or dist?
-            closest_problems = sorted(single_indexable_wspd[current_node], key=lambda x: x[1], reverse=True)
-            for problem in closest_problems:
-                # TODO/REVIEW: investigate implementation and logic, ??? any or all ???  REVIEW
-                if problem[0] in sub_problem_order:
-                    continue
-                elif any(point in collected_points for point in problem[0].covered_points):
-                    if all(point in collected_points for point in problem[0].covered_points):
-                        continue
-                    current_node = problem[0]
-                    needed_points = current_node.covered_points - collected_points
-                    sub_tsp = TravellingSalesmanProblem(problem[0], None, self._s)
-                    raise NotImplementedError("Not yet implemented partial capturing")
-                else:
-                    current_node = problem[0]
-                    sub_problem_order.append(current_node)
-                    collected_points.update(current_node.covered_points)
-                    break
-            else:
-                raise RuntimeError("This should never happen")
-
-        # MARK: Connect the subproblems
-        tour : list[ds.Point] = []
-
-        start, entry_point = util.min_proj(sub_problem_order[0].covered_points, sub_problem_order[1].covered_points)
-        tour.append(start)
-        for i in range(1, len(sub_problem_order) - 1):
-            exit_point, next_entry = util.min_proj(sub_problem_order[i].covered_points, sub_problem_order[i + 1].covered_points)
-            if sub_problem_order[i].leaf: # If we only have one point don't run bfp
-                tour.append(sub_problem_order[i].covered_points[0])
-                entry_point = next_entry
-                continue
-            elif entry_point == exit_point: # entry and exit may not be equal, TODO: make this better
-                popped = tuple(filter(lambda x: x != entry_point, sub_problem_order[i].covered_points))
-                exit_point, next_entry = util.min_proj(popped, sub_problem_order[i + 1].covered_points)
-                # TODO: choose whichever new point is less costly
-                # alt_prev, alt_entry = util.min_proj(sub_problem_order[i - 1].covered_points, popped)
-                # alt_exit, alt_next_entry = util.min_proj(popped, sub_problem_order[i + 1].covered_points)
-                # exit_added_cost = None
-            tour.extend(util.hamiltonian_path(entry_point, exit_point, sub_problem_order[i].covered_points))
-            entry_point = next_entry
-
-        if sub_problem_order[-1].leaf and sub_problem_order[0].leaf:
-            tour.extend((entry_point, start))
-            return tour, calc_dist(tour), None # TODO: fill in None
-        elif sub_problem_order[-1].leaf:
-            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[0].covered_points + [entry_point,]))
-            return tour, calc_dist(tour), None # TODO: fill in None
-        elif sub_problem_order[0].leaf:
-            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[-1].covered_points + [start,]))
-            return tour, calc_dist(tour), None # TODO: fill in None
-
-        exit_point, next_entry = util.min_proj(sub_problem_order[-1].covered_points, sub_problem_order[0].covered_points)
-        if entry_point == exit_point or next_entry == start: # entry and exit may not be equal, TODO: make this better
-            popped_end = tuple(filter(lambda x: x != entry_point, sub_problem_order[-1].covered_points)) if entry_point == exit_point else sub_problem_order[-1].covered_points
-            popped_start = tuple(filter(lambda x: x != start, sub_problem_order[0].covered_points)) if next_entry == start else sub_problem_order[0].covered_points
-            exit_point, next_entry = util.min_proj(popped_end, popped_start)
-        tour.extend(util.hamiltonian_path(entry_point, exit_point, sub_problem_order[-1].covered_points))
-        tour.extend(util.hamiltonian_path(next_entry, start, sub_problem_order[0].covered_points))
-
-        return tour, calc_dist(tour), None # TODO: fill in None
+        for i, node in enumerate(sub_problem_order):
+            # color fill in the section under the current subproblem
+            self.ax[1].fill_between([node.boundary.xMin, node.boundary.xMax], [node.boundary.yMin, node.boundary.yMin], [node.boundary.yMax, node.boundary.yMax], color=color_map(i), alpha=0.5)
 
     # MARK: Testing
 

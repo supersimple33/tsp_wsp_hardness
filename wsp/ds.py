@@ -164,14 +164,14 @@ class AbstractQuadTree(ABC):
         self.connection : list[AbstractQuadTree] = [] # WSP connections
         self.divided = False # flag for if divided into 4 child quads
         self.TreeType = type(self)
-        
+
         # self.repr = None # for wsp
 
         self.ne = None # FIXME: these should be moved or should they?
         self.nw = None
         self.se = None
         self.sw = None
-        
+
         assert bucket == 1, "non-singular buckets are not ready yet"
 
     @abstractmethod
