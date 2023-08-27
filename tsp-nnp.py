@@ -52,10 +52,13 @@ if wsp_mode and False: #
                         ws_orig[a][b] = apoints
                         ws_orig[b][a] = bpoints
         if anode.divided:
-            q.append(anode.ne)
-            q.append(anode.nw)
-            q.append(anode.sw)
-            q.append(anode.se)
+            if isinstance(anode, ds.AbstractPKQuadTree):
+                q.extend(anode.children)
+            else:
+                q.append(anode.ne)
+                q.append(anode.nw)
+                q.append(anode.sw)
+                q.append(anode.se)
 
 points = wspTreeNode.covered_points
 num_points = len(points)
@@ -82,7 +85,7 @@ def findPath(start, rem):
             last_point = perm[len(perm) - 1]
             orig_set_finished = True
             if r in ws[last_point]: # checks if all points in last_point <-> r set have been visited
-                print("blablabla\n")
+                # print("blablabla\n")
                 for p in perm:
                     if (r in ws_orig[last_point]) and (p in ws_orig[last_point][r]):
                         orig_set_finished = False

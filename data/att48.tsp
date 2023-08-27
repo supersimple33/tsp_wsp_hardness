@@ -1,13 +1,6 @@
-# ATT48 - 48 US state capitals
-# minimal tour length: 33523
-# tsp-nnp approximation: 35278.11764287838 // 36336.10880697841
-#   s=1 = 36336.10880697841
-#   s=2 = 35135.455097450664
-#   s=5 = 35135.455097450664
-#   s=10 = 35135.455097450664
-#bounds:0 0 8000 8000
 NAME : att48
 COMMENT : 48 capitals of the US (Padberg/Rinaldi)
+ATT48 - 48 US state capitals |||, 	minimal tour length: 33523, 	tsp-nnp approximation: 35278.11764287838 // 36336.10880697841, 	s=1 = 36336.10880697841, 	s=2 = 35135.455097450664, 	s=5 = 35135.455097450664, 	s=10 = 35135.455097450664, 	bounds:0 0 8000 8000
 TYPE : TSP
 DIMENSION : 48
 EDGE_WEIGHT_TYPE : ATT

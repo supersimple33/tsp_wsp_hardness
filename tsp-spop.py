@@ -84,7 +84,7 @@ print("splits", splits)
 
 def apply_split(pair, glist):
     list1 = []
-    list2 = []    
+    list2 = []
     to_remove = []
     to_add = []
     for item in glist:

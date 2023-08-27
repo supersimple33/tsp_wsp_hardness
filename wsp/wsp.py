@@ -1,4 +1,5 @@
 import math
+import random
 import statistics
 from typing import Type
 
@@ -13,13 +14,13 @@ BUFFER = 1.1
 fig, ax = plt.subplots(1, 2, figsize=(12,6))
 
 
-def runWSP(filename: str, s = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1) -> tuple[ds.AbstractQuadTree, int]:
+def runWSP(filename: str, s = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1, shuffle = False) -> tuple[ds.AbstractQuadTree, int]:
     """Runs the WSP algorithm on the given file, with the given separation factor."""
     points = file_load.load_points(filename, True)
-    return from_points(points, s, debug, shrink, quadtree, bucket)
+    return from_points(points, s, debug, shrink, quadtree, bucket, shuffle=shuffle)
 
 # def from_points(points, s, debug, shrink, quadtree, bucket):
-def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1) -> tuple[ds.AbstractQuadTree, int]:
+def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, quadtree : Type[ds.AbstractQuadTree] = ds.PMRQuadTree, bucket = 1, shuffle = False) -> tuple[ds.AbstractQuadTree, int]:
     """Runs the WSP algorithm on the given list of points, with the given separation factor.
 
         Parameters:
@@ -47,6 +48,8 @@ def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, 
     vals = []
 
     #rootNode = QuadTree(Rect(bounds[0],bounds[1],bounds[2],bounds[3]))
+    if shuffle:
+        random.shuffle(points)
     for point in points:
         rootNode.insert(point)
 
@@ -68,16 +71,16 @@ def from_points(points: list[ds.Point], s = 1.0, debug = False, shrink = False, 
     ax[1].plot([rootNode.boundary.xMin, rootNode.boundary.xMin],[rootNode.boundary.yMin, rootNode.boundary.yMax], color="gray")
     ax[1].plot([rootNode.boundary.xMax, rootNode.boundary.xMax],[rootNode.boundary.yMin, rootNode.boundary.yMax], color="gray")
 
-    if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
+    if issubclass(quadtree, ds.AbstractPKQuadTree):
         #print("PKPR aggregating")
-        rootNode.pk_aggregate(2)
+        rootNode.pk_aggregate(1)
         if shrink:
             rootNode = ds.shrink_boundaries(rootNode, False)
+        rootNode = rootNode.path_compress() # REVIEW: Necessary
         rootNode.pk_draw()
         #print(rootNode)
-    else:
-        if shrink:
-            rootNode = ds.shrink_boundaries(rootNode)
+    elif shrink:
+        rootNode = ds.shrink_boundaries(rootNode)
 
     queue : list[tuple[ds.AbstractQuadTree, ds.AbstractQuadTree]] = [(rootNode, rootNode)] # (| None) needed for second element?
     while len(queue) > 0:
