@@ -3,6 +3,8 @@ import random
 from typing import Optional
 from itertools import permutations
 
+from deprecation import deprecated
+
 from wsp import ds
 
 # MARK: Distances
@@ -30,6 +32,7 @@ def sublist_get_points(lst) -> list['ds.Point']:
             points.append(item)
     return points
 
+@deprecated("This function should be restructured to cleanup its meaning and return type")
 def min_proj_set_or_point(item_A, item_B, min2=False):
     if not isinstance(item_A, list):
         item_A = [item_A]
@@ -38,7 +41,7 @@ def min_proj_set_or_point(item_A, item_B, min2=False):
     item_A = sublist_get_points(item_A)
     item_B = sublist_get_points(item_B)
 
-    if min2:
+    if min2: # TODO: sourcery refactor
         return min2_proj(item_A, item_B)
     return min_proj(item_A, item_B)
 
@@ -82,7 +85,7 @@ def min_proj(set_A: list['ds.Point'], set_B: list['ds.Point']) -> tuple['ds.Poin
 
     return min_p1, min_p2
 
-def min2_proj(set_A, set_B):
+def min2_proj(set_A, set_B) -> tuple['ds.Point', 'ds.Point', Optional['ds.Point'], Optional['ds.Point']]:
     """Min pair between points from set_A and set_B"""
     avg_A = ds.Point(0,0)
     avg_B = ds.Point(0,0)

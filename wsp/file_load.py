@@ -13,6 +13,9 @@ def load_points(filename: str, shuffle=True) -> list[ds.Point]:
     problem = tsplib95.load(filename)
     # assert not problem.is_special(), "Special problems not supported for now"
     points = [ds.Point(*problem.node_coords[i]) for i in problem.get_nodes()]
+    test = []
+    [test.append(p) for p in points if p not in test]
+    assert len(test) == len(points), "Duplicate points in problem"
 
     if shuffle:
         random.shuffle(points)
