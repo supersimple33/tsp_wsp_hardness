@@ -13,20 +13,35 @@ from wsp import tsp
 
 QTREE = ds.PKPRQuadTree
 
+# MARK: VISUAL PARAMETERS
+LW = 1.5 # Line width
+KEEP_ASPECT = True # Keep aspect ratio of plot
 # MARK: SETUP
-N = 3 # How many points in the main cluster
-RADIUS = 2.0
-points : list[ds.Point] = util.generate_points(N, lambda: (random.uniform(-RADIUS, RADIUS), random.uniform(-RADIUS, RADIUS))) + [ds.Point(30, 0)] # Generate points
+N_LEFT = 3 # How many points in the left cluster
+N_RIGHT = 1 # How many points in the right cluster
+RADIUS_LEFT = 3.0
+RADIUS_RIGHT = 0.0
+OFFSET_RIGHT = 30.0
+left_points : list[ds.Point] = util.generate_points(N_LEFT, lambda: (random.uniform(-RADIUS_LEFT, RADIUS_LEFT), random.uniform(-RADIUS_LEFT, RADIUS_LEFT))) # Generate points
+right_points : list[ds.Point] = util.generate_points(N_RIGHT, lambda: (random.uniform(-RADIUS_RIGHT, RADIUS_RIGHT) + OFFSET_RIGHT, random.uniform(-RADIUS_RIGHT, RADIUS_RIGHT)))
+
+left_points = [ds.Point(0,1), ds.Point(0,-1), ds.Point(1-0.9,0)]
+# The line `right_points = [ds.Point(10,0.1)]` is creating a list called `right_points` and
+# initializing it with a single `ds.Point` object. The `ds.Point` object has coordinates (10, 0.1).
+right_points = [ds.Point(5,0.01)]
 
 fig, ax = plt.subplots(1, 1, figsize=(18,9)) # sharex = True?
 ax.set_yscale('linear')
 
-ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, points, np.array([None, ax]), s=2.0)
+# MARK: Travelling Salesman Problems
+ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, left_points + right_points, np.array([None, ax]), s=2.0)
+left_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, left_points, np.array([None, None]), s=2.0)
+right_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, right_points, np.array([None, None]), s=2.0)
 
 # MARK: INTERACTIONS
-held_point = None
-pointA = None
-pointB = None
+held_point : ds.Point  = None
+pointA : ds.Point = None
+pointB : ds.Point = None
 def button_press_callback(event):
     global held_point, pointA, pointB
     if  event.inaxes is None:
@@ -36,18 +51,17 @@ def button_press_callback(event):
     if event.button == 3:
         if pointA is None and pointB is None:
             pointA = util.closest_point(pos, ts_problem.points)
-            plt.title("Point A: " + str(pointA))
-            plt.pause(0.1)
+            plt.title(f"Point A: {pointA}")
         elif pointB is None:
             pointB = util.closest_point(pos, ts_problem.points)
             print("Point A:", pointA, "Point B:", pointB)
-            plt.title("Distance: " + str(pointA.distance_to(pointB)))
-            plt.pause(0.1)
+            plt.title(f"Distance: {pointA.distance_to(pointB)}")
+            plt.plot([pointA.x, pointB.x], [pointA.y, pointB.y])
         else:
             pointA = None
             pointB = None
             plt.title("")
-            plt.pause(0.1)
+        plt.pause(0.1)
         return
     held_point = None
 
@@ -55,20 +69,28 @@ def button_press_callback(event):
     if closest.distance_to(pos) > ts_problem.quadtree.boundary.diameter()*0.05:
         return
 
-    held_point = ts_problem.points.index(closest)
+    held_point = closest
     print("Grabbed:", held_point)
 def button_release_callback(event):
-    global held_point
-    global ts_problem
+    global held_point, ts_problem, left_problem, right_problem
     if event.button != 1 or event.inaxes is None or held_point is None:
         return
-    pos = ds.Point(event.xdata, event.ydata)
+    new_point = ds.Point(event.xdata, event.ydata)
 
-    new_points = ts_problem.points.copy()
-    new_points[held_point] = pos
     ax.clear()
-    ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, new_points, np.array([None, ax]), s=2.0)
-    ts_problem.draw_tour(ts_problem.dp_path[0])
+    if held_point in left_points:
+        left_points.remove(held_point)
+        left_points.append(new_point)
+        left_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, left_points, np.array([None, None]), s=2.0)
+    else:
+        right_points.remove(held_point)
+        right_points.append(new_point)
+        right_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, right_points, np.array([None, None]), s=2.0)
+
+    ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, left_points + right_points, np.array([None, ax]), s=2.0)
+    ts_problem.draw_tour(ts_problem.dp_path[0], 'y', '-', linewidth=LW)
+    ts_problem.draw_tour(left_problem.dp_path[0], 'r', (0, (5, 10)), linewidth=LW)
+    ts_problem.draw_tour(right_problem.dp_path[0], 'm', (0, (5, 10)), linewidth=LW)
     plt.pause(0.1)
 
     # ts_problem.points[held_point] = pos
@@ -80,6 +102,10 @@ def button_release_callback(event):
 fig.canvas.mpl_connect('button_press_event', button_press_callback) # hook up interactions
 fig.canvas.mpl_connect('button_release_event', button_release_callback) # hook up interactions
 
-ts_problem.draw_tour(ts_problem.dp_path[0])
+ts_problem.draw_tour(ts_problem.dp_path[0], 'y', '-', linewidth=LW)
+ts_problem.draw_tour(left_problem.dp_path[0], 'r', (0, (5, 10)), linewidth=LW)
+ts_problem.draw_tour(right_problem.dp_path[0], 'm', (0, (5, 10)),linewidth=LW)
 
+if KEEP_ASPECT:
+    plt.gca().set_aspect("equal")
 plt.show()

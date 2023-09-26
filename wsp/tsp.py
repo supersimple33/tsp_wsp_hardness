@@ -97,13 +97,13 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
     def points(self) -> list[ds.Point]:
         return self.quadtree.covered_points # REVIEW: is this slow?
 
-    def draw_tour(self, tour: list[ds.Point], color='r', linestyle='-', label=None):
+    def draw_tour(self, tour: list[ds.Point], color='r', linestyle='-', label=None, linewidth=None):
         """Draws a path on the matplotlib axes"""
         if self.ax is None:
             print("No axes to draw on")
             return
 
-        path = patches.PathPatch(patches.Path([point.to_tuple() for point in tour]), facecolor='none', edgecolor=color, linestyle=linestyle, label=label)
+        path = patches.PathPatch(patches.Path([point.to_tuple() for point in tour]), facecolor='none', edgecolor=color, linestyle=linestyle, label=label, linewidth=linewidth)
         self.ax[1].add_artist(path)
 
     # MARK: WSP

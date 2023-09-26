@@ -421,7 +421,7 @@ class AbstractPKQuadTree(AbstractQuadTree):
             return self
 
     def pk_draw(self): # TODO: add none check
-        if self.ax is None:
+        if self.ax[1] is None:
             return
 
         for child in self.children:

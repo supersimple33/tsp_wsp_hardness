@@ -161,7 +161,7 @@ def min2_proj(set_A, set_B) -> tuple['ds.Point', 'ds.Point', Optional['ds.Point'
     return min_p1, min_p2, sec_p1, sec_p2
 
 def closest_point(point: 'ds.Point', points: list['ds.Point']) -> 'ds.Point':
-    # REVIEW: this can be spedup using samet's algorithm
+    # REVIEW: this can be speedup using Samet's algorithm
     """Closest point to point in points"""
     min_dist = float('inf')
     min_point = None
