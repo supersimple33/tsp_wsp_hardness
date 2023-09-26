@@ -160,6 +160,18 @@ def min2_proj(set_A, set_B) -> tuple['ds.Point', 'ds.Point', Optional['ds.Point'
     #print("min proj 2", min_p1, min_p2, sec_p1, sec_p2)
     return min_p1, min_p2, sec_p1, sec_p2
 
+def closest_point(point: 'ds.Point', points: list['ds.Point']) -> 'ds.Point':
+    # REVIEW: this can be spedup using samet's algorithm
+    """Closest point to point in points"""
+    min_dist = float('inf')
+    min_point = None
+    for p in points:
+        dist = point.distance_to(p)
+        if dist < min_dist:
+            min_dist = dist
+            min_point = p
+    return min_point
+
 # MARK: Point Generation
 
 def generate_points(n: int, generator = lambda: (random.uniform(-100, 100), random.uniform(-100, 100))) -> list['ds.Point']:

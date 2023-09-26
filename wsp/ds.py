@@ -247,7 +247,7 @@ class AbstractQuadTree(ABC):
 
     def draw_points(self, color='black'):
         """Draw all points in this quadtree."""
-        if self.ax is None:
+        if self.ax[0] is None and self.ax[1] is None:
             return
 
         x = []
@@ -255,8 +255,10 @@ class AbstractQuadTree(ABC):
         for p in self.covered_points:
             x.append(p.x)
             y.append(p.y)
-        self.ax[0].scatter(x, y, color=color)
-        self.ax[1].scatter(x, y, color=color)
+        if self.ax[0] is not None:
+            self.ax[0].scatter(x, y, color=color)
+        if self.ax[1] is not None:
+            self.ax[1].scatter(x, y, color=color)
 
 class AbstractPKQuadTree(AbstractQuadTree):
     def __init__(self, boundary, ax, bucket=1, depth=0):
@@ -522,9 +524,10 @@ class PKPRQuadTree(AbstractPKQuadTree):
         for p in points_to_reinsert:
             self.insert(p)
         # draw
-        if self.ax is not None:
+        if self.ax[0] is not None:
             self.ax[0].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="gray")
             self.ax[0].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="gray")
+        if self.ax[1] is not None:
             self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="lightgray")
             self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="lightgray")
 

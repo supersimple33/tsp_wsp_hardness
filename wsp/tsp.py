@@ -20,7 +20,7 @@ QuadTreeType = TypeVar('QuadTreeType', bound=ds.AbstractPKQuadTree)
 class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of generics
 
     @multimethod
-    def __init__(self, quadtree: ds.AbstractQuadTree, ax : Optional[np.ndarray[Axes]], s = 1.0, wspd = None): # TODO: utilize WSPD?
+    def __init__(self, quadtree: ds.AbstractQuadTree, ax : np.ndarray[Optional[Axes]], s = 1.0, wspd = None): # TODO: utilize WSPD?
         """Initializes the TravellingSalesmanProblem, takes in an already built quadtree"""
         assert s >= 1.0, "Separation factor must be greater than or equal to 1.0"
         self._s = s
@@ -28,11 +28,12 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         self.quadtree = quadtree
 
         self.ax = ax
-        if ax is not None:
+        if ax[0] is not None:
             ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMin], color="gray")
             ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMax, self.quadtree.boundary.yMax], color="gray")
             ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMin],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
             ax[0].plot([self.quadtree.boundary.xMax, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
+        if ax[1] is not None:
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMin], color="gray")
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMax, self.quadtree.boundary.yMax], color="gray")
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMin],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
@@ -50,7 +51,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         self.quadtree.draw_points()
 
     @multimethod # wrenching multimethod is faster than overloading
-    def __init__(self, treeType, points: list[ds.Point], ax : Optional[np.ndarray[Axes]], s = 1.0):
+    def __init__(self, treeType, points: list[ds.Point], ax : np.ndarray[Optional[Axes]], s = 1.0):
         """Initializes the TravellingSalesmanProblem, the base case version which builds its own quadtree"""
         assert s >= 1.0, "Separation factor must be greater than or equal to 1.0" # make stricter later?
         self._s = s
@@ -62,15 +63,16 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         maxY = max(p.y for p in points) + BUFFER
 
         boundary = ds.Rect(minX, minY, maxX, maxY)
+        self.ax = ax
 
         self.quadtree : QuadTreeType = treeType(boundary, ax)
 
-        self.ax = ax
-        if ax is not None:
+        if ax[0] is not None:
             ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMin], color="gray")
             ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMax, self.quadtree.boundary.yMax], color="gray")
             ax[0].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMin],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
             ax[0].plot([self.quadtree.boundary.xMax, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
+        if ax[1] is not None:
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMin], color="gray")
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMax],[self.quadtree.boundary.yMax, self.quadtree.boundary.yMax], color="gray")
             ax[1].plot([self.quadtree.boundary.xMin, self.quadtree.boundary.xMin],[self.quadtree.boundary.yMin, self.quadtree.boundary.yMax], color="gray")
@@ -482,6 +484,11 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         for i, node in enumerate(sub_problem_order):
             # color fill in the section under the current subproblem
             self.ax[1].fill_between([node.boundary.xMin, node.boundary.xMax], [node.boundary.yMin, node.boundary.yMin], [node.boundary.yMax, node.boundary.yMax], color=color_map(i), alpha=0.5)
+
+
+
+    def spop_path(self) -> tuple[list[ds.Point], float, tuple]: # TODO: extract into new file
+        pass
 
     # MARK: Testing
 
