@@ -15,7 +15,7 @@ class Point:
     def __repr__(self):
         return f'P({self.x}, {self.y})'
     def __str__(self):
-        return 'P({:.2f}, {:.2f})'.format(self.x, self.y)
+        return 'P({:.4f}, {:.4f})'.format(self.x, self.y)
     def __iter__(self):
         return iter(self.to_tuple())
     def __hash__(self) -> int:
