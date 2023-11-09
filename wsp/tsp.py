@@ -380,9 +380,6 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         path.append(self.points[0])
         return path, calc_dist(path), None
 
-
-
-
     def generate_sub_problem_order(self, start, t) -> list[QuadTreeType]:
         if start is None:
             start = max(self.single_indexable_wspd.keys(), key=len)
@@ -404,7 +401,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
                 sub_problem_order.append(subtree)
                 return True
             else:
-                sub_tsp = TravellingSalesmanProblem(subtree, None, self._s, None)
+                sub_tsp = TravellingSalesmanProblem(subtree, np.array([None, None]), self._s, None)
                 sub_sub_order = sub_tsp.generate_sub_problem_order(None, t)
                 sub_problem_order.extend(sub_sub_order)
                 collected_points.update(subtree.covered_points) # REVIEW: Potentially dangerous
@@ -420,6 +417,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
                     current_subtree = problem[0]
                     break
             else:
+                # REVIEW: what are we doing here why not just go up?
                 jumpable = min(filter(lambda a: all(point not in collected_points for point in a.covered_points), self.single_indexable_wspd.keys()), key=lambda b: (b.center - current_subtree.center).mag())
                 assert try_to_add(jumpable), "Should have selected a guaranteed jumpable node"
         return sub_problem_order
