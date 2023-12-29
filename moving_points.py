@@ -15,28 +15,31 @@ QTREE = ds.PKPRQuadTree
 
 # MARK: VISUAL PARAMETERS
 LW = 1.5 # Line width
-KEEP_ASPECT = True # Keep aspect ratio of plot
+KEEP_ASPECT = not True # Keep aspect ratio of plot
 # MARK: SETUP
-N_LEFT = 3 # How many points in the left cluster
-N_RIGHT = 1 # How many points in the right cluster
-RADIUS_LEFT = 3.0
-RADIUS_RIGHT = 0.0
-OFFSET_RIGHT = 30.0
+N_LEFT  = 4 # How many points in the left cluster
+N_RIGHT = 4 # How many points in the right cluster
+N_MIDDLE = 3
+RADIUS_LEFT = 1.0
+RADIUS_RIGHT = 1.0
+OFFSET_RIGHT = 10.0
 left_points : list[ds.Point] = util.generate_points(N_LEFT, lambda: (random.uniform(-RADIUS_LEFT, RADIUS_LEFT), random.uniform(-RADIUS_LEFT, RADIUS_LEFT))) # Generate points
 right_points : list[ds.Point] = util.generate_points(N_RIGHT, lambda: (random.uniform(-RADIUS_RIGHT, RADIUS_RIGHT) + OFFSET_RIGHT, random.uniform(-RADIUS_RIGHT, RADIUS_RIGHT)))
+middle_points = util.generate_points(3, lambda: (random.uniform(-RADIUS_RIGHT, RADIUS_RIGHT) + 2.5, random.uniform(-RADIUS_RIGHT, RADIUS_RIGHT) + 2.5))
 
-left_points = [ds.Point(0,1), ds.Point(0,-1), ds.Point(1-0.9,0)]
-# The line `right_points = [ds.Point(10,0.1)]` is creating a list called `right_points` and
-# initializing it with a single `ds.Point` object. The `ds.Point` object has coordinates (10, 0.1).
-right_points = [ds.Point(5,0.01)]
+# left_points = [ds.Point(0,1), ds.Point(0,-1), ds.Point(0.739,0)] # ~0.739 is the decision boundary at 30 points away???
+# right_points = [ds.Point(9, 0.01)] # [ds.Point(3.1,0.01)]
+# left_points = [ds.Point(0,1), ds.Point(0,-1), ds.Point(1,1), ds.Point(1,-1), ds.Point(0.25,0.25), ds.Point(1,0)]
+# right_points = [ds.Point(10,0), ds.Point(10,0.5)]
 
-fig, ax = plt.subplots(1, 1, figsize=(18,9)) # sharex = True?
+fig, ax = plt.subplots(1, 1, figsize=(22,10)) # sharex = True?
 ax.set_yscale('linear')
 
 # MARK: Travelling Salesman Problems
-ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, left_points + right_points, np.array([None, ax]), s=2.0)
+ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, left_points + right_points + middle_points, np.array([None, ax]), s=2.0)
 left_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, left_points, np.array([None, None]), s=2.0)
 right_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, right_points, np.array([None, None]), s=2.0)
+middle_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, middle_points, np.array([None, None]), s=2.0)
 
 # MARK: INTERACTIONS
 held_point : ds.Point  = None
@@ -105,6 +108,7 @@ fig.canvas.mpl_connect('button_release_event', button_release_callback) # hook u
 ts_problem.draw_tour(ts_problem.dp_path[0], 'y', '-', linewidth=LW)
 ts_problem.draw_tour(left_problem.dp_path[0], 'r', (0, (5, 10)), linewidth=LW)
 ts_problem.draw_tour(right_problem.dp_path[0], 'm', (0, (5, 10)),linewidth=LW)
+ts_problem.draw_tour(middle_problem.dp_path[0], 'g', (0, (5, 10)), linewidth=LW)
 
 if KEEP_ASPECT:
     plt.gca().set_aspect("equal")
