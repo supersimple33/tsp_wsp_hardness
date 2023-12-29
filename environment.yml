@@ -2,14 +2,16 @@ name: tsp_wsp_hardness
 channels:
   - defaults
 dependencies:
+  - python=3.11
   - scipy
   - deprecation
-  - python=3.11
   - mypy
   - pylint
   - numpy
   - ipykernel
+  - pandas
   - pip
   - matplotlib
   - multimethod
+  - statsmodels
 prefix: .conda
