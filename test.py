@@ -16,7 +16,14 @@ QTREE = ds.PKPRQuadTree
 DRAW_WSPD_ARGS = {'no_leaves' : False, 'use_boundary' : True, 'no_circles' : False, 'adjust' : 0.0}
 THRESH : int = 7
 
-fig, ax = plt.subplots(1, 2, figsize=(18,9)) #12, 6
+fig, ax = plt.subplots(1, 1, figsize=(18,9)) #12, 6
+
+# MARK: - Labelling points
+points = file_load.load_points("ALL_TSP/wi29.tsp", False)
+ax.scatter([p.x for p in points], [p.y for p in points])
+for i in range(len(points)):
+    ax.annotate(i+1, (points[i].x, points[i].y))
+ax.axis("equal")
 
 # points = file_load.load_points("data/pka379.tsp", False)
 # points = file_load.load_points("data/custom3.tsp", False)
