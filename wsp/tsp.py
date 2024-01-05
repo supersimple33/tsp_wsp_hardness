@@ -10,7 +10,7 @@ from multimethod import multimethod
 
 from wsp import ds
 from wsp import util
-from wsp.util import calc_dist, euclid_dist
+from wsp.util import calc_dist, euclid_dist, group_by
 
 BUFFER = 0.01 # TODO: this should prob just be a percentage of some sort
 
@@ -111,9 +111,9 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
     # MARK: WSP
 
     @cached_property
-    def wspd(self) -> list[tuple[QuadTreeType, QuadTreeType]]:
+    def wspd(self) -> set[tuple[frozenset[QuadTreeType, QuadTreeType], ds.SpecialDist]]:
         """Returns the well-seperated pair decomposition of the underlying quadtree, based on """
-        ws_pairs = []
+        ws_pairs = set()
         is_pk = issubclass(type(self.quadtree), ds.AbstractPKQuadTree)
 
         def recursive_wspd(node_A: QuadTreeType, node_B: QuadTreeType): # could be stricter with typing
@@ -132,9 +132,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
             bubble_dist = (node_A.center - node_B.center).mag() - (big_radius + small_radius)
             if bubble_dist >= self._s * big_radius: # node_A guaranteed to be bigger
                 special_dist = ds.SpecialDist.from_radius(bubble_dist, self._s * big_radius)
-                if (node_B, node_A, special_dist) not in ws_pairs and (node_A, node_B, special_dist) not in ws_pairs: # prevent dups in list
-                    # assert (node_A, node_B) not in ws_pairs, "Duplicate pair found"
-                    ws_pairs.append((node_A, node_B, special_dist))
+                ws_pairs.add((frozenset((node_A, node_B)), special_dist))
                 return
             # else:
             #     pass # ??
@@ -147,16 +145,18 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         recursive_wspd(self.quadtree, self.quadtree)
 
         return ws_pairs
-        # return np.random.shuffle(ws_pairs)
-
+    
     @cached_property
-    def single_indexable_wspd(self): # TODO: have this take over the old wspd property
-        reflected_wspd = self.wspd + [(b, a, s) for a, b, s in self.wspd]
-        single_indexable : dict[QuadTreeType, list[QuadTreeType]] = dict.fromkeys({a for a, _, _ in reflected_wspd}, [])
-        for a in single_indexable:
-            single_indexable[a] = sorted([(b, s) for _, b, s in filter(lambda x: x[0] == a, reflected_wspd)], key=lambda x: x[1])
-
-        return single_indexable
+    def pair_sep_dict(self) -> dict[frozenset[QuadTreeType, QuadTreeType], ds.SpecialDist]:
+        return {ab:c for ab,c in self.wspd}
+    
+    @cached_property
+    def single_indexable_wspd(self) -> dict[ds.AbstractQuadTree, list[ds.AbstractQuadTree]]: # TODO: have this take over the old wspd property
+        expanded_decomp = [(a,b) for (a,b), _ in self.wspd]
+        expanded_decomp = expanded_decomp + [(b,a) for a,b in expanded_decomp]
+        grouping = group_by(expanded_decomp, key=lambda x: x[0], value=lambda x: x[1])
+        [g.sort(key=lambda b: self.pair_sep_dict[frozenset((a,b))]) for (a,g) in grouping.items()]
+        return grouping
 
 
     # MARK: Drawing WSPs
@@ -197,7 +197,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
             return
         self.ax[0].set_title(f"#WSP={len(self.wspd)}")
         # iterate through each wsp pair
-        for node_A, node_B, _ in self.wspd:
+        for (node_A, node_B), _ in self.wspd:
             self.draw_wsp_pair(node_A, node_B, no_leaves, use_boundary, no_circles, adjust, linewidth)
 
     def on_click(self, event, no_leaves=False, use_boundary=False, no_circles=False, adjust=0.02, linewidth=1.0): # TODO: extract args?
@@ -233,7 +233,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
     @cached_property
     def untouched_path(self) -> tuple[list[ds.Point], float, tuple]:
-        return self.points + [self.points[0]], calc_dist(self.points), None
+        return self.points + (self.points[0],), calc_dist(self.points + (self.points[0],)), None
 
     @cached_property #@property # if timeit
     def brute_force_path(self) -> tuple[list[ds.Point], float, tuple]:
@@ -415,8 +415,8 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         assert try_to_add(current_subtree), "Should be guaranteed to insert the first one"
         while len(collected_points) < len(self.points):
             for problem in self.single_indexable_wspd[current_subtree]:
-                if try_to_add(problem[0]):
-                    current_subtree = problem[0]
+                if try_to_add(problem):
+                    current_subtree = problem
                     break
             else:
                 # REVIEW: what are we doing here why not just go up?

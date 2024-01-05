@@ -2,6 +2,7 @@ import math
 import random
 from typing import Optional
 from itertools import permutations
+from collections import defaultdict
 
 from deprecation import deprecated
 
@@ -214,3 +215,9 @@ def hamiltonian_path(start: 'ds.Point', end: 'ds.Point', points: list['ds.Point'
 
     assert min_path is not None and len(min_path) == len(points) and min_path[0] == start and min_path[-1] == end
     return min_path
+
+def group_by(l, key=lambda x: x, value=lambda x: x):
+    d = defaultdict(list)
+    for item in l:
+        d[key(item)].append(value(item))
+    return d
