@@ -1,4 +1,5 @@
 from time import time
+import random
 
 import matplotlib.pyplot as plt
 
@@ -14,29 +15,34 @@ QTREE = ds.PKPRQuadTree
 # QTREE = ds.PointQuadTree
 
 DRAW_WSPD_ARGS = {'no_leaves' : False, 'use_boundary' : True, 'no_circles' : False, 'adjust' : 0.0}
-THRESH : int = 7
+THRESH : int = 2
 
-fig, ax = plt.subplots(1, 1, figsize=(18,9)) #12, 6
+fig, ax = plt.subplots(1, 2, figsize=(18,9)) #12, 6
 
 # MARK: - Labelling points
-points = file_load.load_points("ALL_TSP/wi29.tsp", False)
-ax.scatter([p.x for p in points], [p.y for p in points])
-for i in range(len(points)):
-    ax.annotate(i+1, (points[i].x, points[i].y))
-ax.axis("equal")
+# fig, ax = plt.subplots(1, 1, figsize=(18,9)) #12, 6
+# points = file_load.load_points("ALL_TSP/wi29.tsp", False)
+# ax.scatter([p.x for p in points], [p.y for p in points])
+# for i in range(len(points)):
+#     ax.annotate(i+1, (points[i].x, points[i].y))
+# ax.axis("equal")
 
-# points = file_load.load_points("data/pka379.tsp", False)
+points = file_load.load_points("data/xqf131.tsp", False)
 # points = file_load.load_points("data/custom3.tsp", False)
 # points = util.generate_points(2) + util.circle_points(5, 4.0, ds.Point(15,-1))
 # points = util.circle_points(5, 3.0, None) + util.circle_points(5, 4.0, ds.Point(15,-1)) + [ds.Point(20,20)]
 # points = util.circle_points(5, 2.0, None) + util.circle_points(4, 2.0, ds.Point(15,0)) + util.circle_points(5, 2.0, ds.Point(15,15)) + util.circle_points(4, 2.0, ds.Point(0,15)) #+ [ds.Point(12,16)]
-points = util.generate_points(1000)
+# points = util.generate_points(20)
+# points = [ds.Point(0,0), ds.Point(1,1), ds.Point(2,2), ds.Point(3,3)]
+
 
 ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, points, ax, s=2.0)
 fig.canvas.mpl_connect('button_press_event', lambda event: ts_problem.on_click(event, **DRAW_WSPD_ARGS)) # hook up interactions
 
+random.shuffle(points)
 start = time()
 ts_problem.wspd
+print(len(ts_problem.wspd))
 ts_problem.draw_wspd(**DRAW_WSPD_ARGS)
 print("WSP took", time() - start)
 
@@ -51,9 +57,9 @@ print(len(ts_problem.quadtree))
 
 # brute force
 # start = time()
-# print(tsp.brute_force_path)
-# print("Test took", time() - start, " examind ", tsp.brute_force_path[1][1], " paths", end='\n')
-# tsp.draw_path(tsp.brute_force_path[0], 'r', '--')
+# print(ts_problem.brute_force_path)
+# print("Test took", time() - start, " examind ", ts_problem.brute_force_path[1][1], " paths", end='\n')
+# tsp.draw_path(ts_problem.brute_force_path[0], 'r', '--')
 
 # ish_bfp
 # start = time()

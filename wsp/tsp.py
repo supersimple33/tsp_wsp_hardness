@@ -12,7 +12,7 @@ from wsp import ds
 from wsp import util
 from wsp.util import calc_dist, euclid_dist
 
-BUFFER = 1.1
+BUFFER = 0.01 # TODO: this should prob just be a percentage of some sort
 
 # QuadTreeType = TypeVar('QuadTreeType', bound=ds.AbstractQuadTree)
 QuadTreeType = TypeVar('QuadTreeType', bound=ds.AbstractPKQuadTree)
@@ -57,10 +57,12 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         self._s = s
 
         # Setting/drawing the boundaries and initializing the quadtree
-        minX = min(p.x for p in points) - BUFFER
-        minY = min(p.y for p in points) - BUFFER
-        maxX = max(p.x for p in points) + BUFFER
-        maxY = max(p.y for p in points) + BUFFER
+        width = max(p.x for p in points) - min(p.x for p in points)
+        height = max(p.y for p in points) - min(p.y for p in points)
+        minX = min(p.x for p in points) - (BUFFER * width)
+        minY = min(p.y for p in points) - (BUFFER * height)
+        maxX = max(p.x for p in points) + (BUFFER * width)
+        maxY = max(p.y for p in points) + (BUFFER * height)
 
         boundary = ds.Rect(minX, minY, maxX, maxY)
         self.ax = ax
@@ -82,7 +84,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
         # Populating the quadtree and drawing the points
         for point in points:
-            self.quadtree.covered_points # REVIEW: can we remove this line?
+            # self.quadtree.covered_points # REVIEW: can we remove this line?
             success = self.quadtree.insert(point)
             assert success
 
@@ -95,7 +97,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
     @property
     def points(self) -> list[ds.Point]:
-        return self.quadtree.covered_points # REVIEW: is this slow?
+        return self.quadtree.covered_points # REVIEW: is this slow????
 
     def draw_tour(self, tour: list[ds.Point], color='r', linestyle='-', label=None, linewidth=None):
         """Draws a path on the matplotlib axes"""
@@ -366,7 +368,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
     def nnn_path(self) -> tuple[list[ds.Point], float, tuple]:
         """Returns a solution using the naive nearest neighbor"""
         path = [self.points[0]]
-        rem = self.points[1:]
+        rem = list(self.points[1:])
         while len(rem) > 0:
             min_dist = float('inf')
             min_point = None
@@ -456,10 +458,10 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
             tour.extend((entry_point, start))
             return tour, calc_dist(tour), None # TODO: fill in None
         elif sub_problem_order[-1].leaf:
-            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[0].covered_points + [entry_point,]))
+            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[0].covered_points + (entry_point,)))
             return tour, calc_dist(tour), None # TODO: fill in None
         elif sub_problem_order[0].leaf:
-            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[-1].covered_points + [start,]))
+            tour.extend(util.hamiltonian_path(entry_point, start, sub_problem_order[-1].covered_points + (start,)))
             return tour, calc_dist(tour), None # TODO: fill in None
 
         exit_point, next_entry = util.min_proj(sub_problem_order[-1].covered_points, sub_problem_order[0].covered_points)

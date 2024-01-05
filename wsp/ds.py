@@ -178,6 +178,13 @@ class AbstractQuadTree(ABC):
     def __str__(self) -> str:
         """Return a string representation of this node, suitably formatted."""
         pass
+    
+    # def __eq__(self, tree: object) -> bool:
+    #     """Checks that two trees have the same structure and points (not just the same points)"""
+    #     return self.points == tree.points and self.ne == tree.ne and self.nw == tree.nw and self.se == tree.se and self.sw == tree.sw
+    
+    def __hash__(self) -> int: # REVIEW: if multiple calls this should be cached
+        return hash(self.covered_points)
 
     @abstractmethod
     def str_short(self) -> str: # TODO: default impl?
@@ -223,14 +230,14 @@ class AbstractQuadTree(ABC):
         return True
 
     @abstractmethod
-    def get_points_rec(self, found_points: list[Point]) -> list[Point]:
+    def get_points_rec(self) -> list[Point]:
         """Get all points in this quadtree."""
         pass
 
     @cached_property
-    def covered_points(self) -> list[Point]:
+    def covered_points(self) -> tuple[Point]:
         """Get all points in this quadtree."""
-        return self.get_points_rec([])
+        return self.get_points_rec()
 
     def __contains__(self, point: Point | Tuple[int, int]) -> bool:
         return point in self.covered_points
@@ -291,6 +298,19 @@ class AbstractPKQuadTree(AbstractQuadTree):
                 return s
             return s + '\n' + '\n'.join([
                 sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
+    
+    def __eq__(self, tree: object) -> bool:
+        """Checks that two trees have the same structure and points (not just the same points)"""
+        if self.points != tree.points or len(self.children) != len(tree.children): return False
+        if self.ne != tree.ne or self.nw != tree.nw or self.se != tree.se or self.sw != tree.sw: return False
+        
+        for child in self.children:
+            if child not in tree.children:
+                return False
+        
+        return True
+    
+    __hash__ = AbstractQuadTree.__hash__
 
     def str_short(self):
         return str(self.covered_points) #str(self.boundary) +
@@ -351,14 +371,14 @@ class AbstractPKQuadTree(AbstractQuadTree):
     #         self.ax[1].plot([mid.x, mid.x],[self.boundary.yMin, self.boundary.yMax], color="lightgray")
     #         self.ax[1].plot([self.boundary.xMin, self.boundary.xMax],[mid.y, mid.y], color="lightgray")
 
-    def get_points_rec(self, found_points: list[Point]) -> list[Point]:
+    def get_points_rec(self) -> tuple[Point]:
         """Find the points in the quadtree that lie within boundary."""
-        for point in self.points:
-            found_points.append(point)
+        found_points = tuple(self.points)
 
         # if this node has children, search them too.
+        assert self.pk_aggregated, "get_points_rec should only be called on aggregated trees"
         for child in self.children:
-            child.get_points_rec(found_points)
+            found_points = found_points + child.covered_points
 
         return found_points
 
@@ -383,10 +403,7 @@ class AbstractPKQuadTree(AbstractQuadTree):
             if len(self.children) == 0:
                 self.divided = False
 
-            self.nw = None
-            self.ne = None
-            self.se = None
-            self.sw = None
+            self.nw, self.ne, self.se, self.sw = None, None, None, None
 
             if _parent is not None:
                 if len(self) < k:
@@ -614,17 +631,13 @@ class PMRQuadTree(AbstractQuadTree):
         return (self.ne.insert(point) or self.nw.insert(point) or
                 self.se.insert(point) or self.sw.insert(point))
 
-    def get_points_rec(self, found_points):
+    def get_points_rec(self):
         """Find the points in the quadtree that lie within boundary."""
-        for point in self.points:
-            found_points.append(point)
+        found_points = tuple(self.points)
 
         # if this node has children, search them too.
         if self.divided:
-            self.nw.get_points_rec(found_points)
-            self.ne.get_points_rec(found_points)
-            self.se.get_points_rec(found_points)
-            self.sw.get_points_rec(found_points)
+            found_points = found_points + self.nw.covered_points + self.ne.covered_points + self.se.covered_points + self.sw.covered_points
         return found_points
 
     @cached_property
@@ -700,17 +713,13 @@ class PRQuadTree(AbstractQuadTree):
                 self.se.insert(point) or
                 self.sw.insert(point))
 
-    def get_points_rec(self, found_points):
+    def get_points_rec(self):
         """Find the points in the quadtree that lie within boundary."""
-        for point in self.points:
-            found_points.append(point)
+        found_points = tuple(self.points)
 
         # if this node has children, search them too.
         if self.divided:
-            self.nw.get_points_rec(found_points)
-            self.ne.get_points_rec(found_points)
-            self.se.get_points_rec(found_points)
-            self.sw.get_points_rec(found_points)
+            found_points = found_points + self.nw.covered_points + self.ne.covered_points + self.se.covered_points + self.sw.covered_points
         return found_points
 
     @cached_property
@@ -777,17 +786,13 @@ class PointQuadTree(AbstractQuadTree):
         return (self.ne.insert(point) or self.nw.insert(point) or
                 self.se.insert(point) or self.sw.insert(point))
 
-    def get_points_rec(self, found_points):
+    def get_points_rec(self):
         """Find the points in the quadtree that lie within boundary."""
-        if self.point != None:
-            found_points.append(self.point)
+        found_points = tuple(self.points)
 
         # if this node has children, search them too.
         if self.divided:
-            self.nw.get_points_rec(found_points)
-            self.ne.get_points_rec(found_points)
-            self.se.get_points_rec(found_points)
-            self.sw.get_points_rec(found_points)
+            found_points = found_points + self.nw.covered_points + self.ne.covered_points + self.se.covered_points + self.sw.covered_points
         return found_points
 
     @cached_property
