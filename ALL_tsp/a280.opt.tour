@@ -1,5 +1,6 @@
 NAME : ./TSPLIB/a280.tsp.optbc.tour
 TYPE : TOUR
+COMMENT : NOTE this original TSP has been slightly modified to get rid of that single duplicated point
 DIMENSION : 280
 TOUR_SECTION
 1
@@ -283,3 +284,4 @@ TOUR_SECTION
 3
 280
 -1
+EOF

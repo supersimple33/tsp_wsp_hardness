@@ -1,0 +1,30 @@
+The following are TSPs whose solution is currently blocked on waterloo VLSI:
+DEA2382
+RBW2481
+PDS2566
+MLT2597
+BCH2762
+LSM2854
+XVA2993
+DKE3097
+LSN3119
+LTA3140
+FDP3256
+BEG3293
+DHB3386
+FJS3649
+FJR3672
+DLB3694
+LTB3729
+XUA3937
+DKC3938
+DKF3954
+BGD4396
+FRV4410
+BGF4475
+XQD4966
+FQM5087
+FEA5557
+BND7168
+DGA9698
+Those greater than size 21500 not listed but may be blocked (they have no lower bound yet)
