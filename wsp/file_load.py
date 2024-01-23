@@ -14,9 +14,10 @@ def load_points(filename: str, shuffle=True) -> list[ds.Point]:
     # assert not problem.is_special(), "Special problems not supported for now"
     points = [ds.Point(*problem.node_coords[i]) for i in problem.get_nodes()]
     test = []
-    [test.append(p) for p in points if p not in test]
+    [test.append(p) if p not in test else print("dup", p) for p in points]
     assert len(test) == len(points), "Duplicate points in problem"
-
+    assert len(points) == problem.dimension or problem.dimension == 0, "Dimension doesn't match number of points, data is likely corrupted"
+    
     if shuffle:
         random.shuffle(points)
 

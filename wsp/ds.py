@@ -41,6 +41,8 @@ class Point:
         return [self.x, self.y]
     def to_tuple(self): # could make this lazy
         return (self.x, self.y)
+    def to_complex(self):
+        return complex(self.x, self.y)
     def mag(self):
         return np.hypot(self.x, self.y)
     def distance_to(self, other):

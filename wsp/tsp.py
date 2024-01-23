@@ -1,12 +1,16 @@
 from functools import cache, cached_property
 from typing import Generic, TypeVar, Optional
 from itertools import permutations, combinations
+from random import Random
 
 import matplotlib.pyplot as plt
 from matplotlib import patches, cm
 from matplotlib.axes import Axes
 import numpy as np
 from multimethod import multimethod
+
+from python_tsp.exact import solve_tsp_dynamic_programming, solve_tsp_branch_and_bound
+from python_tsp.heuristics import solve_tsp_local_search, solve_tsp_simulated_annealing
 
 from wsp import ds
 from wsp import util
@@ -21,7 +25,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
     @multimethod
     def __init__(self, quadtree: ds.AbstractQuadTree, ax : np.ndarray[Optional[Axes]], s = 1.0, wspd = None): # TODO: utilize WSPD?
-        """Initializes the TravellingSalesmanProblem, takes in an already built quadtree"""
+        """Initializes the TravellingSalesmanProblem, NOTE: takes in an already built quadtree"""
         assert s >= 1.0, "Separation factor must be greater than or equal to 1.0"
         self._s = s
 
@@ -49,10 +53,12 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
             self.quadtree = self.quadtree.path_compress() # TODO: Ensure these are inconsequential/not slow
             # REVIEW: is setter needed?
         self.quadtree.draw_points()
+        
+        self.points = self.quadtree.covered_points
 
     @multimethod # wrenching multimethod is faster than overloading
     def __init__(self, treeType, points: list[ds.Point], ax : np.ndarray[Optional[Axes]], s = 1.0):
-        """Initializes the TravellingSalesmanProblem, the base case version which builds its own quadtree"""
+        """Initializes the TravellingSalesmanProblem, NOTE: the base case version which builds its own quadtree"""
         assert s >= 1.0, "Separation factor must be greater than or equal to 1.0" # make stricter later?
         self._s = s
 
@@ -94,10 +100,26 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
         self.quadtree = self.quadtree.path_compress()
         self.quadtree.draw_points()
-
-    @property
-    def points(self) -> list[ds.Point]:
-        return self.quadtree.covered_points # REVIEW: is this slow????
+        
+        self.points = points
+        assert len(self.points) == len(self.quadtree.covered_points) and set(self.points) == set(self.quadtree.covered_points), "Points and quadtree points do not match"
+    
+    @cached_property
+    def dist_matrix(self) -> np.ndarray:
+        """Returns a distance matrix for the points"""
+        # conver to numpy array so that we dont have to cal euclid_dist
+        # n = len(self.points)
+        # matrix = np.zeros((n,n))
+        # for i in range(n):
+        #     for j in range(n):
+        #         matrix[i][j] = euclid_dist(self.points[i], self.points[j])
+        # assert np.all(matrix == matrix.T), "Distance matrix is not symmetric" # np.allclose
+        # return matrix
+        
+        a = np.array([[p.to_complex() for p in self.points]])
+        # assert np.all(np.isclose(abs(a.T-a), matrix))
+        return abs(a.T-a)
+        
 
     def draw_tour(self, tour: list[ds.Point], color='r', linestyle='-', label=None, linewidth=None):
         """Draws a path on the matplotlib axes"""
@@ -235,6 +257,8 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
     def untouched_path(self) -> tuple[list[ds.Point], float, tuple]:
         return self.points + (self.points[0],), calc_dist(self.points + (self.points[0],)), None
 
+    # MARK: Optimal Paths
+
     @cached_property #@property # if timeit
     def brute_force_path(self) -> tuple[list[ds.Point], float, tuple]:
         """Returns the brute force path, set return_to_start to False for shortest path between
@@ -262,7 +286,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
         arr[0][0] = 0
         for i in range(1,n):
-            arr[2 ** i][i] = euclid_dist(self.points[0], self.points[i])
+            arr[2 ** i][i] = self.dist_matrix[0][i]
 
         perms = 0
         for mask in range(2**n):
@@ -274,8 +298,8 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
                     if mask & (2 ** j) != 0: # ensure we are travelling to a new node
                         continue
                     new_mask = mask | (2 ** j)
-                    if arr[new_mask][j] > arr[mask][i] + euclid_dist(self.points[i], self.points[j]):
-                        arr[new_mask][j] = arr[mask][i] + euclid_dist(self.points[i], self.points[j])
+                    if arr[new_mask][j] > arr[mask][i] + self.dist_matrix[i][j]:
+                        arr[new_mask][j] = arr[mask][i] + self.dist_matrix[i][j]
                         parent[new_mask][j] = i
 
         path = [0]  # Start with the starting point
@@ -292,6 +316,28 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         path = [self.points[e] for e in path]
 
         return path, calc_dist(path), (perms,)
+    
+    @cached_property
+    def dp_alt_path(self) -> tuple[list[ds.Point], float, tuple]:
+        """Python is weird and often this impl is faster than the one above by about 1/3 :|"""
+        id_path, c_dist = solve_tsp_dynamic_programming(self.dist_matrix)
+        path = [self.points[i] for i in id_path] + [self.points[0]]
+        
+        dist = calc_dist(path)
+        assert np.isclose(dist,c_dist), f"Distance {c_dist} does not match calculated distance {dist}"
+        
+        return path, dist, None
+    
+    @cached_property
+    def bab_path(self) -> tuple[list[ds.Point], float, tuple]:
+        """Calculates a tour using branch and bound"""
+        id_path, c_dist = solve_tsp_branch_and_bound(self.dist_matrix)
+        
+        path = [self.points[i] for i in id_path] + [self.points[0]]
+        dist = calc_dist(path)
+        assert np.isclose(dist,c_dist), f"Branch and bound distance {c_dist} does not match calculated distance {dist}"
+        
+        return path, dist, None
 
     @cached_property
     def ishan_bfp_path(self) -> tuple[list[ds.Point], float, tuple]:
@@ -489,8 +535,42 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
     def spop_path(self) -> tuple[list[ds.Point], float, tuple]: # TODO: extract into new file
         pass
+    
+    # MARK: More Heuristic Paths
+    
+    @cached_property
+    def number_seed(self) -> float:
+        return len(self.points) + min([p.x*100 for p in self.points]) + max([p.y for p in self.points])
+    
+    @cached_property
+    def local_search_path(self):
+        """Returns a solution using local search based on 2-opt and starting with the nn path"""
+        id_path, c_dist = solve_tsp_local_search(self.dist_matrix, self.point_tour_to_ids(self.nnn_path[0][:-1]), perturbation_scheme="two_opt", rng=Random(self.number_seed))
+        
+        path = [self.points[i] for i in id_path] + [self.points[0]]
+        dist = calc_dist(path)
+        assert np.isclose(dist,c_dist), f"Local Search distance {c_dist} does not match calculated distance {dist}"
+        
+        return path, dist, None
+    
+    @cached_property
+    def quick_local_search_path(self):
+        """Returns a solution using local search based on 2-opt and starting with the nn path, but stops after 5 minutes"""
+        iters = int(0.1 * 4.65*(len(self.points)**2)) # NOTE: a rough estimate of 10% of the average number of iterations 
+        id_path, c_dist = solve_tsp_local_search(self.dist_matrix, self.point_tour_to_ids(self.nnn_path[0][:-1]), perturbation_scheme="two_opt", max_iterations=iters, rng=Random(self.number_seed))
+        
+        path = [self.points[i] for i in id_path] + [self.points[0]]
+        dist = calc_dist(path)
+        assert np.isclose(dist,c_dist), f"Quick Local Search distance {c_dist} does not match calculated distance {dist}"
+        
+        return path, dist, None
+
 
     # MARK: Testing
+    
+    def point_tour_to_ids(self, tour: list[ds.Point], offset_add=0) -> list[int]:
+        """Converts a point tour to an id tour"""
+        return [self.points.index(point) + offset_add for point in tour]
 
     def check_tour(self, path: list[ds.Point]) -> bool:
         """Checks if the path is valid for the tsp"""
