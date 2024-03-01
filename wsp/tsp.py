@@ -539,11 +539,11 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
     # MARK: More Heuristic Paths
     
     @cached_property
-    def number_seed(self) -> float:
+    def number_seed(self):
         return len(self.points) + min([p.x*100 for p in self.points]) + max([p.y for p in self.points])
     
     @cached_property
-    def local_search_path(self):
+    def local_search_path(self) -> tuple[list[ds.Point], float, int]:
         """Returns a solution using local search based on 2-opt and starting with the nn path"""
         id_path, c_dist = solve_tsp_local_search(self.dist_matrix, self.point_tour_to_ids(self.nnn_path[0][:-1]), perturbation_scheme="two_opt", rng=Random(self.number_seed))
         
@@ -551,10 +551,10 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         dist = calc_dist(path)
         assert np.isclose(dist,c_dist), f"Local Search distance {c_dist} does not match calculated distance {dist}"
         
-        return path, dist, None
+        return path, dist, self.number_seed
     
     @cached_property
-    def quick_local_search_path(self):
+    def quick_local_search_path(self) -> tuple[list[ds.Point], float, int]:
         """Returns a solution using local search based on 2-opt and starting with the nn path, but stops after 5 minutes"""
         iters = int(0.1 * 4.65*(len(self.points)**2)) # NOTE: a rough estimate of 10% of the average number of iterations 
         id_path, c_dist = solve_tsp_local_search(self.dist_matrix, self.point_tour_to_ids(self.nnn_path[0][:-1]), perturbation_scheme="two_opt", max_iterations=iters, rng=Random(self.number_seed))
@@ -563,7 +563,18 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
         dist = calc_dist(path)
         assert np.isclose(dist,c_dist), f"Quick Local Search distance {c_dist} does not match calculated distance {dist}"
         
-        return path, dist, None
+        return path, dist, self.number_seed
+    
+    @cached_property
+    def simulated_annealing_path(self) -> tuple[list[ds.Point], float, None]:
+        """Returns a solution using simulated annealing based on 2-opt and starting with the nn path, alpha = 0.9"""
+        id_path, c_dist = solve_tsp_simulated_annealing(self.dist_matrix, self.point_tour_to_ids(self.nnn_path[0][:-1]), perturbation_scheme="two_opt", alpha=0.9, rng=Random(self.number_seed))
+        
+        path = [self.points[i] for i in id_path] + [self.points[0]]
+        dist = calc_dist(path)
+        assert np.isclose(dist,c_dist), f"Quick Local Search distance {c_dist} does not match calculated distance {dist}"
+        
+        return path, dist, self.number_seed
 
 
     # MARK: Testing
