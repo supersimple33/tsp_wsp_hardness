@@ -35,7 +35,7 @@ fig, ax = plt.subplots(1, 2, figsize=(18,9)) #12, 6
 # points = util.generate_points(2) + util.circle_points(5, 4.0, ds.Point(15,-1))
 # points = util.circle_points(5, 3.0, None) + util.circle_points(5, 4.0, ds.Point(15,-1)) + [ds.Point(20,20)]
 # points = util.circle_points(5, 2.0, None) + util.circle_points(4, 2.0, ds.Point(15,0)) + util.circle_points(5, 2.0, ds.Point(15,15)) + util.circle_points(4, 2.0, ds.Point(0,15)) #+ [ds.Point(12,16)]
-points = util.generate_points(1000)
+points = util.generate_points(1089)
 # points = [ds.Point(0,0), ds.Point(1,1), ds.Point(2,2), ds.Point(3,3)]
 
 
@@ -56,9 +56,6 @@ print(x)
 
 x = timeit.timeit(lambda: ts_problem.dist_matrix)
 print(x)
-
-from python_tsp.heuristics import solve_tsp_simulated_annealing
-assert solve_tsp_simulated_annealing(ts_problem.dist_matrix, ts_problem.point_tour_to_ids(ts_problem.nnn_path[0][:-1]))[1] == ts_problem.nnn_path[1]
 
 # MARK: branch and bound
 # start = time()
@@ -106,11 +103,11 @@ assert ts_problem.check_tour(ts_problem.nnn_path[0])
 # assert ts_problem.check_tour(ts_problem.nwsp_path(THRESH)[0])
 
 # MARK: - Local Search
-start = time()
-print(ts_problem.local_search_path[1])
-print("LS Test took", time() - start, end='\n')
-ts_problem.draw_tour(ts_problem.local_search_path[0], 'r', '-', label="LS")
-assert ts_problem.check_tour(ts_problem.local_search_path[0])
+# start = time()
+# print(ts_problem.local_search_path[1])
+# print("LS Test took", time() - start, end='\n')
+# ts_problem.draw_tour(ts_problem.local_search_path[0], 'r', '-', label="LS")
+# assert ts_problem.check_tour(ts_problem.local_search_path[0])
 
 # MARK: - Quick Local Search
 # start = time()
@@ -120,11 +117,26 @@ assert ts_problem.check_tour(ts_problem.local_search_path[0])
 # assert ts_problem.check_tour(ts_problem.quick_local_search_path[0])
 
 # MARK: - Simulated Annealing
+# start = time()
+# print(ts_problem.simulated_annealing_path[1])
+# print("SA Test took", time() - start, end='\n')
+# ts_problem.draw_tour(ts_problem.simulated_annealing_path[0], '#A020F0', '-', label="SA")
+# assert ts_problem.check_tour(ts_problem.simulated_annealing_path[0])
+
+# from python_tsp.heuristics import solve_tsp_simulated_annealing
+# x = solve_tsp_simulated_annealing(ts_problem.dist_matrix, ts_problem.point_tour_to_ids(ts_problem.nnn_path[0][:-1]), alpha=0.9, rng=random.Random(ts_problem.number_seed))[0]
+# assert x == ts_problem.point_tour_to_ids(ts_problem.simulated_annealing_path[0])[:-1]
+# print("passed match")
+
+# MARK: - LKH
 start = time()
-print(ts_problem.simulated_annealing_path[1])
-print("SA Test took", time() - start, end='\n')
-ts_problem.draw_tour(ts_problem.simulated_annealing_path[0], '#A020F0', '-', label="SA")
-assert ts_problem.check_tour(ts_problem.simulated_annealing_path[0])
+print(ts_problem.lkh_path[1])
+print("LKH Test took", time() - start, end='\n')
+ts_problem.draw_tour(ts_problem.lkh_path[0], '#FFC5CA', '-', label="LKH")
+assert ts_problem.check_tour(ts_problem.lkh_path[0])
+from python_tsp.heuristics import solve_tsp_lin_kernighan
+assert ts_problem.point_tour_to_ids(ts_problem.lkh_path[0][:-1]) == solve_tsp_lin_kernighan(ts_problem.dist_matrix, ts_problem.point_tour_to_ids(ts_problem.nnn_path[0][:-1]))[0]
+
 
 # print("NN was off by:", ts_problem.nnn_path[1] / ts_problem.dp_path[1])
 # print("NWSP was off by:", ts_problem.nwsp_path(THRESH)[1] / ts_problem.dp_path[1])

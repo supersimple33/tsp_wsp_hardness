@@ -10,7 +10,7 @@ import numpy as np
 from multimethod import multimethod
 
 from python_tsp.exact import solve_tsp_dynamic_programming, solve_tsp_branch_and_bound
-from python_tsp.heuristics import solve_tsp_local_search, solve_tsp_simulated_annealing
+from python_tsp.heuristics import solve_tsp_local_search, solve_tsp_simulated_annealing, solve_tsp_lin_kernighan
 
 from wsp import ds
 from wsp import util
@@ -569,6 +569,17 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
     def simulated_annealing_path(self) -> tuple[list[ds.Point], float, None]:
         """Returns a solution using simulated annealing based on 2-opt and starting with the nn path, alpha = 0.9"""
         id_path, c_dist = solve_tsp_simulated_annealing(self.dist_matrix, self.point_tour_to_ids(self.nnn_path[0][:-1]), perturbation_scheme="two_opt", alpha=0.9, rng=Random(self.number_seed))
+        
+        path = [self.points[i] for i in id_path] + [self.points[0]]
+        dist = calc_dist(path)
+        assert np.isclose(dist,c_dist), f"Quick Local Search distance {c_dist} does not match calculated distance {dist}"
+        
+        return path, dist, self.number_seed
+    
+    @cached_property
+    def lkh_path(self) -> tuple[list[ds.Point], float, None]:
+        """Returns a solution using the Lin-Kernighan heuristic"""
+        id_path, c_dist = solve_tsp_lin_kernighan(self.dist_matrix, self.point_tour_to_ids(self.nnn_path[0][:-1]))
         
         path = [self.points[i] for i in id_path] + [self.points[0]]
         dist = calc_dist(path)
