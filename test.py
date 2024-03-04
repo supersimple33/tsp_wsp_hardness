@@ -20,7 +20,7 @@ DRAW_WSPD_ARGS = {'no_leaves' : False, 'use_boundary' : True, 'no_circles' : Fal
 THRESH : int = 2
 
 fig, ax = plt.subplots(1, 2, figsize=(18,9)) #12, 6
-# ax = np.array([None, None])
+ax = np.array([None, None])
 
 # MARK: - Labelling points
 # fig, ax = plt.subplots(1, 1, figsize=(18,9)) #12, 6
@@ -30,18 +30,19 @@ fig, ax = plt.subplots(1, 2, figsize=(18,9)) #12, 6
 #     ax.annotate(i+1, (points[i].x, points[i].y))
 # ax.axis("equal")
 
-# points = file_load.load_points("ALL_TSP/a280.tsp", False)
+# points = file_load.load_points("ALL_TSP/usa115475.tsp", False)
+# points = file_load.load_points("ALL_TSP/xib32892.tsp", False)
 # points = file_load.load_points("data/custom3.tsp", False)
 # points = util.generate_points(2) + util.circle_points(5, 4.0, ds.Point(15,-1))
 # points = util.circle_points(5, 3.0, None) + util.circle_points(5, 4.0, ds.Point(15,-1)) + [ds.Point(20,20)]
 # points = util.circle_points(5, 2.0, None) + util.circle_points(4, 2.0, ds.Point(15,0)) + util.circle_points(5, 2.0, ds.Point(15,15)) + util.circle_points(4, 2.0, ds.Point(0,15)) #+ [ds.Point(12,16)]
-points = util.generate_points(1089)
+points = util.generate_points(10089)
 # points = [ds.Point(0,0), ds.Point(1,1), ds.Point(2,2), ds.Point(3,3)]
 
-
+start = time()
 ts_problem = tsp.TravellingSalesmanProblem[QTREE](QTREE, points, ax, s=2.0)
 fig.canvas.mpl_connect('button_press_event', lambda event: ts_problem.on_click(event, **DRAW_WSPD_ARGS)) # hook up interactions
-
+print("TSP initialization took", time() - start)
 
 # MARK: WSPD
 # start = time()
@@ -50,12 +51,16 @@ fig.canvas.mpl_connect('button_press_event', lambda event: ts_problem.on_click(e
 # print("WSP took", time() - start)
 # ts_problem.draw_wspd(**DRAW_WSPD_ARGS)
 
+# Pre-cache the length of the quadtree
 x = timeit.timeit(lambda: print(len(ts_problem.quadtree)), number=1)
 print(x)
 
-
+# Pre-cache the distance matrix
 x = timeit.timeit(lambda: ts_problem.dist_matrix)
 print(x)
+
+print(ts_problem.untouched_path[1])
+print()
 
 # MARK: branch and bound
 # start = time()
@@ -91,7 +96,7 @@ print(x)
 # MARK: naive nearest neighbor
 start = time()
 print(ts_problem.nnn_path[1])
-print("Test took", time() - start, end='\n')
+print("NN Test took", time() - start, end='\n')
 ts_problem.draw_tour(ts_problem.nnn_path[0], 'y', '-.', label="NNN")
 assert ts_problem.check_tour(ts_problem.nnn_path[0])
 
@@ -134,9 +139,11 @@ print(ts_problem.lkh_path[1])
 print("LKH Test took", time() - start, end='\n')
 ts_problem.draw_tour(ts_problem.lkh_path[0], '#FFC5CA', '-', label="LKH")
 assert ts_problem.check_tour(ts_problem.lkh_path[0])
-from python_tsp.heuristics import solve_tsp_lin_kernighan
-assert ts_problem.point_tour_to_ids(ts_problem.lkh_path[0][:-1]) == solve_tsp_lin_kernighan(ts_problem.dist_matrix, ts_problem.point_tour_to_ids(ts_problem.nnn_path[0][:-1]))[0]
-
+# from python_tsp.heuristics import solve_tsp_lin_kernighan
+# assert ts_problem.point_tour_to_ids(ts_problem.lkh_path[0][:-1]) == solve_tsp_lin_kernighan(ts_problem.dist_matrix, ts_problem.point_tour_to_ids(ts_problem.nnn_path[0][:-1]))[0]
+if input("print path?") == "y":
+	tour = ts_problem.point_tour_to_ids(ts_problem.lkh_path[0][:-1])
+	[print(i) for i in tour]
 
 # print("NN was off by:", ts_problem.nnn_path[1] / ts_problem.dp_path[1])
 # print("NWSP was off by:", ts_problem.nwsp_path(THRESH)[1] / ts_problem.dp_path[1])

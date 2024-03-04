@@ -123,7 +123,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
     def draw_tour(self, tour: list[ds.Point], color='r', linestyle='-', label=None, linewidth=None):
         """Draws a path on the matplotlib axes"""
-        if self.ax is None:
+        if self.ax is None or self.ax[1] is None:
             print("No axes to draw on")
             return
 
@@ -255,7 +255,8 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
 
     @cached_property
     def untouched_path(self) -> tuple[list[ds.Point], float, tuple]:
-        return self.points + (self.points[0],), calc_dist(self.points + (self.points[0],)), None
+        # REVIEW: should we validate the path just to be sure
+        return self.points + [self.points[0],], calc_dist(self.points + [self.points[0],]), None
 
     # MARK: Optimal Paths
 
@@ -602,3 +603,17 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]): # TODO: better use of ge
     def hk_lower_bound(self) -> tuple[list[ds.Point], float, tuple]:
         "Calculates the held karp lower bound based on Valenzuela's algorithm"
         raise NotImplementedError("Not yet implemented")
+    
+    @staticmethod
+    def num_jumps(path, ideal) -> int:
+        """Counts how many connections in path are also in ideal"""
+        assert len(path) == len(ideal), "Paths must be the same length"
+        path_connections = {frozenset((path[i], path[0 if len(path) - 1 == i else i+1])) for i in range(len(path))}
+        ideal_connections = {frozenset((ideal[i], ideal[0 if len(ideal) - 1 == i else i+1])) for i in range(len(ideal))}
+        
+        jumps = path_connections - ideal_connections
+        
+        # dists = [euclid_dist(p1, p2) for p1, p2 in jumps]
+        # dist = sum(dists)
+        
+        return len(jumps)

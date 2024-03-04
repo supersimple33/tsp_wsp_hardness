@@ -1,5 +1,6 @@
 name: tsp_wsp_hardness
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - python=3.11
@@ -14,4 +15,6 @@ dependencies:
   - matplotlib
   - multimethod
   - statsmodels
+  - multiprocess
+  - notebook
 prefix: .conda

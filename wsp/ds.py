@@ -442,6 +442,9 @@ class AbstractPKQuadTree(AbstractQuadTree):
     def pk_draw(self): # TODO: add none check
         if self.ax[1] is None:
             return
+        
+        if len(self) > 10000:
+            print("are you sure you want to draw", len(self), "points?")
 
         for child in self.children:
             if len(child) > 1:
