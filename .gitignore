@@ -232,3 +232,6 @@ pyrightconfig.json
 papers
 concorde
 solution area/*.res
+solution area/*.sol
+solution area/*.pul
+solution area/*.sav
