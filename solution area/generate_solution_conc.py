@@ -27,7 +27,7 @@ for problem in problems: # TODO: add some multiprocessing
     print("Starting", problem)
     start = time.time()
     
-    solution = solver.solve(verbose=False, random_seed=0) # Uncomment for debugging
+    solution = solver.solve(verbose=False, random_seed=42) # Uncomment for debugging
     print("Solved", problem, "in", time.time() - start, "seconds")
     
     assert solution.success # Check that the solution is optimal

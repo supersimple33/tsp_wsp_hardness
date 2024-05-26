@@ -14,13 +14,6 @@ def euclid_dist(p1 : 'ds.Point', p2: 'ds.Point') -> float:
     """Euclidean distance between two points"""
     return math.sqrt(((p2.x - p1.x) ** 2) + ((p2.y - p1.y) ** 2))
 
-def calc_dist(points : list['ds.Point']) -> float:
-    """Calculate total distance of a path"""
-    dist = 0.0
-    for i in range(len(points) - 1):
-        dist += euclid_dist(points[i], points[i+1])
-    return dist
-
 # MARK: Projection
 
 def sublist_get_points(lst) -> list['ds.Point']:
