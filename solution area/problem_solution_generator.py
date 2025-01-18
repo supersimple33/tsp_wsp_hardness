@@ -108,8 +108,8 @@ for id in ids:  # TODO: SIGINT Handling
         f"Concorde optimal: {solution.optimal_value} {lib_problem.comment}"
     )
 
-    os.makedirs(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{id}")
-    lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{id}/{name}.tsp")
+    os.makedirs(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}")
+    lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{name}.tsp")
 
     # MARK: - Work on Sub Problems
     for i in range(NUM_POINTS):
@@ -139,6 +139,8 @@ for id in ids:  # TODO: SIGINT Handling
         lib_problem.tours = [
             [x + 1 for x in list(solution.tour)],
         ]
-        lib_problem.comment = f"Optimal: {solution.optimal_value} {lib_problem.comment}"
+        lib_problem.comment = (
+            f"Concorde optimal: {solution.optimal_value} {lib_problem.comment}"
+        )
 
-        lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{id}/{name}_{i+1}.tsp")
+        lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{name}_{i+1}.tsp")
