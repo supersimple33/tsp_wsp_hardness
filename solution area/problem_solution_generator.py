@@ -45,16 +45,16 @@ ALPHABET = [
 NUM_POINTS = 50
 START_INDEX = 0
 TAKE = 50
-DISTRIB_CODE = "Uniform"
+DISTRIB_CODE = "u"
 
 
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
     match DISTRIB_CODE:
-        case "Uniform":  # integers
+        case "u":  # Uniform distribution with bounds
             return rng.integers(0, 10000, size=(num_points, 2)).astype(
                 dtype=np.float64
             )  # how do we decide this also typing is a factor
-        case "Normal":
+        case "n":  # Normal distribution
             return rng.normal(
                 size=(num_points, 2), scale=1000
             )  # TODO: Add scaling here (how should i decide????)
@@ -104,9 +104,12 @@ for id in ids:  # TODO: SIGINT Handling
     lib_problem.tours = [
         [x + 1 for x in list(solution.tour)],
     ]
+    lib_problem.comment = (
+        f"Concorde optimal: {solution.optimal_value} {lib_problem.comment}"
+    )
 
-    os.makedirs(f"DATA_GEN_50/{id}")
-    lib_problem.save(f"DATA_GEN_50/{id}/{name}.tsp")
+    os.makedirs(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{id}")
+    lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{id}/{name}.tsp")
 
     # MARK: - Work on Sub Problems
     for i in range(NUM_POINTS):
@@ -136,5 +139,6 @@ for id in ids:  # TODO: SIGINT Handling
         lib_problem.tours = [
             [x + 1 for x in list(solution.tour)],
         ]
+        lib_problem.comment = f"Optimal: {solution.optimal_value} {lib_problem.comment}"
 
-        lib_problem.save(f"DATA_GEN_50/{id}/{name}_{i+1}.tsp")
+        lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{id}/{name}_{i+1}.tsp")
