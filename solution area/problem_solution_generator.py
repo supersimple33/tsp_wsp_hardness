@@ -10,6 +10,10 @@ import math
 import numpy as np
 import tsplib95
 from concorde.tsp import TSPSolver  # DC
+import matplotlib.pyplot as plt
+
+# NOTE: We need constant hashes so cant us python's hash
+from xxhash import xxh64
 
 from wsp import tsp, ds
 
@@ -42,10 +46,11 @@ ALPHABET = [
     "z",
 ]
 
-NUM_POINTS = 50
-START_INDEX = 0
-TAKE = 50
-DISTRIB_CODE = "u"
+NUM_POINTS = 20
+START_INDEX = 3000
+TAKE = 2000
+DISTRIB_CODE = "p0.25"
+# DISTRIB_CODE = "u"
 
 
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
@@ -58,23 +63,26 @@ def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
             return rng.normal(
                 size=(num_points, 2), scale=1000
             )  # TODO: Add scaling here (how should i decide????)
+        case x if x.startswith("p"):  # Power distribution
+            phi = 2.0 * np.pi * rng.random(num_points)
+            r = rng.power(float(DISTRIB_CODE[1:]), num_points) * 1000
+            return np.array([r * np.cos(phi), r * np.sin(phi)]).T
         case _:
             raise ValueError(f"Unknown distribution code: {DISTRIB_CODE}")
 
 
-ids = ["".join(x) for x in itertools.product(ALPHABET, repeat=2)][
-    START_INDEX : START_INDEX + NUM_POINTS
-]
-
+ids = ["".join(x) for x in itertools.product(ALPHABET, repeat=3)]
+assert len(ids) >= START_INDEX + TAKE
+ids = ids[START_INDEX : START_INDEX + TAKE]
 
 # TODO: MULTI-PROCESSING
-for id in ids:  # TODO: SIGINT Handling
+for i, id in enumerate(ids):
     # Save the problem
     name = id + f"{NUM_POINTS}{DISTRIB_CODE}"
-    rng: np.random.Generator = np.random.default_rng(
-        seed=abs(hash(name))
-    )  # CHECK NO OVERFLOW HERE
+    rng: np.random.Generator = np.random.default_rng(seed=xxh64(name).intdigest())
     points = [ds.Point(x, y) for x, y in get_points(rng, NUM_POINTS)]
+    # plt.scatter([p.x for p in points], [p.y for p in points])
+    # plt.show()
 
     # TODO: check if this already exists
 
@@ -84,7 +92,7 @@ for id in ids:  # TODO: SIGINT Handling
 
     lib_problem = tsplib95.models.StandardProblem(
         name=name,
-        comment=f"{NUM_POINTS} points generated from {DISTRIB_CODE} distribution",
+        comment=f"{NUM_POINTS} points generated from {DISTRIB_CODE} distribution (#{i + START_INDEX})",
         type="TSP",
         dimension=NUM_POINTS,  # CHECK TYPES
         edge_weight_type="EUC_2D",
