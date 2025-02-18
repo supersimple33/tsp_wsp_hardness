@@ -3,18 +3,25 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.11
-  - scipy
-  - deprecation
-  - mypy
-  - pylint
-  - numpy
-  - ipykernel
-  - pandas
   - pip
-  - matplotlib
-  - multimethod
+  - numpy
+  - pandas
   - statsmodels
+  - ipykernel
+  - python=3.11
+  - mypy
+  - matplotlib
+  - scipy
+  - pylint
+  - multimethod
+  - deprecation
   - multiprocess
   - notebook
-prefix: .conda
+  - tqdm
+  - nb_conda_kernels
+  - wxpython
+  - perspective
+  - python-xxhash
+  - ipympl
+  - tsplib95
+prefix: ./.conda
