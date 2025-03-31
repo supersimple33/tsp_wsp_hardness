@@ -5,7 +5,7 @@
 
 import os
 
-import itertools
+from itertools import product, combinations, chain
 import math
 import numpy as np
 import tsplib95
@@ -17,41 +17,20 @@ from xxhash import xxh64
 
 from wsp import tsp, ds
 
-ALPHABET = [
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-]
+from string import ascii_lowercase as ALPHABET
 
-NUM_POINTS = 20
-START_INDEX = 3000
-TAKE = 2000
-DISTRIB_CODE = "p0.25"
+
+NUM_POINTS = 25
+START_INDEX = 0
+TAKE = 10
+DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
-EXIST_OK = True
+EXIST_OK = False
+SINGLE_POINT = False
+
+
+def power_subset(ss):
+    return chain(*map(lambda x: combinations(ss, x), range(1, len(ss))))
 
 
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
@@ -72,7 +51,7 @@ def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
             raise ValueError(f"Unknown distribution code: {DISTRIB_CODE}")
 
 
-ids = ["".join(x) for x in itertools.product(ALPHABET, repeat=3)]
+ids = ["".join(x) for x in product(ALPHABET, repeat=3)]
 assert len(ids) >= START_INDEX + TAKE
 ids = ids[START_INDEX : START_INDEX + TAKE]
 
@@ -121,19 +100,24 @@ for i, id in enumerate(ids):
     lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{name}.tsp")
 
     # MARK: - Work on Sub Problems
-    for i in range(NUM_POINTS):
-        # sub_problem = tsp.TravellingSalesmanProblem[TREE_TYPE](
-        #     TREE_TYPE, points[:i] + points[i + 1 :], AX, s=S_FACTOR
-        # )
+    for removed_points in (
+        map(lambda x: [x], range(NUM_POINTS))
+        if SINGLE_POINT
+        else power_subset(range(NUM_POINTS))
+    ):
+        # sub_problem = tsp.TravellingSalesmanProblem[TREE_TYPE]
 
+        sub_name = f"{name}_" + "_".join([str(x) for x in removed_points])
         lib_problem = tsplib95.models.StandardProblem(
-            name=name + f"_{i+1}",
-            comment=f"Removed point {i+1} from {NUM_POINTS} points generated from {DISTRIB_CODE} distribution",
+            name=sub_name,
+            comment=f"Removed points {removed_points} from {NUM_POINTS} points generated from {DISTRIB_CODE} distribution",
             type="TSP",
-            dimension=NUM_POINTS - 1,  # CHECK TYPES
+            dimension=NUM_POINTS - len(removed_points),  # CHECK TYPES
             edge_weight_type="EUC_2D",
             node_coords={
-                j + 1: (p.x, p.y) for j, p in enumerate(points[:i] + points[i + 1 :])
+                j + 1: (p.x, p.y)
+                for j, p in enumerate(points)
+                if j not in removed_points
             },
         )
 
@@ -152,4 +136,4 @@ for i, id in enumerate(ids):
             f"Concorde optimal: {solution.optimal_value} {lib_problem.comment}"
         )
 
-        lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{name}_{i+1}.tsp")
+        lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{sub_name}.tsp")
