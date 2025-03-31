@@ -4,9 +4,10 @@
 # to identify which points are most responsible for increasing the size of the solution
 
 import os
-
-from itertools import product, combinations, chain
 import math
+from itertools import product, combinations, chain
+from string import ascii_lowercase as ALPHABET
+
 import numpy as np
 import tsplib95
 from concorde.tsp import TSPSolver  # DC
@@ -17,9 +18,7 @@ from xxhash import xxh64
 
 from wsp import tsp, ds
 
-from string import ascii_lowercase as ALPHABET
-
-
+SCALE_SIZE = 10000
 NUM_POINTS = 25
 START_INDEX = 0
 TAKE = 10
@@ -36,16 +35,16 @@ def power_subset(ss):
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
     match DISTRIB_CODE:
         case "u":  # Uniform distribution with bounds
-            return rng.integers(0, 10000, size=(num_points, 2)).astype(
+            return rng.integers(0, SCALE_SIZE, size=(num_points, 2)).astype(
                 dtype=np.float64
             )  # how do we decide this also typing is a factor
         case "n":  # Normal distribution
             return rng.normal(
-                size=(num_points, 2), scale=1000
+                size=(num_points, 2), scale=SCALE_SIZE
             )  # TODO: Add scaling here (how should i decide????)
         case x if x.startswith("p"):  # Power distribution
             phi = 2.0 * np.pi * rng.random(num_points)
-            r = rng.power(float(DISTRIB_CODE[1:]), num_points) * 1000
+            r = rng.power(float(DISTRIB_CODE[1:]), num_points) * SCALE_SIZE
             return np.array([r * np.cos(phi), r * np.sin(phi)]).T
         case _:
             raise ValueError(f"Unknown distribution code: {DISTRIB_CODE}")
@@ -58,9 +57,10 @@ ids = ids[START_INDEX : START_INDEX + TAKE]
 # TODO: MULTI-PROCESSING
 for i, id in enumerate(ids):
     # Save the problem
-    name = id + f"{NUM_POINTS}{DISTRIB_CODE}"
+    name = f"{id}{NUM_POINTS}{DISTRIB_CODE}"
     rng: np.random.Generator = np.random.default_rng(seed=xxh64(name).intdigest())
-    points = [ds.Point(x, y) for x, y in get_points(rng, NUM_POINTS)]
+    np_points = get_points(rng, NUM_POINTS)
+    points = [ds.Point(x, y) for x, y in np_points]
     # plt.scatter([p.x for p in points], [p.y for p in points])
     # plt.show()
 
@@ -79,9 +79,8 @@ for i, id in enumerate(ids):
         node_coords={i + 1: (p.x, p.y) for i, p in enumerate(points)},
     )
 
-    lib_problem.save("solution area/temp.tsp")
-
     # BEGIN INITIAL SOLUTION
+    lib_problem.save("solution area/temp.tsp")
 
     solver = TSPSolver.from_tspfile("solution area/temp.tsp")
     solution = solver.solve(verbose=False, random_seed=42)
