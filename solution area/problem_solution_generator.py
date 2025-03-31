@@ -51,6 +51,7 @@ START_INDEX = 3000
 TAKE = 2000
 DISTRIB_CODE = "p0.25"
 # DISTRIB_CODE = "u"
+EXIST_OK = True
 
 
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
@@ -116,7 +117,7 @@ for i, id in enumerate(ids):
         f"Concorde optimal: {solution.optimal_value} {lib_problem.comment}"
     )
 
-    os.makedirs(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}")
+    os.makedirs(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}", exist_ok=EXIST_OK)
     lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{name}.tsp")
 
     # MARK: - Work on Sub Problems

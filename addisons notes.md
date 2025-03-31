@@ -8,3 +8,8 @@ This [site](http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp95.pdf) has
 
 different quadtrees make different wsp representations.
 The point quadtree is especially weird.
+
+
+# Other notes
+
+The TSP with nodes bound to a metric space is APX-complete.
