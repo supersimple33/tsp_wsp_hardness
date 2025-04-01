@@ -19,17 +19,20 @@ from xxhash import xxh64
 from wsp import tsp, ds
 
 SCALE_SIZE = 10000
-NUM_POINTS = 25
-START_INDEX = 0
-TAKE = 10
+NUM_POINTS = 30
+START_INDEX = 22
+TAKE = 1
 DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
-EXIST_OK = False
-SINGLE_POINT = False
+EXIST_OK = True
+NUM_REMOVED = 3
 
 
-def power_subset(ss):
-    return chain(*map(lambda x: combinations(ss, x), range(1, len(ss))))
+def power_subset(ss, k=None):
+    """Generate all subsets of a set with size k."""
+    if k is None:
+        k = len(ss)
+    return chain(*map(lambda x: combinations(ss, x), range(1, k)))
 
 
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
@@ -99,11 +102,7 @@ for i, id in enumerate(ids):
     lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{name}.tsp")
 
     # MARK: - Work on Sub Problems
-    for removed_points in (
-        map(lambda x: [x], range(NUM_POINTS))
-        if SINGLE_POINT
-        else power_subset(range(NUM_POINTS))
-    ):
+    for removed_points in power_subset(range(NUM_POINTS), NUM_REMOVED):
         # sub_problem = tsp.TravellingSalesmanProblem[TREE_TYPE]
 
         sub_name = f"{name}_" + "_".join([str(x) for x in removed_points])
