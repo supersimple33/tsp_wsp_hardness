@@ -24,4 +24,6 @@ dependencies:
   - python-xxhash
   - ipympl
   - tsplib95
+  - cython
+  - networkx
 prefix: ./.conda
