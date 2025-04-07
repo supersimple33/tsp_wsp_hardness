@@ -20,8 +20,8 @@ from wsp import tsp, ds
 
 SCALE_SIZE = 10000
 NUM_POINTS = 30
-START_INDEX = 22
-TAKE = 1
+START_INDEX = 0
+TAKE = 3
 DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
 EXIST_OK = True
@@ -83,9 +83,14 @@ for i, id in enumerate(ids):
     )
 
     # BEGIN INITIAL SOLUTION
-    lib_problem.save("solution area/temp.tsp")
 
-    solver = TSPSolver.from_tspfile("solution area/temp.tsp")
+    dist_matrix = np.sqrt(
+        np.sum(
+            (np_points[:, np.newaxis, :] - np_points[np.newaxis, :, :]) ** 2, axis=-1
+        )
+    )
+    utri = dist_matrix[np.triu_indices(NUM_POINTS, k=1)].astype(np.int32)
+    solver = TSPSolver.from_upper_tri(shape=NUM_POINTS, edges=utri)
     solution = solver.solve(verbose=False, random_seed=42)
 
     assert solution.success  # Check that the solution is optimal
@@ -106,6 +111,10 @@ for i, id in enumerate(ids):
         # sub_problem = tsp.TravellingSalesmanProblem[TREE_TYPE]
 
         sub_name = f"{name}_" + "_".join([str(x) for x in removed_points])
+        mask = np.ones(NUM_POINTS, dtype=bool)
+        mask[list(removed_points)] = False
+        sub_dist_matrix = dist_matrix[np.ix_(mask, mask)]
+
         lib_problem = tsplib95.models.StandardProblem(
             name=sub_name,
             comment=f"Removed points {removed_points} from {NUM_POINTS} points generated from {DISTRIB_CODE} distribution",
@@ -119,9 +128,11 @@ for i, id in enumerate(ids):
             },
         )
 
-        lib_problem.save("solution area/temp.tsp")
-
-        solver = TSPSolver.from_tspfile("solution area/temp.tsp")
+        # BEGIN INITIAL SOLUTION
+        utri = sub_dist_matrix[np.triu_indices(len(sub_dist_matrix), k=1)]
+        solver = TSPSolver.from_upper_tri(
+            shape=NUM_POINTS - len(removed_points), edges=utri.astype(np.int32)
+        )
         solution = solver.solve(verbose=False, random_seed=42)
 
         assert solution.success

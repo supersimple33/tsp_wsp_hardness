@@ -202,6 +202,13 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
     # MARK: - Distance Matrix Setups
 
     @cached_property
+    def dist_matrix_triu(self) -> np.ndarray[np.float64]:
+        """Returns the upper triangular distance matrix for the points"""
+        return self.dist_matrix_with_nan[
+            np.triu_indices(len(self.dist_matrix_with_nan), k=1)
+        ]
+
+    @cached_property
     def dist_matrix_with_nan(self) -> np.ndarray[np.float64]:
         """POINTS TOWARDS DIST MATRIX REPLACING THE DIAGONAL WITH NANs"""
         return np.where(np.eye(len(self.dist_matrix_strict)), np.nan, self.dist_matrix)
