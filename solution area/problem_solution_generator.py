@@ -27,6 +27,13 @@ DISTRIB_CODE = "p0.33"
 EXIST_OK = True
 NUM_REMOVED = 3
 
+# Silencing stuff
+STDOUT = 1
+STDERR = 2
+saved_fd = os.dup(STDOUT)
+error_fd = os.dup(STDERR)
+null_fd = os.open(os.devnull, os.O_WRONLY)
+
 
 def power_subset(ss, k=None):
     """Generate all subsets of a set with size k."""
@@ -91,7 +98,9 @@ for i, id in enumerate(ids):
     )
     utri = dist_matrix[np.triu_indices(NUM_POINTS, k=1)].astype(np.int32)
     solver = TSPSolver.from_upper_tri(shape=NUM_POINTS, edges=utri)
+    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
     solution = solver.solve(verbose=False, random_seed=42)
+    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
 
     assert solution.success  # Check that the solution is optimal
     assert solution.found_tour  # DEBUG: If this fails a different seed should be tried
@@ -133,7 +142,9 @@ for i, id in enumerate(ids):
         solver = TSPSolver.from_upper_tri(
             shape=NUM_POINTS - len(removed_points), edges=utri.astype(np.int32)
         )
+        os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
         solution = solver.solve(verbose=False, random_seed=42)
+        os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
 
         assert solution.success
         assert solution.found_tour
