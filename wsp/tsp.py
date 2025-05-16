@@ -351,7 +351,12 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         )
         midpoint = (point_A + point_B) / 2
 
-        if no_leaves and node_A.leaf and node_B.leaf:
+        if (
+            no_leaves
+            and node_A.leaf
+            and node_B.leaf
+            or (no_leaves == 2 and (node_A.leaf or node_B.leaf))
+        ):
             return
 
         # draw the lines
