@@ -1,5 +1,5 @@
 NAME: aae50u_16
-COMMENT: Concorde optimal: 58819.0 Removed point 16 from 50 points generated from u distribution
+COMMENT: Concorde optimal: 58795.0 Removed points [16] from 50 points generated from u distribution
 TYPE: TSP
 DIMENSION: 49
 EDGE_WEIGHT_TYPE: EUC_2D
@@ -53,55 +53,5 @@ NODE_COORD_SECTION:
 47 2888.0 3541.0
 48 2628.0 6512.0
 49 6569.0 4695.0
-TOUR_SECTION:
-1
-14
-3
-48
-44
-46
-4
-42
-49
-8
-12
-26
-41
-24
-17
-19
-22
-16
-29
-30
-9
-6
-39
-38
-33
-37
-21
-35
-10
-25
-20
-32
-15
-18
-45
-11
-43
-23
-2
-5
-36
-34
-28
-13
-27
-7
-47
-40
-31 
--1
+TOUR_SECTION: 1 14 3 48 44 46 4 42 49 8 12 26 41 24 17 19 22 16 29 30 9 6 39 38 33 37 21 35 10 25 20 32 15 18 45 11 43 23 2 5 36 34 28 13 27 7 47 40 31 -1
 EOF

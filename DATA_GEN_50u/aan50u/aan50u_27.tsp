@@ -1,5 +1,5 @@
 NAME: aan50u_27
-COMMENT: Concorde optimal: 52623.0 Removed point 27 from 50 points generated from u distribution
+COMMENT: Concorde optimal: 52599.0 Removed points [27] from 50 points generated from u distribution
 TYPE: TSP
 DIMENSION: 49
 EDGE_WEIGHT_TYPE: EUC_2D
@@ -53,55 +53,5 @@ NODE_COORD_SECTION:
 47 3211.0 8795.0
 48 4650.0 1265.0
 49 7703.0 8180.0
-TOUR_SECTION:
-1
-21
-29
-13
-46
-19
-24
-35
-25
-8
-44
-23
-18
-38
-33
-48
-27
-45
-10
-22
-4
-5
-43
-40
-3
-30
-7
-11
-26
-15
-9
-32
-16
-36
-37
-47
-14
-20
-2
-17
-31
-49
-6
-28
-42
-41
-12
-39
-34 
--1
+TOUR_SECTION: 1 21 29 13 46 19 24 35 25 8 44 23 18 38 33 48 27 45 10 22 4 5 43 40 3 30 7 11 26 15 9 32 16 36 37 47 14 20 2 17 31 49 6 28 42 41 12 39 34 -1
 EOF

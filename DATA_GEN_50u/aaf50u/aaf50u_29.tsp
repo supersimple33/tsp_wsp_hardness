@@ -1,5 +1,5 @@
 NAME: aaf50u_29
-COMMENT: Concorde optimal: 57105.0 Removed point 29 from 50 points generated from u distribution
+COMMENT: Concorde optimal: 57080.0 Removed points [29] from 50 points generated from u distribution
 TYPE: TSP
 DIMENSION: 49
 EDGE_WEIGHT_TYPE: EUC_2D
@@ -53,55 +53,5 @@ NODE_COORD_SECTION:
 47 8243.0 5916.0
 48 6594.0 4231.0
 49 3396.0 3831.0
-TOUR_SECTION:
-1
-33
-47
-35
-15
-30
-21
-25
-41
-40
-38
-2
-43
-19
-11
-12
-17
-10
-6
-22
-9
-7
-42
-14
-29
-49
-37
-23
-27
-32
-26
-18
-5
-46
-31
-39
-20
-34
-4
-8
-45
-36
-44
-28
-48
-16
-13
-3
-24 
--1
+TOUR_SECTION: 1 24 3 13 16 48 28 44 36 45 8 4 34 20 39 31 46 5 18 26 32 27 23 37 49 29 14 42 7 9 22 6 10 17 12 11 19 43 2 38 40 41 25 21 30 15 35 47 33 -1
 EOF

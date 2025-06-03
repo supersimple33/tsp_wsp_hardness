@@ -1,5 +1,5 @@
 NAME: aag50u_46
-COMMENT: Concorde optimal: 55620.0 Removed point 46 from 50 points generated from u distribution
+COMMENT: Concorde optimal: 55596.0 Removed points [46] from 50 points generated from u distribution
 TYPE: TSP
 DIMENSION: 49
 EDGE_WEIGHT_TYPE: EUC_2D
@@ -53,55 +53,5 @@ NODE_COORD_SECTION:
 47 5695.0 6906.0
 48 5907.0 8195.0
 49 9199.0 6846.0
-TOUR_SECTION:
-1
-15
-29
-32
-11
-23
-37
-42
-43
-10
-36
-41
-4
-38
-46
-40
-12
-7
-5
-20
-19
-34
-44
-26
-27
-31
-22
-13
-35
-25
-17
-14
-6
-24
-39
-16
-9
-47
-48
-30
-45
-2
-8
-3
-33
-49
-28
-21
-18 
--1
+TOUR_SECTION: 1 18 21 28 49 33 3 8 2 45 30 48 47 9 16 39 24 6 14 17 25 35 13 22 31 27 26 44 34 19 20 5 7 12 40 46 38 4 41 36 10 43 42 37 23 11 32 29 15 -1
 EOF

@@ -1,5 +1,5 @@
 NAME: aaj50u_19
-COMMENT: Concorde optimal: 54503.0 Removed point 19 from 50 points generated from u distribution
+COMMENT: Concorde optimal: 54477.0 Removed points [19] from 50 points generated from u distribution
 TYPE: TSP
 DIMENSION: 49
 EDGE_WEIGHT_TYPE: EUC_2D
@@ -53,55 +53,5 @@ NODE_COORD_SECTION:
 47 9776.0 3439.0
 48 1526.0 5771.0
 49 4866.0 6859.0
-TOUR_SECTION:
-1
-48
-12
-29
-31
-33
-44
-22
-49
-21
-45
-10
-6
-14
-40
-4
-7
-18
-34
-36
-16
-42
-24
-27
-46
-38
-47
-26
-8
-13
-17
-25
-15
-43
-32
-23
-30
-9
-19
-2
-20
-37
-39
-3
-11
-35
-41
-28
-5 
--1
+TOUR_SECTION: 1 5 28 41 35 11 3 39 37 20 2 19 9 30 23 32 43 15 25 17 13 8 26 47 38 46 27 24 42 16 36 34 18 7 4 40 14 6 10 45 21 49 22 44 33 31 29 12 48 -1
 EOF
