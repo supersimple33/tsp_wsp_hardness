@@ -128,18 +128,19 @@ for i, id in enumerate(ids):
     for removed_points in power_subset(range(NUM_POINTS), NUM_REMOVED):
         # sub_problem = tsp.TravellingSalesmanProblem[TREE_TYPE]
 
-        sub_name = f"{name}_" + "_".join([str(x) for x in removed_points])
+        sub_name = f"{name}_" + "_".join([str(x + 1) for x in removed_points])
 
         lib_problem = tsplib95.models.StandardProblem(
             name=sub_name,
-            comment=f"Removed points {removed_points} from {NUM_POINTS} points generated from {DISTRIB_CODE} distribution",
+            comment=f"Removed points {[x+1 for x in removed_points]} from {NUM_POINTS} points generated from {DISTRIB_CODE} distribution",
             type="TSP",
             dimension=NUM_POINTS - len(removed_points),  # CHECK TYPES
             edge_weight_type="EUC_2D",
             node_coords={
-                j + 1: (p.x, p.y)
-                for j, p in enumerate(points)
-                if j not in removed_points
+                idx + 1: (p.x, p.y)
+                for idx, (_, p) in enumerate(
+                    (j, p) for j, p in enumerate(points) if j not in removed_points
+                )
             },
         )
 
