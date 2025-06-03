@@ -22,7 +22,7 @@ from wsp import tsp, ds
 SCALE_SIZE = 10000
 NUM_POINTS = 50
 START_INDEX = 0
-TAKE = 100
+TAKE = 15
 # DISTRIB_CODE = "p0.33"
 DISTRIB_CODE = "u"
 EXIST_OK = True
@@ -99,8 +99,8 @@ for i, id in enumerate(ids):
             (np_points[:, np.newaxis, :] - np_points[np.newaxis, :, :]) ** 2, axis=-1
         )
     )
-    utri = np.round(dist_matrix[np.triu_indices(NUM_POINTS, k=1)]).astype(np.int32)
-    solver = TSPSolver.from_upper_tri(shape=NUM_POINTS, edges=utri)
+    ltri = np.round(dist_matrix[np.tril_indices(NUM_POINTS, k=-1)]).astype(np.int32)
+    solver = TSPSolver.from_lower_tri(shape=NUM_POINTS, edges=ltri)
     os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
     solution = solver.solve(verbose=False, random_seed=42)
     os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
@@ -148,9 +148,9 @@ for i, id in enumerate(ids):
         mask = np.ones(NUM_POINTS, dtype=bool)
         mask[list(removed_points)] = False
         sub_dist_matrix = dist_matrix[np.ix_(mask, mask)]
-        utri = sub_dist_matrix[np.triu_indices(len(sub_dist_matrix), k=1)]
-        solver = TSPSolver.from_upper_tri(
-            shape=NUM_POINTS - len(removed_points), edges=utri.astype(np.int32)
+        ltri = sub_dist_matrix[np.tril_indices(len(sub_dist_matrix), k=-1)]
+        solver = TSPSolver.from_lower_tri(
+            shape=NUM_POINTS - len(removed_points), edges=ltri.astype(np.int32)
         )
         os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
         solution = solver.solve(verbose=False, random_seed=42)
@@ -173,6 +173,9 @@ for i, id in enumerate(ids):
         )
 
         lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{sub_name}.tsp")
+
+    if i % 250 == 0:
+        print(i)
 
 print(
     f"Generated {TAKE}x{NUM_POINTS} points from {DISTRIB_CODE} distribution in {time.time() - t:.2f} seconds"
