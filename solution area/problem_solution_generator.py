@@ -5,6 +5,7 @@
 
 import os
 import math
+import time
 from itertools import product, combinations, chain
 from string import ascii_lowercase as ALPHABET
 
@@ -21,11 +22,11 @@ from wsp import tsp, ds
 SCALE_SIZE = 10000
 NUM_POINTS = 30
 START_INDEX = 0
-TAKE = 3
+TAKE = 6
 DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
 EXIST_OK = True
-NUM_REMOVED = 3
+NUM_REMOVED = 2
 
 # Silencing stuff
 STDOUT = 1
@@ -33,6 +34,8 @@ STDERR = 2
 saved_fd = os.dup(STDOUT)
 error_fd = os.dup(STDERR)
 null_fd = os.open(os.devnull, os.O_WRONLY)
+
+t = time.time()
 
 
 def power_subset(ss, k=None):
@@ -89,7 +92,7 @@ for i, id in enumerate(ids):
         node_coords={i + 1: (p.x, p.y) for i, p in enumerate(points)},
     )
 
-    # BEGIN INITIAL SOLUTION
+    # BEGIN INITIAL SOLUTION (NEW CODE IS 2x faster)
 
     dist_matrix = np.sqrt(
         np.sum(
@@ -101,6 +104,12 @@ for i, id in enumerate(ids):
     os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
     solution = solver.solve(verbose=False, random_seed=42)
     os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
+
+    # lib_problem.save("solution area/temp.tsp")
+    # os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
+    # solver = TSPSolver.from_tspfile("solution area/temp.tsp")
+    # solution = solver.solve(verbose=False, random_seed=42)
+    # os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
 
     assert solution.success  # Check that the solution is optimal
     assert solution.found_tour  # DEBUG: If this fails a different seed should be tried
@@ -120,9 +129,6 @@ for i, id in enumerate(ids):
         # sub_problem = tsp.TravellingSalesmanProblem[TREE_TYPE]
 
         sub_name = f"{name}_" + "_".join([str(x) for x in removed_points])
-        mask = np.ones(NUM_POINTS, dtype=bool)
-        mask[list(removed_points)] = False
-        sub_dist_matrix = dist_matrix[np.ix_(mask, mask)]
 
         lib_problem = tsplib95.models.StandardProblem(
             name=sub_name,
@@ -137,7 +143,10 @@ for i, id in enumerate(ids):
             },
         )
 
-        # BEGIN INITIAL SOLUTION
+        # BEGIN INITIAL SOLUTION (NEW CODE IS 2x faster)
+        mask = np.ones(NUM_POINTS, dtype=bool)
+        mask[list(removed_points)] = False
+        sub_dist_matrix = dist_matrix[np.ix_(mask, mask)]
         utri = sub_dist_matrix[np.triu_indices(len(sub_dist_matrix), k=1)]
         solver = TSPSolver.from_upper_tri(
             shape=NUM_POINTS - len(removed_points), edges=utri.astype(np.int32)
@@ -145,6 +154,12 @@ for i, id in enumerate(ids):
         os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
         solution = solver.solve(verbose=False, random_seed=42)
         os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
+
+        # lib_problem.save("solution area/temp.tsp")
+        # os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
+        # solver = TSPSolver.from_tspfile("solution area/temp.tsp")
+        # solution = solver.solve(verbose=False, random_seed=42)
+        # os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
 
         assert solution.success
         assert solution.found_tour
@@ -157,3 +172,7 @@ for i, id in enumerate(ids):
         )
 
         lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{sub_name}.tsp")
+
+print(
+    f"Generated {NUM_POINTS} points from {DISTRIB_CODE} distribution in {time.time() - t:.2f} seconds"
+)
