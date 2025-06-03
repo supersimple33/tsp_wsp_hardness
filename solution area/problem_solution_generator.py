@@ -20,13 +20,13 @@ from xxhash import xxh64
 from wsp import tsp, ds
 
 SCALE_SIZE = 10000
-NUM_POINTS = 30
+NUM_POINTS = 50
 START_INDEX = 0
-TAKE = 6
-DISTRIB_CODE = "p0.33"
-# DISTRIB_CODE = "u"
+TAKE = 100
+# DISTRIB_CODE = "p0.33"
+DISTRIB_CODE = "u"
 EXIST_OK = True
-NUM_REMOVED = 2
+NUM_REMOVED = 1
 
 # Silencing stuff
 STDOUT = 1
@@ -41,8 +41,8 @@ t = time.time()
 def power_subset(ss, k=None):
     """Generate all subsets of a set with size k."""
     if k is None:
-        k = len(ss)
-    return chain(*map(lambda x: combinations(ss, x), range(1, k)))
+        k = len(ss) + 1
+    return chain(*map(lambda x: combinations(ss, x), range(1, k + 1)))
 
 
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
@@ -99,7 +99,7 @@ for i, id in enumerate(ids):
             (np_points[:, np.newaxis, :] - np_points[np.newaxis, :, :]) ** 2, axis=-1
         )
     )
-    utri = dist_matrix[np.triu_indices(NUM_POINTS, k=1)].astype(np.int32)
+    utri = np.round(dist_matrix[np.triu_indices(NUM_POINTS, k=1)]).astype(np.int32)
     solver = TSPSolver.from_upper_tri(shape=NUM_POINTS, edges=utri)
     os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
     solution = solver.solve(verbose=False, random_seed=42)
@@ -174,5 +174,5 @@ for i, id in enumerate(ids):
         lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{sub_name}.tsp")
 
 print(
-    f"Generated {NUM_POINTS} points from {DISTRIB_CODE} distribution in {time.time() - t:.2f} seconds"
+    f"Generated {TAKE}x{NUM_POINTS} points from {DISTRIB_CODE} distribution in {time.time() - t:.2f} seconds"
 )
