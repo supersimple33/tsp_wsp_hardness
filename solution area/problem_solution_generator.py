@@ -162,8 +162,8 @@ for i, id in enumerate(ids):
         # solution = solver.solve(verbose=False, random_seed=42)
         # os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
 
-        assert solution.success
-        assert solution.found_tour
+        assert solution.found_tour, "Concorde did not find a tour for the subproblem"
+        assert solution.success, "Concorde did not optimally solve the subproblem"
 
         lib_problem.tours = [
             [x + 1 for x in list(solution.tour)],
