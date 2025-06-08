@@ -194,6 +194,7 @@ class AbstractQuadTree(ABC):
         self.connection: list[AbstractQuadTree] = []  # WSP connections
         self.divided = False  # flag for if divided into 4 child quads
         self.TreeType = type(self)
+        self.leaf = False  # TODO: Implement this
 
         # self.repr = None # for wsp
 

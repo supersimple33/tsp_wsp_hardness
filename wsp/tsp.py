@@ -309,7 +309,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
     def pair_sep_dict(
         self,
     ) -> dict[frozenset[QuadTreeType, QuadTreeType], ds.SpecialDist]:
-        return {ab: c for ab, c in self.wspd}
+        return dict(self.wspd)
 
     @cached_property
     def single_indexable_wspd(
@@ -318,7 +318,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         ds.AbstractQuadTree, list[ds.AbstractQuadTree]
     ]:  # TODO: have this take over the old wspd property
         expanded_decomp = [(a, b) for (a, b), _ in self.wspd]
-        expanded_decomp = expanded_decomp + [(b, a) for a, b in expanded_decomp]
+        expanded_decomp += [(b, a) for a, b in expanded_decomp]
         grouping = group_by(expanded_decomp, key=lambda x: x[0], value=lambda x: x[1])
         [
             g.sort(key=lambda b: self.pair_sep_dict[frozenset((a, b))])
