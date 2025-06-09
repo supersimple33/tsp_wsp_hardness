@@ -26,6 +26,7 @@ dependencies:
   - tsplib95
   - cython
   - networkx
+  - scikit-learn
   - pip:
       - -r requirements.txt
 prefix: ./.conda
