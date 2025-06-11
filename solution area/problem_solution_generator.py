@@ -20,11 +20,11 @@ from xxhash import xxh64
 from wsp import tsp, ds
 
 SCALE_SIZE = 10000
-NUM_POINTS = 50
-START_INDEX = 0
-TAKE = 15
-# DISTRIB_CODE = "p0.33"
-DISTRIB_CODE = "u"
+NUM_POINTS = 30
+START_INDEX = 1000
+TAKE = 1000
+DISTRIB_CODE = "p0.33"
+# DISTRIB_CODE = "u"
 EXIST_OK = True
 NUM_REMOVED = 1
 
@@ -174,7 +174,7 @@ for i, id in enumerate(ids):
 
         lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{sub_name}.tsp")
 
-    if i % 250 == 0:
+    if i % 50 == 0:
         print(i)
 
 print(

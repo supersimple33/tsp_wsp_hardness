@@ -236,4 +236,4 @@ solution area/*.sol
 solution area/*.pul
 solution area/*.sav
 
-DATA_GEN_30p0.33/*
+figures/*
