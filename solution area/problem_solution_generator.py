@@ -21,7 +21,7 @@ from wsp import tsp, ds
 
 SCALE_SIZE = 10000
 NUM_POINTS = 50
-START_INDEX = 0
+START_INDEX = 1
 TAKE = 2
 DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
@@ -113,7 +113,6 @@ for i, id in enumerate(ids):
 
     assert solution.success  # Check that the solution is optimal
     assert solution.found_tour  # DEBUG: If this fails a different seed should be tried
-    parent_solution = solution.tour
 
     lib_problem.tours = [
         [x + 1 for x in list(solution.tour)],
@@ -126,7 +125,10 @@ for i, id in enumerate(ids):
     lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{name}.tsp")
 
     # MARK: - Work on Sub Problems
-    for removed_points in power_subset(range(NUM_POINTS), NUM_REMOVED):
+    def gen_sub_problem(
+        removed_points: tuple[int, ...],
+        last_solution: list[int],
+    ):
         # sub_problem = tsp.TravellingSalesmanProblem[TREE_TYPE]
 
         sub_name = f"{name}_" + "_".join([str(x + 1) for x in removed_points])
@@ -157,9 +159,9 @@ for i, id in enumerate(ids):
         # this is all wrong below
         in_tour = np.array(
             [
-                i - sum(1 if i > rem_point else 0 for rem_point in removed_points)
-                for i in parent_solution
-                if i not in removed_points
+                i - (1 if i > removed_points[0] else 0)
+                for i in last_solution
+                if i != removed_points[0]
             ]
         )
         solution = solver.solve(in_tour=in_tour, verbose=False, random_seed=42)
@@ -182,6 +184,15 @@ for i, id in enumerate(ids):
         )
 
         lib_problem.save(f"DATA_GEN_{NUM_POINTS}{DISTRIB_CODE}/{name}/{sub_name}.tsp")
+
+        if len(removed_points) < NUM_REMOVED:
+            for point in range(min(removed_points)):
+                gen_sub_problem((point,) + removed_points, last_solution=solution.tour)
+
+    if NUM_REMOVED > 0:
+        # Generate all subsets of points to remove
+        for removed_point in range(NUM_POINTS):
+            gen_sub_problem((removed_point,), last_solution=solution.tour)
 
     if i % 50 == 0:
         print(i)

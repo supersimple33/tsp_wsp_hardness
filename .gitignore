@@ -235,5 +235,7 @@ solution area/*.res
 solution area/*.sol
 solution area/*.pul
 solution area/*.sav
+DATA_GEN_50p0.33
+DATA_GEN_60p0.33
 
 figures/*
