@@ -20,13 +20,13 @@ from xxhash import xxh64
 from wsp import tsp, ds
 
 SCALE_SIZE = 10000
-NUM_POINTS = 30
-START_INDEX = 2000
-TAKE = 1000
+NUM_POINTS = 50
+START_INDEX = 0
+TAKE = 2
 DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
 EXIST_OK = True
-NUM_REMOVED = 1
+NUM_REMOVED = 2
 
 # Silencing stuff
 STDOUT = 1
@@ -113,6 +113,7 @@ for i, id in enumerate(ids):
 
     assert solution.success  # Check that the solution is optimal
     assert solution.found_tour  # DEBUG: If this fails a different seed should be tried
+    parent_solution = solution.tour
 
     lib_problem.tours = [
         [x + 1 for x in list(solution.tour)],
@@ -153,7 +154,15 @@ for i, id in enumerate(ids):
             shape=NUM_POINTS - len(removed_points), edges=ltri.astype(np.int32)
         )
         os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
-        solution = solver.solve(verbose=False, random_seed=42)
+        # this is all wrong below
+        in_tour = np.array(
+            [
+                i - sum(1 if i > rem_point else 0 for rem_point in removed_points)
+                for i in parent_solution
+                if i not in removed_points
+            ]
+        )
+        solution = solver.solve(in_tour=in_tour, verbose=False, random_seed=42)
         os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
 
         # lib_problem.save("solution area/temp.tsp")
