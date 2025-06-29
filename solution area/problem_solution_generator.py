@@ -22,7 +22,7 @@ from wsp import tsp, ds
 SCALE_SIZE = 10000
 NUM_POINTS = 50
 START_INDEX = 1
-TAKE = 2
+TAKE = 1
 DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
 EXIST_OK = True
@@ -114,9 +114,11 @@ for i, id in enumerate(ids):
     assert solution.success  # Check that the solution is optimal
     assert solution.found_tour  # DEBUG: If this fails a different seed should be tried
 
-    lib_problem.tours = [
-        [x + 1 for x in list(solution.tour)],
-    ]
+    # rolled_tour = np.roll(solution.tour, -np.argwhere(solution.tour == 0)[0]) + 1
+    # if rolled_tour[1] > rolled_tour[-1]:
+    #     rolled_tour = np.concatenate(([rolled_tour[0]], rolled_tour[:0:-1]))
+    # lib_problem.tours = [list(rolled_tour)]
+    lib_problem.tours = [list(solution.tour + 1)]
     lib_problem.comment = (
         f"Concorde optimal: {solution.optimal_value} {lib_problem.comment}"
     )
@@ -176,9 +178,11 @@ for i, id in enumerate(ids):
         assert solution.found_tour, "Concorde did not find a tour for the subproblem"
         assert solution.success, "Concorde did not optimally solve the subproblem"
 
-        lib_problem.tours = [
-            [x + 1 for x in list(solution.tour)],
-        ]
+        # rolled_tour = np.roll(solution.tour, -np.argwhere(solution.tour == 0)[0]) + 1
+        # if rolled_tour[1] > rolled_tour[-1]:
+        #     rolled_tour = np.concatenate(([rolled_tour[0]], rolled_tour[:0:-1]))
+        # lib_problem.tours = [list(rolled_tour)]
+        lib_problem.tours = [list(solution.tour + 1)]
         lib_problem.comment = (
             f"Concorde optimal: {solution.optimal_value} {lib_problem.comment}"
         )
