@@ -21,8 +21,8 @@ from wsp import tsp, ds
 
 SCALE_SIZE = 10000
 NUM_POINTS = 50
-START_INDEX = 1
-TAKE = 1
+START_INDEX = 0
+TAKE = 5
 DISTRIB_CODE = "p0.33"
 # DISTRIB_CODE = "u"
 EXIST_OK = True
