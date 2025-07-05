@@ -1,4 +1,4 @@
-tsplib95>=0.7.1
 pyconcorde @ git+https://github.com/supersimple33/pyconcorde
+tsplib95 @ git+https://github.com/supersimple33/tsplib95@patch-2
 wspd>=0.7.0
 python_tsp>=0.5.0
