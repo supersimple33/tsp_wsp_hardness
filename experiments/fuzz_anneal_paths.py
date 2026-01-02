@@ -25,16 +25,60 @@ def diameter(d: List[List[float]]) -> float:
 
 
 def all_endpoint_optimal_paths(d: List[List[float]]) -> List[List[float]]:
+    """
+    L[s][t] = length of shortest Hamiltonian path that
+    starts at s, ends at t, and visits every vertex exactly once.
+
+    Uses Held–Karp–style DP:
+      For each fixed start s:
+        dp[mask][j] = best cost of a path that starts at s,
+                      visits exactly the vertices in 'mask',
+                      and ends at j (s ∈ mask, j ∈ mask).
+    """
     n = len(d)
     INF = float("inf")
+    full_mask = (1 << n) - 1
+
+    # Initialize output matrix with +inf (no path)
     L = [[INF] * n for _ in range(n)]
-    for perm in itertools.permutations(range(n)):
-        length = 0.0
-        for i in range(n - 1):
-            length += d[perm[i]][perm[i + 1]]
-        s, t = perm[0], perm[-1]
-        if s != t and length < L[s][t]:
-            L[s][t] = length
+
+    for s in range(n):
+        # dp[mask][j]
+        dp = [[INF] * n for _ in range(1 << n)]
+        dp[1 << s][s] = 0.0
+
+        for mask in range(1 << n):
+            # Must contain the start vertex
+            if not (mask & (1 << s)):
+                continue
+
+            for j in range(n):
+                if not (mask & (1 << j)):
+                    continue
+
+                cost = dp[mask][j]
+                if math.isinf(cost):
+                    continue
+
+                # Extend path by going to a new vertex k not yet in mask
+                if mask == full_mask:
+                    # Already visited everyone; can't extend further
+                    continue
+
+                for k in range(n):
+                    if mask & (1 << k):
+                        continue
+                    new_mask = mask | (1 << k)
+                    new_cost = cost + d[j][k]
+                    if new_cost < dp[new_mask][k]:
+                        dp[new_mask][k] = new_cost
+
+        # After the DP, dp[full_mask][t] is the best s→...→t Hamiltonian path
+        for t in range(n):
+            if t == s:
+                continue
+            L[s][t] = dp[full_mask][t]
+
     return L
 
 
@@ -181,12 +225,25 @@ if __name__ == "__main__":
     #    (0.193857, -0.268223),
     # ]
 
+    START = [
+        (0.255691, 0.152402),
+        (-0.242313, 0.038200),
+        (0.281690, 0.080247),
+        (-0.124978, -0.764436),
+        (0.719447, -0.235692),
+        (-0.089001, 0.232604),
+        (0.058391, 0.211552),
+        (0.162232, 0.178466),
+        (-0.265936, -0.103417),
+        (-0.211332, 0.128331),
+    ]
+
     local_search(
-        n_points=8,
-        iters=2000,
+        n_points=10,
+        iters=20000,
         step_size=0.05,
         temperature_start=0.05,
         temperature_end=0.005,
         seed=123,
-        # start_points=START,  # <-- supply or set to None
+        start_points=START,  # <-- supply or set to None
     )
