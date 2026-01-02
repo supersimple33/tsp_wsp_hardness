@@ -1,7 +1,7 @@
 import itertools
 import math
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 Point = Tuple[float, float]
 
@@ -39,7 +39,6 @@ def all_endpoint_optimal_paths(d: List[List[float]]) -> List[List[float]]:
 
 
 def max_gap_ratio(points: List[Point]):
-    """Return (max_gap, diam, ratio, (a,b,c,d))."""
     d = dist_matrix(points)
     diam = diameter(d)
     L = all_endpoint_optimal_paths(d)
@@ -96,13 +95,23 @@ def local_search(
     step_size: float = 0.05,
     temperature_start: float = 0.1,
     temperature_end: float = 0.001,
-    seed: int | None = None,
+    seed: Optional[int] = None,
+    start_points: Optional[List[Point]] = None,  # <-- NEW
 ):
 
-    # Create a private RNG — deterministic & isolated
     rng = random.Random(seed)
 
-    pts = normalize_to_unit_diameter(random_instance(rng, n_points, radius))
+    # ----- choose starting configuration -----
+    if start_points is not None:
+        if len(start_points) != n_points:
+            raise ValueError(
+                f"start_points has {len(start_points)} points but n_points={n_points}"
+            )
+        pts = normalize_to_unit_diameter(start_points)
+        print("Using user-supplied starting configuration.")
+    else:
+        pts = normalize_to_unit_diameter(random_instance(rng, n_points, radius))
+        print("Using random starting configuration.")
 
     best_pts = pts
     best_gap, best_diam, best_ratio, best_pairs = max_gap_ratio(pts)
@@ -118,7 +127,6 @@ def local_search(
     for t in range(iters):
         temp = schedule(t)
 
-        # Choose a point to perturb
         i = rng.randrange(n_points)
         x, y = current_pts[i]
 
@@ -161,11 +169,24 @@ def local_search(
 
 
 if __name__ == "__main__":
+    # Example: start from a known configuration
+    # START = [
+    #    (0.278862, 0.286847),
+    #    (-0.484354, 0.418137),
+    #    (0.389020, 0.170291),
+    #    (0.403116, -0.019424),
+    #    (-0.247903, -0.553506),
+    #    (0.300714, -0.177158),
+    #    (0.180302, 0.350063),
+    #    (0.193857, -0.268223),
+    # ]
+
     local_search(
         n_points=8,
-        iters=100000,
+        iters=2000,
         step_size=0.05,
         temperature_start=0.05,
         temperature_end=0.005,
         seed=123,
+        # start_points=START,  # <-- supply or set to None
     )
