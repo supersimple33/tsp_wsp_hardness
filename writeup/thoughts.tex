@@ -10,6 +10,7 @@
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{lem}[thm]{Lemma}
+\DeclareMathOperator{\dist}{dist}
 
 \begin{document}
 \section{Observations}
@@ -32,24 +33,60 @@ Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $x,p
 \end{align*}
 \end{thm}
 
+% 8 points of interest 
+% a b c D e f g H i j k
+% k j i H g f e D c b a
+
+% D abc-efg-ijk H   AD HK
+% D kji-gfe-cba H   DK AH
+
+% Defg-ijk abc H    AK CH
+% Defg-ijk cba H    CK AH
+
+% D abc-efg kjiH    AD GK
+% D gfe-cba kjiH    DG AK
+
+% Dcba gfe kjiH     AG EK
+% Dcba efg kjiH     AE GK
+
+% Defg abc kjiH     AG CK
+% Defg cba kjiH     CG AK
+
+% D ijk abc-efgH    DI AK
+% D kji abc-efgH    DK AI
+
+% Dcba efg-ijk H    AE HK
+% Dcba kji-gfe H    AK GH
+
+% Dcba kji efgH     AK EI
+% Dcba ijk efgH     AI EK
+
+
+
+
+
+
 \begin{thm}
-Within a bulb of radius $r$ the difference in shortest hamiltonian paths between any two points is at most $4r$. 
+Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
 \end{thm}
 \begin{proof}
     Fix one pair of endpoints $(a,b)$ and let $P_{a,b}$ be the optimal Hamiltonian path from $a$ to $b$ with length denoted $L(a,b)$.
     Next consider another pair of endpoints $(c,d)$ we can then build a hamiltonian path from $c$ to $d$ using $P_{a,b}$.
     \begin{enumerate}
         \item Start at $c$
-        \item Travel from $c$ to $a$ for a cost of $d(c,a) \leq 2r$
+        \item Travel from $c$ to $a$ for a cost of $\dist(c,a) \leq d$
         \item Follow the path $P_{a,b}$ from $a$ to $b$ for a cost of $c \leq L(a,b)$. (shortcutting $c,d$)
-        \item Travel from $b$ to $d$ for a cost of $d(b,d) \leq 2r$
+        \item Travel from $b$ to $d$ for a cost of $\dist(b,d) \leq d$
     \end{enumerate}
-    Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 4r$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 4r$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 4r$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 4r$ as desired.
+    %WLOG assume that $c$ occurs before $d$ on the path $P_{a,b}$. 
+    %Then let $x$ be the point which precedes $c$ on the path and let $x'$ be the point that immediately follows. 
+    %In the same way define $y$ and $y'$ for point $d$.
+    %Since the triangle inequality must be obeyed we know 
+    Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 2d$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
 \end{proof}
 
-\begin{thm}
-Within a bulb of radius $r$ the difference in shortest hamiltonian paths between any two points is at most $2r$. 
-\end{thm}
+\appendix
+\section{Outdated proofs}
 
 
 \end{document}
