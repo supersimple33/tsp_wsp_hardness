@@ -10,7 +10,11 @@
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{lem}[thm]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[thm]{Definition}
+
 \DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\diam}{diam}
 
 \begin{document}
 \section{Observations}
@@ -19,8 +23,20 @@ A single bulb can have a effect on the solution of max $O(nr)$ where $r$ is the 
 %If we target the wrong initial inner TSP point we incur a max penalty of $4r$ the same goes for a poorly chosen exit point. Thus so long as we accurately solve the inner the rest of the way we incur a penalty of at most $8r$.
 
 \section{Definitions}
-A \textbf{Pair Decomposition} is a of $P$ is a set of pairs $$\PairDecomp = \left\{ \{A_1, B_1\}, \ldots, \{A_k,B_k\} \right\}$$
-such that (I) $\forall i; A_i,B_i \subset P$, (II) $\forall i; A_i \cap B_i = \emptyset$, and (III) $\bigcup_{i=1}^k A_i \otimes B_i = \binom{P}{2} = P \otimes P$.
+\begin{definition}
+    A \textbf{Pair Decomposition} is a of $P$ is a set of pairs
+    $$\PairDecomp = \left\{ \{A_1, B_1\}, \ldots, \{A_k,B_k\} \right\}$$
+    such that (I) $\forall i; A_i,B_i \subset P$, (II) $\forall i; A_i \cap B_i = \emptyset$, and (III) $\bigcup_{i=1}^k A_i \otimes B_i = \binom{P}{2} = P \otimes P$.
+\end{definition}
+
+\begin{definition}
+    $\dist(Q,R) = \min_{q \in Q, r \in R} |qr|$
+\end{definition}
+
+\begin{definition}
+    The pair $\{Q,R\}$ is \textbf{$s$-well-separated} if
+    $$\max\{\diam(Q), \diam(R)\} \leq \frac{1}{s} \cdot \dist(Q,R)$$
+\end{definition}
 
 \section{Some Proved Ideas}
 \begin{thm}
