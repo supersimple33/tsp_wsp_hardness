@@ -11,9 +11,12 @@
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{lem}[thm]{Lemma}
 \theoremstyle{definition}
-\newtheorem{definition}[thm]{Definition}
+\newtheorem{defn}[thm]{Definition}
 
-\DeclareMathOperator{\dist}{dist}
+%\newcommand{\dist}{\delta}
+\newcommand{\BigLength}{\mathcal{L}}
+\newcommand{\Cover}{\mathcal{C}}
+\DeclareMathOperator{\dist}{\delta}
 \DeclareMathOperator{\diam}{diam}
 
 \begin{document}
@@ -23,20 +26,24 @@ A single bulb can have a effect on the solution of max $O(nr)$ where $r$ is the 
 %If we target the wrong initial inner TSP point we incur a max penalty of $4r$ the same goes for a poorly chosen exit point. Thus so long as we accurately solve the inner the rest of the way we incur a penalty of at most $8r$.
 
 \section{Definitions}
-\begin{definition}
+\begin{defn}
     A \textbf{Pair Decomposition} is a of $P$ is a set of pairs
     $$\PairDecomp = \left\{ \{A_1, B_1\}, \ldots, \{A_k,B_k\} \right\}$$
     such that (I) $\forall i; A_i,B_i \subset P$, (II) $\forall i; A_i \cap B_i = \emptyset$, and (III) $\bigcup_{i=1}^k A_i \otimes B_i = \binom{P}{2} = P \otimes P$.
-\end{definition}
+\end{defn}
 
-\begin{definition}
+\begin{defn}
     $\dist(Q,R) = \min_{q \in Q, r \in R} |qr|$
-\end{definition}
+\end{defn}
 
-\begin{definition}
+\begin{defn}
     The pair $\{Q,R\}$ is \textbf{$s$-well-separated} if
     $$\max\{\diam(Q), \diam(R)\} \leq \frac{1}{s} \cdot \dist(Q,R)$$
-\end{definition}
+\end{defn}
+
+\begin{defn}
+    Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ visits all points in $A$ before any point in $B$ (or vice versa).
+\end{defn}
 
 \section{Some Proved Ideas}
 \begin{thm}
@@ -76,11 +83,6 @@ Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $x,p
 
 % Dcba kji efgH     AK EI
 % Dcba ijk efgH     AI EK
-
-
-
-
-
 
 \begin{thm}
 Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
