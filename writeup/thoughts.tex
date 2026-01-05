@@ -47,12 +47,12 @@ A single bulb can have a effect on the solution of max $O(nr)$ where $r$ is the 
 
 \section{Some Proved Ideas}
 \begin{thm}
-Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $x,p \in A$, and let $y,q \in B$. Then the following inequalities hold:
-
+Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
+Then the following inequalities hold:
 \begin{align*}
-    |xy| &\leq (1 + 2/s) \cdot |xq| \\
-    |xy| &\leq (1 + 4/s) \cdot |pq| \\
-    |px| &\leq (2/s) \cdot |pq| \\
+    |pq| &\leq (1 + 2/s) \cdot |pq'| \\
+    |pq| &\leq (1 + 4/s) \cdot |p'q'| \\
+    |pp'| &\leq (2/s) \cdot |pq| \\
 \end{align*}
 \end{thm}
 
@@ -103,8 +103,27 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 2d$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
 \end{proof}
 
+\begin{thm}
+Let $A$ and $B$ be two finite sets of points that are TSP-separated. 
+Let $|A| = n$ and $|B| = m$.
+Let $P_a = [(a_1,a_2), \dots, (a_{n-1}, a_n)]$ represent the hamiltonian path through $A$ derived as a subpath of the optimal TSP tour on $A \cup B$ and let $P_b$ be defined similarly.
+Then $\forall (a_i, a_{i+1}) \in P_a, (b_j, b_{j+1}) \in P_b$ it holds that
+$|a_i a_{i+1}| + |b_j b_{j+1}| \leq \min(|a_i b_j| + |a_{i+1} b_{j+1}|, |a_i b_{j+1}| + |a_{i+1} b_{j}|)$.
+\end{thm}
+
 \appendix
 \section{Outdated proofs}
+% this section is for if a better bound is found (ie proof is still valid but not as strong as desired)
 
+\section{Dead ends}
+% these theorems are false
+
+Let $A$ and $B$ be two finite sets of points that are TSP-separated. 
+Let $\Cover_k(S)$ denote the optimal cost of $k$ disjoint hamiltonian paths covering all points in set $S$.
+Let $\BigLength_{2k}(A,B)$ be the sum of the $2k$ shortest edges between $A$ and $B$ without point replacement.
+Then, $\Cover_1(A) + \Cover_1(B) + \BigLength_{2}(A,B) \leq \Cover_k(A) + \Cover_k(B) + \BigLength_{2k}(A,B)$.
+
+Let $A$ and $B$ be two finite sets of points that are TSP-separated. Then $\dist(A,B) \geq \max(\lambda(A), \lambda(B))$.
+[Where $\lambda(A) = \max(|a_1 a_2|, |a_2 a_3|, \dots, |a_{n-1} a_n|)$ so that it represents the longest edge in the hamiltonian path through $A$ which is derived as a subpath of the optimal TSP tour on $A \cup B$. The same definition applies to $\lambda(B)$.]
 
 \end{document}
