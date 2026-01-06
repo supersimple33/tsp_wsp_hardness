@@ -29,7 +29,60 @@
 \maketitle
 
 \section{Work Area}
+The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp}.
+
+\section{Definitions}
+\begin{defn}
+    A \textbf{Pair Decomposition} is a of $P$ is a set of pairs
+    $$\PairDecomp = \left\{ \{A_1, B_1\}, \ldots, \{A_k,B_k\} \right\}$$
+    such that (I) $\forall i; A_i,B_i \subset P$, (II) $\forall i; A_i \cap B_i = \emptyset$, and (III) $\bigcup_{i=1}^k A_i \otimes B_i = \binom{P}{2} = P \otimes P$.
+\end{defn}
+
+\begin{defn}
+    $\dist(Q,R) = \min_{q \in Q, r \in R} |qr|$
+\end{defn}
+
+\begin{defn}
+    The pair $\{Q,R\}$ is \textbf{$s$-well-separated} if
+    $$\max\{\diam(Q), \diam(R)\} \leq \frac{1}{s} \cdot \dist(Q,R)$$
+\end{defn}
+
+\begin{defn}
+    Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ visits all points in $A$ before any point in $B$ (or vice versa).
+\end{defn}
+
+\section{Some Proved Ideas}
 \begin{thm}
+Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
+Then the following inequalities hold:
+\begin{align*}
+    |pq| &\leq (1 + 2/s) \cdot |pq'| \\
+    |pq| &\leq (1 + 4/s) \cdot |p'q'| \\
+    |pp'| &\leq (2/s) \cdot |pq| \\
+\end{align*}
+\end{thm}
+
+\begin{thm}[You can ignore]
+Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
+\end{thm}
+\begin{proof}
+    Fix one pair of endpoints $(a,b)$ and let $P_{a,b}$ be the optimal Hamiltonian path from $a$ to $b$ with length denoted $L(a,b)$.
+    Next consider another pair of endpoints $(c,d)$ we can then build a hamiltonian path from $c$ to $d$ using $P_{a,b}$.
+    \begin{enumerate}
+        \item Start at $c$
+        \item Travel from $c$ to $a$ for a cost of $\dist(c,a) \leq d$
+        \item Follow the path $P_{a,b}$ from $a$ to $b$ for a cost of $c \leq L(a,b)$. (shortcutting $c,d$)
+        \item Travel from $b$ to $d$ for a cost of $\dist(b,d) \leq d$
+    \end{enumerate}
+    %WLOG assume that $c$ occurs before $d$ on the path $P_{a,b}$. 
+    %Then let $x$ be the point which precedes $c$ on the path and let $x'$ be the point that immediately follows. 
+    %In the same way define $y$ and $y'$ for point $d$.
+    %Since the triangle inequality must be obeyed we know 
+    Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 2d$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
+\end{proof}
+
+\begin{thm}
+    \label{thm:wsp_tsp}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > \frac{5}{2}$. Then $A$ and $B$ must be TSP-separated.
 \end{thm}
 \begin{proof}
@@ -67,98 +120,6 @@
     \end{align*}
     However this contradicts our initial assumption that $s > \frac{5}{2}$. Thus we conclude that $A$ and $B$ must be TSP-separated as desired.
 \end{proof}
-
-
-%\section{Observations}
-%A single bulb can have a effect on the solution of max $O(nr)$ where $r$ is the radius of the bulb and $n$ is the number of points inside. 
-
-%%If we target the wrong initial inner TSP point we incur a max penalty of $4r$ the same goes for a poorly chosen exit point. Thus so long as we accurately solve the inner the rest of the way we incur a penalty of at most $8r$.
-
-\section{Definitions}
-\begin{defn}
-    A \textbf{Pair Decomposition} is a of $P$ is a set of pairs
-    $$\PairDecomp = \left\{ \{A_1, B_1\}, \ldots, \{A_k,B_k\} \right\}$$
-    such that (I) $\forall i; A_i,B_i \subset P$, (II) $\forall i; A_i \cap B_i = \emptyset$, and (III) $\bigcup_{i=1}^k A_i \otimes B_i = \binom{P}{2} = P \otimes P$.
-\end{defn}
-
-\begin{defn}
-    $\dist(Q,R) = \min_{q \in Q, r \in R} |qr|$
-\end{defn}
-
-\begin{defn}
-    The pair $\{Q,R\}$ is \textbf{$s$-well-separated} if
-    $$\max\{\diam(Q), \diam(R)\} \leq \frac{1}{s} \cdot \dist(Q,R)$$
-\end{defn}
-
-\begin{defn}
-    Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ visits all points in $A$ before any point in $B$ (or vice versa).
-\end{defn}
-
-\section{Some Proved Ideas}
-\begin{thm}
-Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
-Then the following inequalities hold:
-\begin{align*}
-    |pq| &\leq (1 + 2/s) \cdot |pq'| \\
-    |pq| &\leq (1 + 4/s) \cdot |p'q'| \\
-    |pp'| &\leq (2/s) \cdot |pq| \\
-\end{align*}
-\end{thm}
-
-% 8 points of interest 
-% a b c D e f g H i j k
-% k j i H g f e D c b a
-
-% D abc-efg-ijk H   AD HK
-% D kji-gfe-cba H   DK AH
-
-% Defg-ijk abc H    AK CH
-% Defg-ijk cba H    CK AH
-
-% D abc-efg kjiH    AD GK
-% D gfe-cba kjiH    DG AK
-
-% Dcba gfe kjiH     AG EK
-% Dcba efg kjiH     AE GK
-
-% Defg abc kjiH     AG CK
-% Defg cba kjiH     CG AK
-
-% D ijk abc-efgH    DI AK
-% D kji abc-efgH    DK AI
-
-% Dcba efg-ijk H    AE HK
-% Dcba kji-gfe H    AK GH
-
-% Dcba kji efgH     AK EI
-% Dcba ijk efgH     AI EK
-
-\begin{thm}
-Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
-\end{thm}
-\begin{proof}
-    Fix one pair of endpoints $(a,b)$ and let $P_{a,b}$ be the optimal Hamiltonian path from $a$ to $b$ with length denoted $L(a,b)$.
-    Next consider another pair of endpoints $(c,d)$ we can then build a hamiltonian path from $c$ to $d$ using $P_{a,b}$.
-    \begin{enumerate}
-        \item Start at $c$
-        \item Travel from $c$ to $a$ for a cost of $\dist(c,a) \leq d$
-        \item Follow the path $P_{a,b}$ from $a$ to $b$ for a cost of $c \leq L(a,b)$. (shortcutting $c,d$)
-        \item Travel from $b$ to $d$ for a cost of $\dist(b,d) \leq d$
-    \end{enumerate}
-    %WLOG assume that $c$ occurs before $d$ on the path $P_{a,b}$. 
-    %Then let $x$ be the point which precedes $c$ on the path and let $x'$ be the point that immediately follows. 
-    %In the same way define $y$ and $y'$ for point $d$.
-    %Since the triangle inequality must be obeyed we know 
-    Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 2d$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
-\end{proof}
-
-\begin{thm}
-Let $A$ and $B$ be two finite sets of points that are TSP-separated. 
-Let $|A| = n$ and $|B| = m$.
-Let $P_a = [(a_1,a_2), \dots, (a_{n-1}, a_n)]$ represent the hamiltonian path through $A$ derived as a subpath of the optimal TSP tour on $A \cup B$ and let $P_b$ be defined similarly.
-Then $\forall (a_i, a_{i+1}) \in P_a, (b_j, b_{j+1}) \in P_b$ it holds that
-$|a_i a_{i+1}| + |b_j b_{j+1}| \leq \min(|a_i b_j| + |a_{i+1} b_{j+1}|, |a_i b_{j+1}| + |a_{i+1} b_{j}|)$.
-\end{thm}
 
 \appendix
 \section{Outdated proofs}
