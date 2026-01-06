@@ -21,7 +21,7 @@
 \newcommand{\Cover}{\mathcal{C}}
 
 \newcommand{\dist}{\delta}
-%\DeclareMathOperator{\dist}{\delta}
+%\DeclareMathOperator{\dist}{dist}
 
 \DeclareMathOperator{\diam}{diam}
 
@@ -32,6 +32,7 @@
 The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp}.
 
 \section{Definitions}
+\subsection{Background Definitions}
 \begin{defn}
     A \textbf{Pair Decomposition} is a of $P$ is a set of pairs
     $$\PairDecomp = \left\{ \{A_1, B_1\}, \ldots, \{A_k,B_k\} \right\}$$
@@ -47,11 +48,19 @@ The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp}.
     $$\max\{\diam(Q), \diam(R)\} \leq \frac{1}{s} \cdot \dist(Q,R)$$
 \end{defn}
 
+\subsection{My definitions}
+
 \begin{defn}
     Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ visits all points in $A$ before any point in $B$ (or vice versa).
 \end{defn}
 
-\section{Some Proved Ideas}
+\begin{defn}
+    Let $\{(A_1, B_1), \dots, (A_n, B_n)\}$ be a Well Separated Pair Decomposition of point set $P$.
+    We say that this WSPD is a \textbf{bindary WSPD} if $\forall A_i; |A_i| = 1 \vee \exists j,k; A_i = A_j \cup A_k$ and the same holds for all $B_i$.
+\end{defn}
+
+\section{Theorems}
+\subsection{Background Theorems}
 \begin{thm}
 Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
 Then the following inequalities hold:
@@ -62,6 +71,7 @@ Then the following inequalities hold:
 \end{align*}
 \end{thm}
 
+\subsection{My Theorems}
 \begin{thm}[You can ignore]
 Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
 \end{thm}
@@ -81,8 +91,7 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 2d$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
 \end{proof}
 
-\begin{thm}
-    \label{thm:wsp_tsp}
+\begin{thm}\label{thm:wsp_tsp}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > \frac{5}{2}$. Then $A$ and $B$ must be TSP-separated.
 \end{thm}
 \begin{proof}
