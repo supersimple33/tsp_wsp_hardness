@@ -13,6 +13,7 @@
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{lem}[thm]{Lemma}
+\newtheorem{corollary}{Corollary}[thm]
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{Definition}
 
@@ -29,7 +30,7 @@
 \maketitle
 
 \section{Work Area}
-The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp}.
+The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp} and Theorem~\ref{thm:wsp_path}.
 
 \section{Definitions}
 \subsection{Background Definitions}
@@ -119,10 +120,44 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     Therefore $A$ and $B$ must be TSP-separated as desired.
 \end{proof}
 
+\begin{thm}\label{thm:wsp_path}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
+\end{thm}
+\begin{proof}
+    Let $|A| = n$ and $|B| = m$.
+    WLOG assume that $n,m \geq 3$.
+
+    Assume by contradiction that the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ does not visit all points in $A$ before any point in $B$ (or vice versa).
+    Then the optimal hamiltonian path on $A \cup B$ must contain at least three edges of the form ${a_i, b_i}$ where $a_i \in A$ and $b_i \in B$.
+    WLOG let these edges be $\{a_1, b_1\}, \{b_2, a_2\}, \{a_3, b_3\}$ ordered as they appear in the path.
+    This gives the following partial structure of the path:
+    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b'$$
+
+    Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|a_1 b_1| + |a_3 b_3| \leq |a_1 a_3| + |b_1 b_3|$.
+    This is to say that the following path must be at least as long as the original path
+    $$a' \to \dots \to a_1 \to a_3 \to \dots \to a_2 \to b_2 \to \dots \to b_1 \to b_3 \to \dots \to b'$$
+
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{2}{s} |a_i b_i|$. From this we can conclude the following:
+    \begin{align*}
+        |a_1 b_1| + |a_3 b_3| &\leq |a_1 a_3| + |b_1 b_3| \\
+        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_3 b_3| \\
+        &= \frac{2}{s} (|a_1 b_1| + |a_3 b_3|)
+    \end{align*}
+    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
+\end{proof}
+
+
+%\begin{thm}
+%    Let $P$ be a set of points and suppose we have a binary WSPD $\PairDecomp_s$ of $P$ with separation factor $s > \frac{5}{2}$. 
+%    Then the optimal TSP tour on $P$ can be obtained in polynomial time from the optimal TSP tours on each pair in $\PairDecomp_s$.
+%\end{thm}
+
 \appendix
 \section{Outdated proofs}
 % this section is for if a better bound is found (ie proof is still valid but not as strong as desired)
-\begin{thm}[There is a better bound]\label{thm:wsp_tsp}
+\begin{thm}[There is a better bound]
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2.5$. Then $A$ and $B$ must be TSP-separated.
 \end{thm}
 
