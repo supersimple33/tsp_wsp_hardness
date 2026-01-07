@@ -57,7 +57,7 @@ The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp} and Theorem~\ref
 
 \begin{defn}
     Let $\{(A_1, B_1), \dots, (A_n, B_n)\}$ be a Well Separated Pair Decomposition of point set $P$.
-    We say that this WSPD is a \textbf{bindary WSPD} if $\forall A_i; |A_i| = 1 \vee \exists j,k; A_i = A_j \cup A_k$ and the same holds for all $B_i$.
+    We say that this WSPD is a \textbf{binary WSPD} if $\forall A_i; |A_i| = 1 \vee \exists j,k; A_i = A_j \cup A_k$ and the same holds for all $B_i$.
 \end{defn}
 
 \section{Theorems}
@@ -120,7 +120,7 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     Therefore $A$ and $B$ must be TSP-separated as desired.
 \end{proof}
 
-\begin{thm}\label{thm:wsp_path}
+\begin{thm}\label{thm:wsp_path_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
 \end{thm}
 \begin{proof}
@@ -146,6 +146,33 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     \end{align*}
     This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
     Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
+\end{proof}
+
+\begin{thm}\label{thm:wsp_path_aa}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a',a'' \in A$ must only contain two edges between $A$ and $B$.
+\end{thm}
+\begin{proof}
+    Let $|A| = n$ and $|B| = m$.
+    WLOG assume that $n,m \geq 4$.
+
+    Assume by contradiction that the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ contains at least four edges of the form $(a_i, b_i)$ where $a_i \in A$ and $b_i \in B$.
+    WLOG let these edges be $\{a_1, b_1\}, \{b_2, a_2\}, \{a_3, b_3\}, \{b_4, a_4\}$ ordered as they appear in the path.
+    This gives the following partial structure of the path:
+    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b_4 \to a_4 \to \dots \to a''$$
+
+    Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|b_2 a_2| + |b_4 a_4| \leq |b_2 b_4| + |a_2 a_4|$.
+    This is to say that the following path must be at least as long as the original path:
+    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to b_4 \to \dots \to b_3 \to a_3 \to \dots \to a_2 \to a_4 \to \dots \to a''$$
+
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{2}{s} |a_i b_i|$. From this we can conclude the following:
+    \begin{align*}
+        |b_2 a_2| + |b_4 a_4| &\leq |b_2 b_4| + |a_2 a_4| \\
+        &\leq \frac{2}{s} |b_2 a_2| + \frac{2}{s} |b_4 a_4| \\
+        &= \frac{2}{s} (|b_2 a_2| + |b_4 a_4|)
+    \end{align*}
+    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ must only contain two edges between $A$ and $B$.
 \end{proof}
 
 
