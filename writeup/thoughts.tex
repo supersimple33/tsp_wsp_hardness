@@ -60,10 +60,9 @@ The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp} and Theorem~\ref
     We say that this WSPD is a \textbf{binary WSPD} if $\forall A_i; |A_i| = 1 \vee \exists j,k; A_i = A_j \cup A_k$ and the same holds for all $B_i$.
 \end{defn}
 
-\section{Theorems}
-\subsection{Background Theorems}
+\section{Background Theorems}
 \begin{thm}
-Let $A$ and $B$ be two finite sets of points that are s-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
+Let $A$ and $B$ be two finite sets of points that are $s$-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
 Then the following inequalities hold:
 \begin{align*}
     |pq| &\leq (1 + 2/s) \cdot |pq'| \\
@@ -72,7 +71,9 @@ Then the following inequalities hold:
 \end{align*}
 \end{thm}
 
-\subsection{My Theorems}
+\section{My Theorems}
+\subsection{Hamiltonian Endpoint Distance Bound}
+
 \begin{thm}[You can ignore]
 Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
 \end{thm}
@@ -91,6 +92,9 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     %Since the triangle inequality must be obeyed we know 
     Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 2d$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
 \end{proof}
+I haven't been able to prove it either way yet, but I believe the bound can be tightened for this theorem. 
+
+\subsection{Well-Separated Sets are Path/Tour Separated}
 
 \begin{thm}\label{thm:wsp_tsp}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then $A$ and $B$ must be TSP-separated.
@@ -175,11 +179,55 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ must only contain two edges between $A$ and $B$.
 \end{proof}
 
+\subsection{Properly Structured WSPDs imply Tour Structure}
 
-%\begin{thm}
-%    Let $P$ be a set of points and suppose we have a binary WSPD $\PairDecomp_s$ of $P$ with separation factor $s > \frac{5}{2}$. 
-%    Then the optimal TSP tour on $P$ can be obtained in polynomial time from the optimal TSP tours on each pair in $\PairDecomp_s$.
-%\end{thm}
+\begin{thm}
+    Let $P$ be a set of points and suppose we have a $k$-binary WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 2$. 
+    Then for any given pair $(A_i, B_i) \in \PairDecomp_s$ there must exist exactly one or two edges in the optimal TSP tour on $P$ connecting them. Furthermore, there are exactly two edges exiting $A_i \cup B_i$ if they are not the root clusters.
+\end{thm}
+\begin{proof}
+    This can be proved via induction. 
+    For the top level pair of $(A_t, B_t) \in \PairDecomp_s$ where $A_t \cup B_t = P$ the result follows directly from Theorem~\ref{thm:wsp_tsp} which implies exactly two edges connect $A_t$ to $B_t$.
+    
+    Next consider the second level cluster $(A_t', B_t') \in \PairDecomp_s$. WLOG let $A_t' \cup B_t' = A_t$.
+    By the previous case we know that there are exactly two edges exiting $A_t$. WLOG let one of these edges be of the form $\{a_*, d_*\}$ where $a_* \in A_t'$ and $d_* \in B_t$. We proceed with a case analysis.
+
+    \textbf{Case 1:} The second edge exiting $A_t$ is of the form $\{b_*, d_\dagger\}$ where $b_* \in B_t'$ and $d_\dagger \in B_t$.
+    Since there are no other edges exiting $A_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A_t$ with endpoints $a_*$ and $b_*$.
+    By Theorem~\ref{thm:wsp_path_ab} we know that this path must have exactly one edge connecting $A_t'$ to $B_t'$.
+
+    \textbf{Case 2:} The second edge exiting $A_t$ is of the form $\{a_\dagger, d_\dagger\}$ where $a_\dagger \in A_t'$ and $d_\dagger \in B_t$.
+    Since there are no other edges exiting $A_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A_t$ with endpoints $a_*$ and $a_\dagger$.
+    By Theorem~\ref{thm:wsp_path_aa} we know that this path must have exactly two edges connecting $A_t'$ to $B_t'$.
+
+    Now consider the third level or lower pair $(A_i, B_i) \in \PairDecomp_s$. Assume by induction that for the parent pair $(C_p, D_p) \in \PairDecomp_s$ with $A_i \cup B_i = C_p$ there is exactly one or two edges connecting $C_p$ to $D_p$ in the optimal TSP tour and furthermore there are exactly two edges exiting $C_p$.
+
+    Let $\{c_*, d_*\}$ be an edge connecting $C_p$ to $D_p$ in the optimal TSP tour.
+    WLOG assume that $c_* \in A_i$ and define $a_* = c_*$ (the case where $c_* \in B_i$ is symmetric).
+    We proceed with a case analysis.
+
+    \textbf{Case 1:} There are two edges connecting $C_p$ to $D_p$ in the optimal TSP tour and the second edge is of the form $\{b_*, d_\dagger\}$ where $b_* \in B_i$ and $d_\dagger \in D_p$.
+    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
+    By Theorem~\ref{thm:wsp_path_ab} we know that this path must visit all points in $A_i$ before any point in $B_i$ (or vice versa).
+    Thus there must be exactly one edge connecting $A_i$ to $B_i$. And exactly two edges $\{a_*, d_*\}, \{b_*, d_\dagger\}$ exiting $C_p$ as desired.
+
+    \textbf{Case 2:} There are two edges connecting $C_p$ to $D_p$ in the optimal TSP tour and the second edge is of the form $\{a_\dagger, d_\dagger\}$ where $a_\dagger \in A_i$ and $d_\dagger \in D_p$.
+    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
+    By Theorem~\ref{thm:wsp_path_aa} we know that this path must contain exactly two edges between $A_i$ and $B_i$. Furthermore there are exactly two edges $\{a_*, d_*\}, \{a_\dagger, d_\dagger\}$ exiting $C_p$ as desired.
+
+    \textbf{Case 3:} There is only one edge connecting $C_p$ to $D_p$ in the optimal TSP tour and the other edge is of the form $\{a_\dagger, e_*\}$ where $a_\dagger \in A_i$ and $e_* \notin C_p \cup D_p$.
+    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
+    By Theorem~\ref{thm:wsp_path_aa} we know that this path must only contain two edges between $A_i$ and $B_i$. Furthermore there are exactly two edges $\{a_*, d_*\}, \{a_\dagger, e_*\}$ exiting $C_p$ as desired.
+
+    \textbf{Case 4:} There is only one edge connecting $C_p$ to $D_p$ in the optimal TSP tour and the other edge is of the form $\{b_*, e_*\}$ where $b_* \in B_i$ and $e_* \notin C_p \cup D_p$.
+    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
+    By Theorem~\ref{thm:wsp_path_ab} we know that this path must visit all points in $A_i$ before any point in $B_i$ (or vice versa).
+    Thus there must be exactly one edges connecting $A_i$ to $B_i$. And exactly two edges $\{a_*, d_*\}, \{b_*, e_*\}$ exiting $C_p$ as desired.
+
+    Therefore by induction we have shown that for any given pair $(A_i, B_i) \in \PairDecomp_s$ there must exist exactly one or two edges in the optimal TSP tour on $P$ connecting them. Furthermore, there are exactly two edges exiting $A_i \cup B_i$ if they are not the root clusters.
+\end{proof}
+
+There may be a way to deterministically say which of the two cases will occur based on the structure of the WSPD but I have not yet found it.
 
 \appendix
 \section{Outdated proofs}
