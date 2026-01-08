@@ -56,8 +56,16 @@ The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp} and Theorem~\ref
 \end{defn}
 
 \begin{defn}
-    Let $\{(A_1, B_1), \dots, (A_n, B_n)\}$ be a Well Separated Pair Decomposition of point set $P$.
-    We say that this WSPD is a \textbf{binary WSPD} if $\forall A_i; |A_i| = 1 \vee \exists j,k; A_i = A_j \cup A_k$ and the same holds for all $B_i$.
+    Let $\{(A_1, B_1), \dots, (A_n, B_n)\} = \PairDecomp$ be a Well Separated Pair Decomposition of the point set $P$.
+    We say that a given pair $(A_i, B_i) \in \PairDecomp$ is a \textbf{$k$-binary WSP} if either $A_i \cup B_i = P$ (which we call $1$-binary WSP) or there exists another pair $(A_j, B_j) \in \PairDecomp$ such that $A_i \cup B_i$ is equal to either $A_j$ or $B_j$ and furthermore the pair $(A_j, B_j)$ is a $(k-1)$-binary WSP.
+\end{defn}
+
+\begin{defn}
+    A Well Separated Pair Decomposition $\PairDecomp$ of the point set $P$ is a \textbf{$k$-binary WSPD} if the union of all $k$-binary WSPs in $\PairDecomp$ is equal to $P$.
+\end{defn}
+
+\begin{defn}
+    A Well Separated Pair Decomposition $\PairDecomp$ of the point set $P$ is a \textbf{full binary WSPD} if $\forall (A_i, B_i) \in \PairDecomp$ the pair is a $k$-binary WSP for some $k$.
 \end{defn}
 
 \section{Background Theorems}
@@ -182,8 +190,8 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \subsection{Properly Structured WSPDs imply Tour Structure}
 
 \begin{thm}
-    Let $P$ be a set of points and suppose we have a $k$-binary WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 2$. 
-    Then for any given pair $(A_i, B_i) \in \PairDecomp_s$ there must exist exactly one or two edges in the optimal TSP tour on $P$ connecting them. Furthermore, there are exactly two edges exiting $A_i \cup B_i$ if they are not the root clusters.
+    Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 2$. 
+    Then for any given $k$-binary WSP $(A_i, B_i) \in \PairDecomp_s$ there must exist exactly one or two edges in the optimal TSP tour on $P$ connecting them. Furthermore, there are exactly two edges exiting $A_i \cup B_i$ if they are not a $1$-binary WSP (aka the root pair).
 \end{thm}
 \begin{proof}
     This can be proved via induction. 
