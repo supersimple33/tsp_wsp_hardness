@@ -10,24 +10,30 @@ import numpy as np
 from concorde.tsp import TSPSolver
 from xxhash import xxh64
 
+# results
+# 100k no tsp non sep
+# 50k p=25 s=0.33 -> 0
+# 50k p=10 s=0.33 -> 3
+# 50k p=6  s=0.33 -> 10
+# 50k p=5  s=0.33 -> 81
 
 # -----------------------
 # Parameters (edit freely)
 # -----------------------
 
 SCALE_SIZE = 10000
-NUM_POINTS = 10
+NUM_POINTS = 5
 NA = NUM_POINTS // 2
 NB = NUM_POINTS - NA
 
-TAKE = 200  # how many random problems to generate+solve
+TAKE = 50_000  # how many random problems to generate+solve
 START_INDEX = 0
 
-DISTRIB_CODE = "p0.33"  # "u", "n", or "pX"
-S_FACTOR = 0.1  # diameter-based separation factor s
-CONCORDE_SEED = 42  # single seed per problem (but problems differ)
+DISTRIB_CODE = "u"  # "u", "n", or "pX"
+S_FACTOR = 0.5  # diameter-based separation factor s
+CONCORDE_SEED = 41  # single seed per problem (but problems differ)
 
-PRINT_FIRST_K_BAD = 5
+PRINT_FIRST_K_BAD = 0
 
 
 # -----------------------
@@ -47,6 +53,16 @@ null_fd = os.open(os.devnull, os.O_WRONLY)
 
 
 def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
+    """
+    DISTRIB_CODE options:
+      "u"          : uniform integer square [0,SCALE_SIZE)^2
+      "n"          : normal(0, SCALE_SIZE)
+      "pX"         : power radial with exponent X (your old)
+      "c"          : circularly-uniform on a circle (equal angles + random rotation)
+      "cr"         : circularly-uniform on a circle (random angles i.i.d.)
+      "annX"       : annulus with r in [X*R, R], angle uniform; e.g. ann0.8
+                     (X in (0,1), closer to 1 => thin ring)
+    """
     match DISTRIB_CODE:
         case "u":
             return rng.integers(0, SCALE_SIZE, size=(num_points, 2)).astype(np.float64)
@@ -56,6 +72,35 @@ def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
             phi = 2.0 * np.pi * rng.random(num_points)
             r = rng.power(float(DISTRIB_CODE[1:]), num_points) * SCALE_SIZE
             return np.array([r * np.cos(phi), r * np.sin(phi)]).T
+        # ---- NEW: circularly uniform schemes ----
+        case "c":
+            # "circularly uniform" in the strong sense:
+            # equally spaced angles, random global rotation
+            # (gives a very structured, symmetric set; good for stress testing)
+            R = float(SCALE_SIZE)
+            theta0 = 2.0 * np.pi * rng.random()
+            k = np.arange(num_points, dtype=np.float64)
+            theta = theta0 + 2.0 * np.pi * k / num_points
+            return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+        case "cr":
+            # "circularly uniform" in the weaker sense:
+            # angles i.i.d. uniform; all points on the circle
+            R = float(SCALE_SIZE)
+            theta = 2.0 * np.pi * rng.random(num_points)
+            return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+        case x if x.startswith("ann"):
+            # uniform angle; radius in [alpha*R, R]
+            # (thin ring if alpha ~ 0.9)
+            R = float(SCALE_SIZE)
+            alpha = float(x[3:])
+            if not (0.0 < alpha < 1.0):
+                raise ValueError("annX requires 0 < X < 1, e.g. ann0.9")
+            theta = 2.0 * np.pi * rng.random(num_points)
+            # sample radius uniformly in area over the annulus:
+            # r^2 uniform in [alpha^2 R^2, R^2]
+            u = rng.random(num_points)
+            r = R * np.sqrt(alpha * alpha + (1.0 - alpha * alpha) * u)
+            return np.stack([r * np.cos(theta), r * np.sin(theta)], axis=1)
         case _:
             raise ValueError(f"Unknown distribution code: {DISTRIB_CODE}")
 
@@ -159,7 +204,7 @@ def main():
     t0 = time.time()
 
     # Use your ID scheme but just take TAKE of them
-    ids = ["".join(x) for x in product(ALPHABET, repeat=3)]
+    ids = ["".join(x) for x in product(ALPHABET, repeat=4)]
     ids = ids[START_INDEX : START_INDEX + TAKE]
 
     bad: List[BadInstance] = []
@@ -201,7 +246,7 @@ def main():
                 )
             )
 
-        if (k + 1) % 25 == 0:
+        if (k + 1) % 250 == 0:
             print(f"progress {k+1}/{len(ids)} | bad_so_far={len(bad)}")
 
     print("\nRESULTS")
