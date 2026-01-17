@@ -39,15 +39,15 @@ from xxhash import xxh64
 # -----------------------
 
 SCALE_SIZE = 10000
-NUM_POINTS = 80
+NUM_POINTS = 5
 NA = NUM_POINTS // 2
 NB = NUM_POINTS - NA
 
-TAKE = 50_000  # how many random problems to generate+solve
+TAKE = 10_000  # how many random problems to generate+solve
 START_INDEX = 0
 
 DISTRIB_CODE = "cr"  # "u", "n", or "pX"
-S_FACTOR = 0.5  # diameter-based separation factor s
+S_FACTOR = 0.4  # diameter-based separation factor s
 CONCORDE_SEED = 43  # single seed per problem (but problems differ)
 
 PRINT_FIRST_K_BAD = 0
@@ -69,57 +69,46 @@ null_fd = os.open(os.devnull, os.O_WRONLY)
 # -----------------------
 
 
-def get_points(rng: np.random.Generator, num_points: int) -> np.ndarray:
+def get_points(
+    rng: np.random.Generator,
+    num_points: int = NUM_POINTS,
+    distrib_code: str = DISTRIB_CODE,
+    scale_size: int = SCALE_SIZE,
+) -> np.ndarray:
     """
-    DISTRIB_CODE options:
-      "u"          : uniform integer square [0,SCALE_SIZE)^2
-      "n"          : normal(0, SCALE_SIZE)
-      "pX"         : power radial with exponent X (your old)
-      "c"          : circularly-uniform on a circle (equal angles + random rotation)
-      "cr"         : circularly-uniform on a circle (random angles i.i.d.)
-      "annX"       : annulus with r in [X*R, R], angle uniform; e.g. ann0.8
-                     (X in (0,1), closer to 1 => thin ring)
+    distrib_code options:
+      "u", "n", "pX", "c", "cr", "annX"
     """
-    match DISTRIB_CODE:
+    match distrib_code:
         case "u":
-            return rng.integers(0, SCALE_SIZE, size=(num_points, 2)).astype(np.float64)
+            return rng.integers(0, scale_size, size=(num_points, 2)).astype(np.float64)
         case "n":
-            return rng.normal(size=(num_points, 2), scale=SCALE_SIZE)
+            return rng.normal(size=(num_points, 2), scale=scale_size)
         case x if x.startswith("p"):
             phi = 2.0 * np.pi * rng.random(num_points)
-            r = rng.power(float(DISTRIB_CODE[1:]), num_points) * SCALE_SIZE
+            r = rng.power(float(x[1:]), num_points) * scale_size
             return np.array([r * np.cos(phi), r * np.sin(phi)]).T
-        # ---- NEW: circularly uniform schemes ----
         case "c":
-            # "circularly uniform" in the strong sense:
-            # equally spaced angles, random global rotation
-            # (gives a very structured, symmetric set; good for stress testing)
-            R = float(SCALE_SIZE)
+            R = float(scale_size)
             theta0 = 2.0 * np.pi * rng.random()
             k = np.arange(num_points, dtype=np.float64)
             theta = theta0 + 2.0 * np.pi * k / num_points
             return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
         case "cr":
-            # "circularly uniform" in the weaker sense:
-            # angles i.i.d. uniform; all points on the circle
-            R = float(SCALE_SIZE)
+            R = float(scale_size)
             theta = 2.0 * np.pi * rng.random(num_points)
             return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
         case x if x.startswith("ann"):
-            # uniform angle; radius in [alpha*R, R]
-            # (thin ring if alpha ~ 0.9)
-            R = float(SCALE_SIZE)
+            R = float(scale_size)
             alpha = float(x[3:])
             if not (0.0 < alpha < 1.0):
                 raise ValueError("annX requires 0 < X < 1, e.g. ann0.9")
             theta = 2.0 * np.pi * rng.random(num_points)
-            # sample radius uniformly in area over the annulus:
-            # r^2 uniform in [alpha^2 R^2, R^2]
             u = rng.random(num_points)
             r = R * np.sqrt(alpha * alpha + (1.0 - alpha * alpha) * u)
             return np.stack([r * np.cos(theta), r * np.sin(theta)], axis=1)
         case _:
-            raise ValueError(f"Unknown distribution code: {DISTRIB_CODE}")
+            raise ValueError(f"Unknown distribution code: {distrib_code}")
 
 
 # -----------------------
