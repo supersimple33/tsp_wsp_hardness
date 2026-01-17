@@ -201,32 +201,40 @@ class BadInstance:
     tour: np.ndarray
 
 
-# -----------------------
-# Main experiment loop
-# -----------------------
+def run_experiment(
+    *,
+    scale_size: int,
+    num_points: int,
+    take: int,
+    start_index: int,
+    distrib_code: str,
+    s_factor: float,
+    concorde_seed: int,
+    print_every: int = 0,
+) -> Tuple[int, List[BadInstance]]:
+    """
+    Returns:
+      bad_count, bad_instances (kept in-memory; you can choose to ignore for sweeps)
+    """
+    NA = num_points // 2
+    NB = num_points - NA
 
-
-def main():
-    t0 = time.time()
-
-    # Use your ID scheme but just take TAKE of them
     ids = ["".join(x) for x in product(ALPHABET, repeat=4)]
-    ids = ids[START_INDEX : START_INDEX + TAKE]
+    ids = ids[start_index : start_index + take]
 
     bad: List[BadInstance] = []
 
     for k, id_ in enumerate(ids):
-        name = f"{id_}_{NUM_POINTS}_{DISTRIB_CODE}_s{S_FACTOR}"
+        name = f"{id_}_{num_points}_{distrib_code}_s{s_factor}"
 
         rng = np.random.default_rng(seed=xxh64(name).intdigest())
-        A = get_points(rng, NA)
-        B = get_points(rng, NB)
+        A = get_points(rng, NA, distrib_code, scale_size)
+        B = get_points(rng, NB, distrib_code, scale_size)
 
-        # optional recenter clusters (helps with "u")
         A = A - np.mean(A, axis=0, keepdims=True)
         B = B - np.mean(B, axis=0, keepdims=True)
 
-        B2, D, distAB, achieved_s = enforce_diameter_separation(A, B, S_FACTOR)
+        B2, D, distAB, achieved_s = enforce_diameter_separation(A, B, s_factor)
         if D <= 0:
             continue
 
@@ -234,7 +242,7 @@ def main():
         labels = np.array([0] * NA + [1] * NB, dtype=np.int8)
 
         solver = build_concorde_solver(points)
-        tour, optv = solve_concorde_once(solver, random_seed=CONCORDE_SEED)
+        tour, optv = solve_concorde_once(solver, random_seed=concorde_seed)
 
         crosses = tour_cross_edges(tour, labels)
         if crosses > 2:
@@ -252,14 +260,34 @@ def main():
                 )
             )
 
-        if (k + 1) % 250 == 0:
+        if print_every and (k + 1) % print_every == 0:
             print(f"progress {k+1}/{len(ids)} | bad_so_far={len(bad)}")
 
+    return len(bad), bad
+
+
+# -----------------------
+# Main experiment loop
+# -----------------------
+
+
+def main():
+    t0 = time.time()
+    bad_count, bad = run_experiment(
+        scale_size=SCALE_SIZE,
+        num_points=NUM_POINTS,
+        take=TAKE,
+        start_index=START_INDEX,
+        distrib_code=DISTRIB_CODE,
+        s_factor=S_FACTOR,
+        concorde_seed=CONCORDE_SEED,
+        print_every=250,
+    )
+
     print("\nRESULTS")
-    print(f"s={S_FACTOR} | problems={len(ids)} | NOT TSP-separated tours={len(bad)}")
+    print(f"s={S_FACTOR} | problems={TAKE} | NOT TSP-separated tours={bad_count}")
     print(f"elapsed={time.time() - t0:.2f}s")
 
-    # Print first few bad instances with raw points so you can analyze
     for ex in bad[:PRINT_FIRST_K_BAD]:
         print("\n--- BAD INSTANCE ---")
         print(ex.name)
