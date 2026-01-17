@@ -11,27 +11,44 @@ from concorde.tsp import TSPSolver
 from xxhash import xxh64
 
 # results
-# 100k no tsp non sep
-# 50k p=25 s=0.33 -> 0
-# 50k p=10 s=0.33 -> 3
-# 50k p=6  s=0.33 -> 10
-# 50k p=5  s=0.33 -> 81
+# 50k u p=25 s=0.33 -> 0
+# 50k u p=10 s=0.33 -> 3
+# 50k u p=6  s=0.33 -> 10
+# 50k u p=5  s=0.33 -> 81
+
+# 50k u     p=5 s=0.5 -> 0
+# 50k n     p=5 s=0.5 -> 0
+# 50k p0.33 p=5 s=0.5 -> 0
+
+# 50k u p=10 s=0.5 -> 0
+# 50k c p=10 s=0.5 -> 0
+# 50k cr p=10 s=0.5 -> 0
+# 50k ann0.8 p=10 s=0.5 -> 0
+# 50k ann0.5 p=10 s=0.5 -> 0
+
+# 50k u p=20 s=0.5 -> 0
+# c cr ann0.8 ann0.5
+
+# 50k u p=40 s=0.5 -> 0
+# c cr ann0.8 ann0.5
+
+# p=80 -> 0
 
 # -----------------------
 # Parameters (edit freely)
 # -----------------------
 
 SCALE_SIZE = 10000
-NUM_POINTS = 5
+NUM_POINTS = 80
 NA = NUM_POINTS // 2
 NB = NUM_POINTS - NA
 
 TAKE = 50_000  # how many random problems to generate+solve
 START_INDEX = 0
 
-DISTRIB_CODE = "u"  # "u", "n", or "pX"
+DISTRIB_CODE = "cr"  # "u", "n", or "pX"
 S_FACTOR = 0.5  # diameter-based separation factor s
-CONCORDE_SEED = 41  # single seed per problem (but problems differ)
+CONCORDE_SEED = 43  # single seed per problem (but problems differ)
 
 PRINT_FIRST_K_BAD = 0
 
