@@ -40,8 +40,8 @@ from xxhash import xxh64
 
 SCALE_SIZE = 10000
 NUM_POINTS = 5
-DIMENSION = 2  # 2 or 3
-METRIC = "euclidean"  # "euclidean" or "manhattan"
+DIMENSION = 3  # 2 or 3
+METRIC = "manhattan"  # "euclidean" or "manhattan"
 NA = NUM_POINTS // 2
 NB = NUM_POINTS - NA
 
@@ -49,10 +49,10 @@ TAKE = 10_000  # how many random problems to generate+solve
 START_INDEX = 0
 
 DISTRIB_CODE = "cr"  # "u", "n", or "pX"
-S_FACTOR = 0.4  # diameter-based separation factor s
-CONCORDE_SEED = 43  # single seed per problem (but problems differ)
+S_FACTOR = 0.5  # diameter-based separation factor s
+CONCORDE_SEED = 44  # single seed per problem (but problems differ)
 
-PRINT_FIRST_K_BAD = 0
+PRINT_FIRST_K_BAD = 1
 
 
 # -----------------------
@@ -71,12 +71,63 @@ null_fd = os.open(os.devnull, os.O_WRONLY)
 # -----------------------
 
 
+def _random_unit_vectors(
+    rng: np.random.Generator, count: int, dimension: int, metric: str
+) -> np.ndarray:
+    """Sample unit vectors under the chosen metric."""
+    if metric == "euclidean":
+        direction = rng.normal(size=(count, dimension))
+        direction /= np.linalg.norm(direction, axis=1, keepdims=True)
+        return direction
+    if metric == "manhattan":
+        base = rng.exponential(scale=1.0, size=(count, dimension))
+        signs = rng.choice([-1.0, 1.0], size=(count, dimension))
+        direction = signs * base
+        direction /= np.sum(np.abs(direction), axis=1, keepdims=True)
+        return direction
+    raise ValueError(f"Unknown metric: {metric}")
+
+
+def _fibonacci_sphere(count: int) -> np.ndarray:
+    """Even-ish spread on the unit sphere (3D)."""
+    k = np.arange(count, dtype=np.float64) + 0.5
+    phi = math.pi * (3.0 - math.sqrt(5.0))
+    y = 1.0 - 2.0 * k / count
+    radius = np.sqrt(1.0 - y * y)
+    theta = phi * k
+    x = np.cos(theta) * radius
+    z = np.sin(theta) * radius
+    return np.stack([x, y, z], axis=1)
+
+
+def _diamond_boundary_2d(count: int, R: float, rng: np.random.Generator) -> np.ndarray:
+    """Points evenly along the L1 unit diamond boundary scaled by R."""
+    t = (np.arange(count, dtype=np.float64) + rng.random()) / count * 4.0
+    x = np.empty(count)
+    y = np.empty(count)
+    for i, ti in enumerate(t):
+        if ti < 1.0:
+            x[i] = R * (1.0 - ti)
+            y[i] = R * ti
+        elif ti < 2.0:
+            x[i] = -R * (ti - 1.0)
+            y[i] = R * (2.0 - ti)
+        elif ti < 3.0:
+            x[i] = -R * (3.0 - ti)
+            y[i] = -R * (ti - 2.0)
+        else:
+            x[i] = R * (ti - 3.0)
+            y[i] = -R * (4.0 - ti)
+    return np.stack([x, y], axis=1)
+
+
 def get_points(
     rng: np.random.Generator,
     num_points: int = NUM_POINTS,
     distrib_code: str = DISTRIB_CODE,
     scale_size: int = SCALE_SIZE,
     dimension: int = DIMENSION,
+    metric: str = METRIC,
 ) -> np.ndarray:
     """
     distrib_code options:
@@ -91,45 +142,37 @@ def get_points(
             return rng.normal(size=(num_points, dimension), scale=scale_size)
         case x if x.startswith("p"):
             power = float(x[1:])
-            direction = rng.normal(size=(num_points, dimension))
-            direction /= np.linalg.norm(direction, axis=1, keepdims=True)
+            direction = _random_unit_vectors(rng, num_points, dimension, metric)
             r = rng.power(power, num_points) * scale_size
             return direction * r[:, None]
         case "c":
-            if dimension < 2:
-                raise ValueError("circle distribution requires dimension >= 2")
             R = float(scale_size)
-            theta0 = 2.0 * np.pi * rng.random()
-            k = np.arange(num_points, dtype=np.float64)
-            theta = theta0 + 2.0 * np.pi * k / num_points
-            base = np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
-            if dimension > 2:
-                pad = np.zeros((num_points, dimension - 2), dtype=np.float64)
-                return np.concatenate([base, pad], axis=1)
-            return base
+            if metric == "euclidean" and dimension == 2:
+                theta0 = 2.0 * np.pi * rng.random()
+                k = np.arange(num_points, dtype=np.float64)
+                theta = theta0 + 2.0 * np.pi * k / num_points
+                return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+            if metric == "euclidean" and dimension == 3:
+                return _fibonacci_sphere(num_points) * R
+            if metric == "manhattan" and dimension == 2:
+                return _diamond_boundary_2d(num_points, R, rng)
+            if metric == "manhattan" and dimension == 3:
+                direction = _random_unit_vectors(rng, num_points, dimension, metric)
+                return direction * R
+            raise ValueError("circle distribution requires dimension >= 2")
         case "cr":
-            if dimension < 2:
-                raise ValueError("circle distribution requires dimension >= 2")
             R = float(scale_size)
-            theta = 2.0 * np.pi * rng.random(num_points)
-            base = np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
-            if dimension > 2:
-                pad = np.zeros((num_points, dimension - 2), dtype=np.float64)
-                return np.concatenate([base, pad], axis=1)
-            return base
+            if metric == "euclidean" and dimension == 2:
+                theta = 2.0 * np.pi * rng.random(num_points)
+                return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+            direction = _random_unit_vectors(rng, num_points, dimension, metric)
+            return direction * R
         case x if x.startswith("ann"):
             R = float(scale_size)
             alpha = float(x[3:])
             if not (0.0 < alpha < 1.0):
                 raise ValueError("annX requires 0 < X < 1, e.g. ann0.9")
-            if dimension == 2:
-                theta = 2.0 * np.pi * rng.random(num_points)
-                u = rng.random(num_points)
-                r = R * np.sqrt(alpha * alpha + (1.0 - alpha * alpha) * u)
-                return np.stack([r * np.cos(theta), r * np.sin(theta)], axis=1)
-
-            direction = rng.normal(size=(num_points, dimension))
-            direction /= np.linalg.norm(direction, axis=1, keepdims=True)
+            direction = _random_unit_vectors(rng, num_points, dimension, metric)
             u = rng.random(num_points)
             r = R * (alpha**dimension + (1.0 - alpha**dimension) * u) ** (
                 1.0 / dimension
@@ -267,8 +310,8 @@ def run_experiment(
         name = f"{id_}_{num_points}_{distrib_code}_s{s_factor}_{dimension}d_{metric}"
 
         rng = np.random.default_rng(seed=xxh64(name).intdigest())
-        A = get_points(rng, NA, distrib_code, scale_size, dimension)
-        B = get_points(rng, NB, distrib_code, scale_size, dimension)
+        A = get_points(rng, NA, distrib_code, scale_size, dimension, metric)
+        B = get_points(rng, NB, distrib_code, scale_size, dimension, metric)
 
         A = A - np.mean(A, axis=0, keepdims=True)
         B = B - np.mean(B, axis=0, keepdims=True)
@@ -336,10 +379,12 @@ def main():
         print(f"opt_value(int)={ex.opt_value}, cross_edges={ex.cross_edges}")
         print("A points:")
         for p in ex.points[:NA]:
-            print(f"  ({p[0]:.6f}, {p[1]:.6f})")
+            coords = ", ".join(f"{v:.6f}" for v in p)
+            print(f"  ({coords})")
         print("B points:")
         for p in ex.points[NA:]:
-            print(f"  ({p[0]:.6f}, {p[1]:.6f})")
+            coords = ", ".join(f"{v:.6f}" for v in p)
+            print(f"  ({coords})")
         print("tour (0-index):", ex.tour.tolist())
 
 
