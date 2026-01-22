@@ -40,6 +40,8 @@ from xxhash import xxh64
 
 SCALE_SIZE = 10000
 NUM_POINTS = 5
+DIMENSION = 2  # 2 or 3
+METRIC = "euclidean"  # "euclidean" or "manhattan"
 NA = NUM_POINTS // 2
 NB = NUM_POINTS - NA
 
@@ -74,6 +76,7 @@ def get_points(
     num_points: int = NUM_POINTS,
     distrib_code: str = DISTRIB_CODE,
     scale_size: int = SCALE_SIZE,
+    dimension: int = DIMENSION,
 ) -> np.ndarray:
     """
     distrib_code options:
@@ -81,32 +84,57 @@ def get_points(
     """
     match distrib_code:
         case "u":
-            return rng.integers(0, scale_size, size=(num_points, 2)).astype(np.float64)
+            return rng.integers(0, scale_size, size=(num_points, dimension)).astype(
+                np.float64
+            )
         case "n":
-            return rng.normal(size=(num_points, 2), scale=scale_size)
+            return rng.normal(size=(num_points, dimension), scale=scale_size)
         case x if x.startswith("p"):
-            phi = 2.0 * np.pi * rng.random(num_points)
-            r = rng.power(float(x[1:]), num_points) * scale_size
-            return np.array([r * np.cos(phi), r * np.sin(phi)]).T
+            power = float(x[1:])
+            direction = rng.normal(size=(num_points, dimension))
+            direction /= np.linalg.norm(direction, axis=1, keepdims=True)
+            r = rng.power(power, num_points) * scale_size
+            return direction * r[:, None]
         case "c":
+            if dimension < 2:
+                raise ValueError("circle distribution requires dimension >= 2")
             R = float(scale_size)
             theta0 = 2.0 * np.pi * rng.random()
             k = np.arange(num_points, dtype=np.float64)
             theta = theta0 + 2.0 * np.pi * k / num_points
-            return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+            base = np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+            if dimension > 2:
+                pad = np.zeros((num_points, dimension - 2), dtype=np.float64)
+                return np.concatenate([base, pad], axis=1)
+            return base
         case "cr":
+            if dimension < 2:
+                raise ValueError("circle distribution requires dimension >= 2")
             R = float(scale_size)
             theta = 2.0 * np.pi * rng.random(num_points)
-            return np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+            base = np.stack([R * np.cos(theta), R * np.sin(theta)], axis=1)
+            if dimension > 2:
+                pad = np.zeros((num_points, dimension - 2), dtype=np.float64)
+                return np.concatenate([base, pad], axis=1)
+            return base
         case x if x.startswith("ann"):
             R = float(scale_size)
             alpha = float(x[3:])
             if not (0.0 < alpha < 1.0):
                 raise ValueError("annX requires 0 < X < 1, e.g. ann0.9")
-            theta = 2.0 * np.pi * rng.random(num_points)
+            if dimension == 2:
+                theta = 2.0 * np.pi * rng.random(num_points)
+                u = rng.random(num_points)
+                r = R * np.sqrt(alpha * alpha + (1.0 - alpha * alpha) * u)
+                return np.stack([r * np.cos(theta), r * np.sin(theta)], axis=1)
+
+            direction = rng.normal(size=(num_points, dimension))
+            direction /= np.linalg.norm(direction, axis=1, keepdims=True)
             u = rng.random(num_points)
-            r = R * np.sqrt(alpha * alpha + (1.0 - alpha * alpha) * u)
-            return np.stack([r * np.cos(theta), r * np.sin(theta)], axis=1)
+            r = R * (alpha**dimension + (1.0 - alpha**dimension) * u) ** (
+                1.0 / dimension
+            )
+            return direction * r[:, None]
         case _:
             raise ValueError(f"Unknown distribution code: {distrib_code}")
 
@@ -116,30 +144,39 @@ def get_points(
 # -----------------------
 
 
-def pairwise_dists(P: np.ndarray) -> np.ndarray:
+def pairwise_dists(P: np.ndarray, metric: str) -> np.ndarray:
     dif = P[:, None, :] - P[None, :, :]
-    return np.sqrt(np.sum(dif * dif, axis=-1))
+    if metric == "euclidean":
+        return np.sqrt(np.sum(dif * dif, axis=-1))
+    if metric == "manhattan":
+        return np.sum(np.abs(dif), axis=-1)
+    raise ValueError(f"Unknown metric: {metric}")
 
 
-def diameter(P: np.ndarray) -> float:
-    return float(np.max(pairwise_dists(P)))
+def diameter(P: np.ndarray, metric: str) -> float:
+    return float(np.max(pairwise_dists(P, metric)))
 
 
-def set_distance(A: np.ndarray, B: np.ndarray) -> float:
+def set_distance(A: np.ndarray, B: np.ndarray, metric: str) -> float:
     dif = A[:, None, :] - B[None, :, :]
-    d = np.sqrt(np.sum(dif * dif, axis=-1))
+    if metric == "euclidean":
+        d = np.sqrt(np.sum(dif * dif, axis=-1))
+    elif metric == "manhattan":
+        d = np.sum(np.abs(dif), axis=-1)
+    else:
+        raise ValueError(f"Unknown metric: {metric}")
     return float(np.min(d))
 
 
 def enforce_diameter_separation(
-    A: np.ndarray, B: np.ndarray, s: float
+    A: np.ndarray, B: np.ndarray, s: float, metric: str
 ) -> Tuple[np.ndarray, float, float, float]:
     """
     Shift B in +x so that dist(A,B) >= s * D where D=max(diam(A),diam(B)).
     We do this by forcing x-gap = s*D, which implies Euclidean gap >= s*D.
     """
-    dA = diameter(A)
-    dB = diameter(B)
+    dA = diameter(A, metric)
+    dB = diameter(B, metric)
     D = max(dA, dB)
     if D <= 0:
         return B, D, 0.0, 0.0
@@ -151,7 +188,7 @@ def enforce_diameter_separation(
     B2 = B.copy()
     B2[:, 0] += shift
 
-    distAB = set_distance(A, B2)
+    distAB = set_distance(A, B2, metric)
     achieved_s = distAB / D
     return B2, D, distAB, achieved_s
 
@@ -161,9 +198,9 @@ def enforce_diameter_separation(
 # -----------------------
 
 
-def build_concorde_solver(points: np.ndarray) -> TSPSolver:
+def build_concorde_solver(points: np.ndarray, metric: str) -> TSPSolver:
     n = points.shape[0]
-    dist_matrix = pairwise_dists(points)
+    dist_matrix = pairwise_dists(points, metric)
     ltri = np.round(dist_matrix[np.tril_indices(n, k=-1)]).astype(np.int32)
     return TSPSolver.from_lower_tri(shape=n, edges=ltri)
 
@@ -193,7 +230,7 @@ class BadInstance:
     name: str
     achieved_s: float
     D: float
-    distAB: float
+    dist_ab: float
     opt_value: int
     cross_edges: int
     points: np.ndarray
@@ -205,6 +242,8 @@ def run_experiment(
     *,
     scale_size: int,
     num_points: int,
+    dimension: int,
+    metric: str,
     take: int,
     start_index: int,
     distrib_code: str,
@@ -225,23 +264,23 @@ def run_experiment(
     bad: List[BadInstance] = []
 
     for k, id_ in enumerate(ids):
-        name = f"{id_}_{num_points}_{distrib_code}_s{s_factor}"
+        name = f"{id_}_{num_points}_{distrib_code}_s{s_factor}_{dimension}d_{metric}"
 
         rng = np.random.default_rng(seed=xxh64(name).intdigest())
-        A = get_points(rng, NA, distrib_code, scale_size)
-        B = get_points(rng, NB, distrib_code, scale_size)
+        A = get_points(rng, NA, distrib_code, scale_size, dimension)
+        B = get_points(rng, NB, distrib_code, scale_size, dimension)
 
         A = A - np.mean(A, axis=0, keepdims=True)
         B = B - np.mean(B, axis=0, keepdims=True)
 
-        B2, D, distAB, achieved_s = enforce_diameter_separation(A, B, s_factor)
+        B2, D, dist_ab, achieved_s = enforce_diameter_separation(A, B, s_factor, metric)
         if D <= 0:
             continue
 
         points = np.vstack([A, B2]).astype(np.float64)
         labels = np.array([0] * NA + [1] * NB, dtype=np.int8)
 
-        solver = build_concorde_solver(points)
+        solver = build_concorde_solver(points, metric)
         tour, optv = solve_concorde_once(solver, random_seed=concorde_seed)
 
         crosses = tour_cross_edges(tour, labels)
@@ -251,7 +290,7 @@ def run_experiment(
                     name=name,
                     achieved_s=achieved_s,
                     D=D,
-                    distAB=distAB,
+                    dist_ab=dist_ab,
                     opt_value=optv,
                     cross_edges=crosses,
                     points=points,
@@ -276,6 +315,8 @@ def main():
     bad_count, bad = run_experiment(
         scale_size=SCALE_SIZE,
         num_points=NUM_POINTS,
+        dimension=DIMENSION,
+        metric=METRIC,
         take=TAKE,
         start_index=START_INDEX,
         distrib_code=DISTRIB_CODE,
@@ -291,7 +332,7 @@ def main():
     for ex in bad[:PRINT_FIRST_K_BAD]:
         print("\n--- BAD INSTANCE ---")
         print(ex.name)
-        print(f"achieved_s={ex.achieved_s:.6f} (distAB={ex.distAB:.6f}, D={ex.D:.6f})")
+        print(f"achieved_s={ex.achieved_s:.6f} (distAB={ex.dist_ab:.6f}, D={ex.D:.6f})")
         print(f"opt_value(int)={ex.opt_value}, cross_edges={ex.cross_edges}")
         print("A points:")
         for p in ex.points[:NA]:
