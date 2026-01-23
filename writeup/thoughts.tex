@@ -28,6 +28,7 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
 
 \section{Work Area}
 The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp} and Theorem~\ref{thm:wsp_path}.
@@ -52,7 +53,8 @@ The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp} and Theorem~\ref
 \subsection{My definitions}
 
 \begin{defn}
-    Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ visits all points in $A$ before any point in $B$ (or vice versa).
+    Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ visits all points in $A$ before any point in $B$ (or vice versa). 
+    Furthermore, Let $P = A \cup B \cup C$ (with all three pairwise disjoint). We say that $A$, $B$, and $C$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ has exactly 3 or 4 edges connecting the three sets. 
 \end{defn}
 
 \begin{defn}
