@@ -282,13 +282,37 @@ There may be a way to deterministically say which of the two cases will occur ba
     \end{align*}
     This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
 
-    %\textbf{Subcase 1c:} There is another loop connecting two of the sets.
+    \textbf{Subcase 1c:} There must be at least two additional edges connecting one of the pairs of sets.
+    Then the optimal TSP tour must contain at least five edges connecting the three sets.
+    WLOG let these edges be $\{a_1, b_1\}$, $\{b_2, c_1\}$, $\{c_2, a_2\}$, $\{a_3, b_3\}$, $\{b_4, a_4\}$ ordered as they appear in the tour. This gives the following partial structure of the tour:
+    $$a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b_4 \to a_4 \to \dots \to a_1$$
 
-    %\textbf{Case 2:} The optimal TSP tour on $P$ does not contain any edge connecting one of the pairs of sets.
-    %WLOG assume that there are no edges connecting $A$ to $C$ in the optimal TSP tour on $P$.
-    %Assume by contradiction that the optimal TSP tour on $P$ is not TSP-separated.
-    %WLOG let there be at least four edges connecting $A$ to $B$ and at least two edges connecting $B$ to $C$.
+    Since the tour is optimal we know that it satisfies the 2-optimality condition implying the following:
+    \begin{align*}
+        |a_1 b_1| + |a_3 b_3| &\leq |a_1 a_3| + |b_1 b_3| \\
+        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_3 b_3| \\
+        &= \frac{2}{s} (|a_1 b_1| + |a_3 b_3|)
+    \end{align*}
+    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
 
+    \textbf{Case 2:} The optimal TSP tour on $P$ does not contain any edge connecting one of the pairs of sets.
+    WLOG assume that there are no edges connecting $A$ to $C$ in the optimal TSP tour on $P$.
+    Assume by contradiction that the optimal TSP tour on $P$ is not TSP-separated.
+
+    Then, there must be at least two additional edges connecting one of the pairs of sets.
+    Then the optimal TSP tour must contain at least six edges connecting the three sets.
+    WLOG let these edges be $\{b_1, a_1\}$, $\{a_2, b_2\}$, $\{b_3, c_1\}$, $\{c_2, b_4\}$, $\{b_5, a_3\}$, $\{a_4, b_6\}$ ordered as they appear in the tour. This gives the following partial structure of the tour:
+    $$b_1 \to a_1 \to \dots \to a_2 \to b_2 \to \dots \to b_3 \to c_1 \to \dots \to c_2 \to b_4 \to \dots \to b_5 \to a_3 \to \dots \to a_4 \to b_6 \to \dots \to b_1$$
+
+    Since the tour is optimal we know that it satisfies the 2-optimality condition implying the following:
+    \begin{align*}
+        |b_1 a_1| + |b_5 a_3| &\leq |b_1 b_5| + |a_1 a_3| \\
+        &\leq \frac{2}{s} |b_1 a_1| + \frac{2}{s} |b_5 a_3| \\
+        &= \frac{2}{s} (|b_1 a_1| + |b_5 a_3|)
+    \end{align*}
+    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+
+    Therefore $A$, $B$, and $C$ must be TSP-separated as desired.
 \end{proof}
 
 \appendix
