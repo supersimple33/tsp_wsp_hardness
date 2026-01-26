@@ -39,17 +39,17 @@ from xxhash import xxh64
 # -----------------------
 
 SCALE_SIZE = 10000
-NUM_POINTS = 5
-DIMENSION = 3  # 2 or 3
-METRIC = "manhattan"  # "euclidean" or "manhattan"
+NUM_POINTS = 9
+DIMENSION = 5  # 2 or 3
+METRIC = "euclidean"  # "euclidean" or "manhattan"
 NA = NUM_POINTS // 2
 NB = NUM_POINTS - NA
 
 TAKE = 10_000  # how many random problems to generate+solve
 START_INDEX = 0
 
-DISTRIB_CODE = "cr"  # "u", "n", or "pX"
-S_FACTOR = 0.5  # diameter-based separation factor s
+DISTRIB_CODE = "n"  # "u", "n", or "pX"
+S_FACTOR = 0.7  # diameter-based separation factor s
 CONCORDE_SEED = 44  # single seed per problem (but problems differ)
 
 PRINT_FIRST_K_BAD = 1
