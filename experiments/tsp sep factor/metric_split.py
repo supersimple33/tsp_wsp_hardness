@@ -4,9 +4,11 @@ from dataclasses import dataclass
 from typing import List, Sequence, Tuple, Optional
 import math
 
+import numpy as np
+
 
 def balanced_metric_split(
-    D: Sequence[Sequence[float]], s: float, k: int
+    D: Sequence[Sequence[float]] | np.ndarray, s: float, k: int
 ) -> List[List[int]]:
     """
     BalancedMetricSplit(D, s, k)
@@ -130,7 +132,9 @@ def connected_components(adj: Sequence[Sequence[int]]) -> List[List[int]]:
     return comps
 
 
-def diameter_of_set(D: Sequence[Sequence[float]], nodes: Sequence[int]) -> float:
+def diameter_of_set(
+    D: Sequence[Sequence[float]] | np.ndarray, nodes: Sequence[int]
+) -> float:
     """diam(C) = max_{x,y in C} D[x][y]. O(|C|^2)."""
     m = len(nodes)
     if m <= 1:
@@ -147,7 +151,7 @@ def diameter_of_set(D: Sequence[Sequence[float]], nodes: Sequence[int]) -> float
 
 
 def min_intercluster_distance(
-    D: Sequence[Sequence[float]], A: Sequence[int], B: Sequence[int]
+    D: Sequence[Sequence[float]] | np.ndarray, A: Sequence[int], B: Sequence[int]
 ) -> float:
     """Delta(A,B) = min_{x in A, y in B} D[x][y]. O(|A||B|)."""
     best = math.inf
@@ -171,7 +175,7 @@ if __name__ == "__main__":
     n = len(pts)
     D = [[abs(pts[i] - pts[j]) for j in range(n)] for i in range(n)]
 
-    clusters = balanced_metric_split(D, s=2.5, k=3)
+    clusters = balanced_metric_split(D, s=1.0, k=2)
     print("Clusters (0-indexed):", clusters)
     # Pretty print with point values
     print("Clusters (by value):", [[pts[i] for i in c] for c in clusters])
