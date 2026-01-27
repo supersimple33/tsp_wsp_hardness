@@ -49,8 +49,8 @@ def balanced_metric_split(
         {D[i][j] for i in range(n) for j in range(i + 1, n) if D[i][j] > 0}
     )
 
-    best_score = math.inf
-    best_components: List[List[int]] = []
+    best_score = n
+    best_components: List[List[int]] = [list(range(n))]
 
     # Pre-allocate buffers for speed
     adj: List[List[int]] = [[] for _ in range(n)]
@@ -69,7 +69,7 @@ def balanced_metric_split(
                     adj[j].append(i)
 
         comps = connected_components(adj)
-        if len(comps) != k:
+        if not 1 < len(comps) <= k:
             continue
 
         # Diameter feasibility: ensure each component has diameter <= M
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     n = len(pts)
     D = [[abs(pts[i] - pts[j]) for j in range(n)] for i in range(n)]
 
-    clusters = balanced_metric_split(D, s=1.0, k=2)
+    clusters = balanced_metric_split(D, s=0.5, k=2)
     print("Clusters (0-indexed):", clusters)
     # Pretty print with point values
     print("Clusters (by value):", [[pts[i] for i in c] for c in clusters])
