@@ -26,10 +26,11 @@ def balanced_metric_split(
         and among feasible candidates minimizes max cluster size.
       - Returns [] if no feasible partition is found.
     """
+    n = len(D)
     if s <= 0:
         raise ValueError("s must be > 0")
-    if k < 2:
-        raise ValueError("k must be >= 2")
+    if k < 2 or k >= n:
+        raise ValueError("k must be >= 2 and < n")
 
     n = len(D)
     if n == 0:
@@ -86,10 +87,10 @@ def balanced_metric_split(
 
         # Separation feasibility: delta(C,C') >= s * max(diam(C), diam(C'))
         sep = True
-        for a in range(k):
+        for a in range(len(comps)):
             Ca = comps[a]
             da = comp_diams[a]
-            for b in range(a + 1, k):
+            for b in range(a + 1, len(comps)):
                 Cb = comps[b]
                 db = comp_diams[b]
                 delta = min_intercluster_distance(D, Ca, Cb)
