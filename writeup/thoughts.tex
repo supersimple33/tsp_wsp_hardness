@@ -119,12 +119,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Then the optimal hamiltonian path on $A \cup B$ must contain at least three edges of the form $(a_i, b_i)$ where $a_i \in A$ and $b_i \in B$.
     WLOG let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b'$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b'$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     $|a_1 b_1| + |a_3 b_3| \leq |a_1 a_3| + |b_1 b_3|$.
     This is to say that the following path must be at least as long as the original path
-    $$a' \to \dots \to a_1 \to a_3 \to \dots \to a_2 \to b_2 \to \dots \to b_1 \to b_3 \to \dots \to b'$$
+    $$a' \leadsto a_1 \to a_3 \leadsto a_2 \to b_2 \leadsto b_1 \to b_3 \leadsto b'$$
 
     Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{2}{s} |a_i b_i|$. From this we can conclude the following:
     \begin{align*}
@@ -146,12 +146,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Assume by contradiction that the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ contains at least four edges of the form $(a_i, b_i)$ where $a_i \in A$ and $b_i \in B$.
     WLOG let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3), (b_4, a_4)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b_4 \to a_4 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     $|b_2 a_2| + |b_4 a_4| \leq |b_2 b_4| + |a_2 a_4|$.
     This is to say that the following path must be at least as long as the original path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to b_4 \to \dots \to b_3 \to a_3 \to \dots \to a_2 \to a_4 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to b_4 \leadsto b_3 \to a_3 \leadsto a_2 \to a_4 \leadsto a''$$
 
     Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{2}{s} |a_i b_i|$. From this we can conclude the following:
     \begin{align*}
@@ -233,7 +233,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     \textbf{Subcase 1a:} There is another loop connecting the three sets both in the same orientation.
     Then the optimal path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, b_3)^*$, $(b_4, c_3)^*$, $(c_4, a_4)^*$ ordered as they appear in the path. This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b_4 \to c_3 \to \dots \to c_4 \to a_4 \to \dots \to a''$$
+    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to c_3 \leadsto c_4 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 6-optimality condition implying the following:
     $|a_1 b_1| + |b_2 c_1| + |c_2 a_2| + |a_3 b_3| + |b_4 c_3| + |c_4 a_4| \leq |a_1 a_2| + |a_3 b_3| + |b_4 b_1| + |b_2 c_1| + |c_2 c_3| + |c_4 a_4|$.
@@ -248,7 +248,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     \textbf{Subcase 1b:} There is another loop connecting the three sets in the opposite orientation.
     Then the optimal path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, c_3)^*$, $(c_4, b_3)^*$, $(b_4, a_4)^*$ ordered as they appear in the path. This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to a_2 \to \dots \to a_3 \to c_3 \to \dots \to c_4 \to b_3 \to \dots \to b_4 \to a_4 \to \dots \to a''$$
+    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c_4 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 6-optimality condition implying the following:
     $|a_1 b_1| + |b_2 c_1| + |c_2 a_2| + |a_3 c_3| + |c_4 b_3| + |b_4 a_4| \leq |a_1 a_2| + |a_3 c_3| + |c_4 c_2| + |c_1 b_2| + |b_1 b_3| + |b_4 a_4|$.
@@ -264,7 +264,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, b_3)^*$, $(b_4, a_4)^*$ ordered as they appear in the path. 
     This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b_4 \to a_4 \to \dots \to a''$$
+    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -278,7 +278,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, c_3)^*$, $(c_4, a_4)^*$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to a_2 \to \dots \to a_3 \to c_3 \to \dots \to c_4 \to a_4 \to \dots \to a''$$
+    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c_4 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -293,7 +293,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
     WLOG let these edges be $(a_3, b_3)^*$, $(b_4, a_4)^*$, $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_3 \to b_3 \to \dots \to b_4 \to a_4 \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to a_2 \to \dots \to a''$$
+    $$a' \to a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -307,7 +307,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
     WLOG let these edges be $(a_3, c_3)^*$, $(c_4, a_4)^*$, $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_3 \to c_3 \to \dots \to c_4 \to a_4 \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to a_2 \to \dots \to a''$$
+    $$a' \to a_3 \to c_3 \leadsto c_4 \to a_4 \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -321,7 +321,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_4, b_3)^*$, $(b_4, c_3)^*$, $(c_2, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_4 \to b_3 \to \dots \to b_4 \to c_3 \to \dots \to c_2 \to a_2 \to \dots \to a''$$
+    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_4 \to b_3 \leadsto b_4 \to c_3 \leadsto c_2 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -340,7 +340,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_5, a_3)^*$, $(a_4, b_6)^*$, $(b_2, c_1)$, $(c_2, b_3)$, $(b_4, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_5 \to a_3 \to \dots \to a_4 \to b_6 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to b_3 \to \dots \to b_4 \to a_2 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_5 \to a_3 \leadsto a_4 \to b_6 \leadsto b_2 \to c_1 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -354,7 +354,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_3, b_5)^*$, $(b_6, c_4)^*$, $(c_2, b_3)$, $(b_4, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_3 \to b_5 \to \dots \to b_6 \to c_4 \to \dots \to c_2 \to b_3 \to \dots \to b_4 \to a_2 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_3 \to b_5 \leadsto b_6 \to c_4 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -368,7 +368,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, b_3)$, $(b_4, a_2)$, $(a_3, b_5)^*$, $(b_6, a_4)^*$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to c_1 \to \dots \to c_2 \to b_3 \to \dots \to b_4 \to a_2 \to \dots \to a_3 \to b_5 \to \dots \to b_6 \to a_4 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a_3 \to b_5 \leadsto b_6 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -385,7 +385,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_5, a_3)^*$, $(a_4, b_6)^*$, $(b_2, a_2)$, $(a_5, c_1)$, $(c_2, a_6)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_5 \to a_3 \to \dots \to a_4 \to b_6 \to \dots \to b_2 \to a_2 \to \dots \to a_5 \to c_1 \to \dots \to c_2 \to a_6 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_5 \to a_3 \leadsto a_4 \to b_6 \leadsto b_2 \to a_2 \leadsto a_5 \to c_1 \leadsto c_2 \to a_6 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -399,7 +399,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, a_2)$, $(a_3, c_1)$, $(c_2, a_4)$, $(a_5, c_3)^*$, $(c_4, a_6)^*$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to a_2 \to \dots \to a_3 \to c_1 \to \dots \to c_2 \to a_4 \to \dots \to a_5 \to c_3 \to \dots \to c_4 \to a_6 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to c_1 \leadsto c_2 \to a_4 \leadsto a_5 \to c_3 \leadsto c_4 \to a_6 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
@@ -413,7 +413,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, a_2)$, $(a_3, c_1)$, $(c_2, a_4)$, $(a_5, b_5)^*$, $(b_6, a_6)^*$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to \dots \to a_1 \to b_1 \to \dots \to b_2 \to a_2 \to \dots \to a_3 \to c_1 \to \dots \to c_2 \to a_4 \to \dots \to a_5 \to b_5 \to \dots \to b_6 \to a_6 \to \dots \to a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to c_1 \leadsto c_2 \to a_4 \leadsto a_5 \to b_5 \leadsto b_6 \to a_6 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
