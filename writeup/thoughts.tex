@@ -132,7 +132,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \subsection{Well-Separated Sets are Path/Tour Separated}
 
 \begin{thm}\label{thm:wsp_path_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 1$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
 \end{thm}
 \begin{proof}
     Let $|A| = n$ and $|B| = m$.
@@ -149,18 +149,18 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     This is to say that the following path must be at least as long as the original path
     $$a' \leadsto a_1 \to a_3 \leadsto a_2 \to b_2 \leadsto b_1 \to b_3 \leadsto b'$$
 
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{2}{s} |a_i b_i|$. From this we can conclude the following:
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{1}{s} |a_i b_i|$. From this we can conclude the following:
     \begin{align*}
         |a_1 b_1| + |a_3 b_3| &\leq |a_1 a_3| + |b_1 b_3| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_3 b_3| \\
-        &= \frac{2}{s} (|a_1 b_1| + |a_3 b_3|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_3 b_3| \\
+        &= \frac{1}{s} (|a_1 b_1| + |a_3 b_3|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
     Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
 \end{proof}
 
 \begin{thm}\label{thm:wsp_path_aa}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a',a'' \in A$ must only contain two edges between $A$ and $B$.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 1$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a',a'' \in A$ must only contain two edges between $A$ and $B$.
 \end{thm}
 \begin{proof}
     Let $|A| = n$ and $|B| = m$.
@@ -176,24 +176,24 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     This is to say that the following path must be at least as long as the original path:
     $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to b_4 \leadsto b_3 \to a_3 \leadsto a_2 \to a_4 \leadsto a''$$
 
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{2}{s} |a_i b_i|$. From this we can conclude the following:
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{1}{s} |a_i b_i|$. From this we can conclude the following:
     \begin{align*}
         |b_2 a_2| + |b_4 a_4| &\leq |b_2 b_4| + |a_2 a_4| \\
-        &\leq \frac{2}{s} |b_2 a_2| + \frac{2}{s} |b_4 a_4| \\
-        &= \frac{2}{s} (|b_2 a_2| + |b_4 a_4|)
+        &\leq \frac{1}{s} |b_2 a_2| + \frac{1}{s} |b_4 a_4| \\
+        &= \frac{1}{s} (|b_2 a_2| + |b_4 a_4|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
     Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ must only contain two edges between $A$ and $B$.
 \end{proof}
 
 \begin{corollary}\label{cor:wsp_tsp}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then $A$ and $B$ must be TSP-separated.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 1$. Then $A$ and $B$ must be TSP-separated.
 \end{corollary}
 
 \subsection{Properly Structured WSPDs imply Tour Structure}
 
 \begin{thm}\label{thm:bin_wspd_tour_structure}
-    Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 2$. 
+    Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 1$. 
     Then for any given $k$-binary WSP $(A_i, B_i) \in \PairDecomp_s$ there must exist exactly one or two edges in the optimal TSP tour on $P$ connecting them. Furthermore, there are exactly two edges exiting $A_i \cup B_i$ if they are not a $1$-binary WSP (aka the root pair).
 \end{thm}
 \begin{proof}
@@ -242,7 +242,7 @@ There may be a way to deterministically say which of the two cases will occur ba
 \subsection{Moving beyond binary WSPDs}
 
 \begin{thm}
-    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 2$. 
+    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 1$. 
     Then a hamiltonian path which starts on a point $a' \in A$ and ends on a point $a'' \in A$ must have only three or four edges connecting the three sets.
 \end{thm}
 \begin{proof}
@@ -263,10 +263,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     We can then rearrange this to get:
     \begin{align*}
         |a_1 b_1| + |c_2 a_2| + |b_4 c_3| &\leq |a_1 a_2| + |b_4 b_1| + |c_2 c_3| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |c_2 a_2| + \frac{2}{s} |b_4 c_3| \\
-        &= \frac{2}{s} (|a_1 b_1| + |c_2 a_2| + |b_4 c_3|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |c_2 a_2| + \frac{1}{s} |b_4 c_3| \\
+        &= \frac{1}{s} (|a_1 b_1| + |c_2 a_2| + |b_4 c_3|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subcase 1b:} There is another loop connecting the three sets in the opposite orientation.
     Then the optimal path must contain at least six edges connecting the three sets.
@@ -278,10 +278,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     We can then rearrange this to get:
     \begin{align*}
         |a_1 b_1| + |c_2 a_2| + |c_4 b_3| &\leq |a_1 a_2| + |c_2 c_4| + |b_1 b_3| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |c_2 a_2| + \frac{2}{s} |c_4 b_3| \\
-        &= \frac{2}{s} (|a_1 b_1| + |c_2 a_2| + |c_4 b_3|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |c_2 a_2| + \frac{1}{s} |c_4 b_3| \\
+        &= \frac{1}{s} (|a_1 b_1| + |c_2 a_2| + |c_4 b_3|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subcase 1c:} There must be at least two additional edges at the end causing a loop from $A$ to $B$.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
@@ -292,10 +292,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |a_1 b_1| + |a_3 b_3| &\leq |a_1 a_3| + |b_1 b_3| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_3 b_3| \\
-        &= \frac{2}{s} (|a_1 b_1| + |a_3 b_3|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_3 b_3| \\
+        &= \frac{1}{s} (|a_1 b_1| + |a_3 b_3|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subcase 1d:} There must be at least two additional edges at the end causing a loop from $A$ to $C$.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
@@ -306,10 +306,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |c_2 a_2| + |c_4 a_4| &\leq |c_2 c_4| + |a_2 a_4| \\
-        &\leq \frac{2}{s} |c_2 a_2| + \frac{2}{s} |c_4 a_4| \\
-        &= \frac{2}{s} (|c_2 a_2| + |c_4 a_4|)
+        &\leq \frac{1}{s} |c_2 a_2| + \frac{1}{s} |c_4 a_4| \\
+        &= \frac{1}{s} (|c_2 a_2| + |c_4 a_4|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
 
     \textbf{Subcase 1e:} There must be at least two additional edges connecting $A,B$ before starting the primary loop.
@@ -321,10 +321,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |a_3 b_3| + |a_1 b_1| &\leq |a_3 a_1| + |b_3 b_1| \\
-        &\leq \frac{2}{s} |a_3 b_3| + \frac{2}{s} |a_1 b_1| \\
-        &= \frac{2}{s} (|a_3 b_3| + |a_1 b_1|)
+        &\leq \frac{1}{s} |a_3 b_3| + \frac{1}{s} |a_1 b_1| \\
+        &= \frac{1}{s} (|a_3 b_3| + |a_1 b_1|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subcase 1f:} There must be at least two additional edges connecting $A,C$ before starting the primary loop.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
@@ -335,10 +335,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |c_4 a_4| + |c_2 a_2| &\leq |c_4 c_2| + |a_4 a_2| \\
-        &\leq \frac{2}{s} |c_4 a_4| + \frac{2}{s} |c_2 a_2| \\
-        &= \frac{2}{s} (|c_4 a_4| + |c_2 a_2|)
+        &\leq \frac{1}{s} |c_4 a_4| + \frac{1}{s} |c_2 a_2| \\
+        &= \frac{1}{s} (|c_4 a_4| + |c_2 a_2|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subcase 1g:} There is a loop back from $B$ to $C$ before the primary loop is ended.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
@@ -349,10 +349,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |b_2 c_1| + |b_4 c_3| &\leq |b_2 b_4| + |c_1 c_3| \\
-        &\leq \frac{2}{s} |b_2 c_1| + \frac{2}{s} |b_4 c_3| \\
-        &= \frac{2}{s} (|b_2 c_1| + |b_4 c_3|)
+        &\leq \frac{1}{s} |b_2 c_1| + \frac{1}{s} |b_4 c_3| \\
+        &= \frac{1}{s} (|b_2 c_1| + |b_4 c_3|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Case 2:} The optimal TSP tour on $P$ does not contain an edge connecting each pair of sets.
     \textbf{Subcase 2a:} WLOG let there only edges connecting $A$ to $B$ and $B$ to $C$ ($C$ and $B$ can be alternated symmetrically).
@@ -368,10 +368,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |a_1 b_1| + |a_4 b_6| &\leq |a_1 a_4| + |b_1 b_6| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_4 b_6| \\
-        &= \frac{2}{s} (|a_1 b_1| + |a_4 b_6|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_4 b_6| \\
+        &= \frac{1}{s} (|a_1 b_1| + |a_4 b_6|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
     
     \textbf{Subsubcase 2a.ii:} There is an extra loop connecting $B$ to $C$ before ending the path.
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
@@ -382,10 +382,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |b_2 c_1| + |b_6 c_4| &\leq |b_2 b_6| + |c_1 c_4| \\
-        &\leq \frac{2}{s} |b_2 c_1| + \frac{2}{s} |b_6 c_4| \\
-        &= \frac{2}{s} (|b_2 c_1| + |b_6 c_4|)
+        &\leq \frac{1}{s} |b_2 c_1| + \frac{1}{s} |b_6 c_4| \\
+        &= \frac{1}{s} (|b_2 c_1| + |b_6 c_4|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subsubcase 2a.iii:} There is an extra loop connecting $A,B$ after ending the path.
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
@@ -396,10 +396,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |a_1 b_1| + |a_3 b_5| &\leq |a_1 a_3| + |b_1 b_5| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_3 b_5| \\
-        &= \frac{2}{s} (|a_1 b_1| + |a_3 b_5|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_3 b_5| \\
+        &= \frac{1}{s} (|a_1 b_1| + |a_3 b_5|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subcase 2b:} Let there only be edges connecting $A$ to $B$ and $A$ to $C$.
     WLOG let these edges be $(a_1, b_1)$, $(b_2, a_2)$, $(a_3, c_1)$, $(c_2, a_4)$ ordered as they appear in the path (if $C$ occurs before $B$ then flip the names).
@@ -413,10 +413,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |a_1 b_1| + |a_4 b_6| &\leq |a_1 a_4| + |b_1 b_6| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_4 b_6| \\
-        &= \frac{2}{s} (|a_1 b_1| + |a_4 b_6|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_4 b_6| \\
+        &= \frac{1}{s} (|a_1 b_1| + |a_4 b_6|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subsubcase 2b.ii:} There is an extra loop connecting $A,C$ after ending the path.
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
@@ -427,10 +427,10 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |a_3 c_1| + |a_5 c_3| &\leq |a_3 a_5| + |c_1 c_3| \\
-        &\leq \frac{2}{s} |a_3 c_1| + \frac{2}{s} |a_5 c_3| \\
-        &= \frac{2}{s} (|a_3 c_1| + |a_5 c_3|)
+        &\leq \frac{1}{s} |a_3 c_1| + \frac{1}{s} |a_5 c_3| \\
+        &= \frac{1}{s} (|a_3 c_1| + |a_5 c_3|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     \textbf{Subsubcase 2b.iii:} There is an extra loop connecting $A,B$ before ending the path.
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
@@ -441,17 +441,17 @@ There may be a way to deterministically say which of the two cases will occur ba
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
     \begin{align*}
         |a_1 b_1| + |a_5 b_5| &\leq |a_1 a_5| + |b_1 b_5| \\
-        &\leq \frac{2}{s} |a_1 b_1| + \frac{2}{s} |a_5 b_5| \\
-        &= \frac{2}{s} (|a_1 b_1| + |a_5 b_5|)
+        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_5 b_5| \\
+        &= \frac{1}{s} (|a_1 b_1| + |a_5 b_5|)
     \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
 
     Therefore in all cases we have reached a contradiction when assuming that there are more than four edges connecting the three sets.
     Thus the optimal hamiltonian path from $a'$ to $a''$ over $P$ must have only three or four edges connecting the three sets.
 \end{proof}
 
 \begin{corollary}
-    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 2$. 
+    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 1$. 
     Then $A$, $B$, and $C$ must be TSP-separated.
 \end{corollary}
 
