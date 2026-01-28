@@ -74,14 +74,37 @@ The main theorem I am proving here is Corollary~\ref{cor:wsp_tsp} and Theorem~\r
 
 \section{Background Theorems}
 \begin{thm}
-Let $A$ and $B$ be two finite sets of points that are $s$-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
+Let $A$ and $B$ be two sets of points that are $s$-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
 Then the following inequalities hold:
 \begin{align*}
-    |pq| &\leq (1 + 2/s) \cdot |pq'| \\
-    |pq| &\leq (1 + 4/s) \cdot |p'q'| \\
-    |pp'| &\leq (2/s) \cdot |pq| \\
+    |pq| &\leq (1 + 1/s) \cdot |pq'| \\
+    |pq| &\leq (1 + 2/s) \cdot |p'q'| \\
+    |pp'| &\leq (1/s) \cdot |pq| \\
 \end{align*}
 \end{thm}
+
+\begin{proof}
+    Let $A$ and $B$ be two se-ts of points that are $s$-well-separated, let $p,p' \in A$, and let $q,q' \in B$.
+
+    Note that $|qq'| \leq \diam(B) \leq \frac{1}{s} \cdot \dist(A,B) \leq \frac{1}{s} |pq'|$ by the definition of well-separated pairs.
+    The first result then follows from the next analysis:
+    \begin{align*}
+        |pq| &\leq |pq'| + |q'q| \\
+        &\leq |pq'| + \frac{1}{s} |pq'| \\
+        &= (1 + 1/s) \cdot |pq'|
+    \end{align*}
+
+    For the second result we note that $|pp'| \leq \diam(A) \leq \frac{1}{s} \cdot \dist(A,B) \leq \frac{1}{s} |p'q'|$ by the definition of well-separated pairs.
+    The second result then follows from the next analysis:
+    \begin{align*}
+        |pq| &\leq |pp'| + |p'q'| + |q'q| \\
+        &\leq |pp'| + |p'q'| + \frac{1}{s} |p'q'| \\
+        &\leq \frac{1}{s} |p'q'| + |p'q'| + \frac{1}{s} |p'q'| \\
+        &= (1 + 2/s) \cdot |p'q'|
+    \end{align*}
+    
+    Finally for the third result we note that the following is true $|pp'| \leq \diam(A) \leq \frac{1}{s} \cdot \dist(A,B) \leq \frac{1}{s} |pq|$ by the definition of well-separated pairs. The result is immediately apart that $|pp'| \leq (1/s) \cdot |pq|$.
+\end{proof}
 
 \section{My Theorems}
 \subsection{Hamiltonian Endpoint Distance Bound}
