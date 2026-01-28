@@ -33,7 +33,7 @@
 \tableofcontents
 
 \section{Work Area}
-The main theorem I am proving here is Theorem~\ref{thm:wsp_tsp} and Theorem~\ref{thm:wsp_path}.
+The main theorem I am proving here is Corollary~\ref{cor:wsp_tsp} and Theorem~\ref{thm:bin_wspd_tour_structure}.
 
 \section{Definitions}
 \subsection{Background Definitions}
@@ -108,34 +108,6 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \subsection{Well-Separated Sets are Path/Tour Separated}
 
-\begin{thm}\label{thm:wsp_tsp}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then $A$ and $B$ must be TSP-separated.
-\end{thm}
-\begin{proof}
-    Let $|A| = n$ and $|B| = m$.
-    WLOG assume that $n,m \geq 4$.
-
-    Assume by contradiction that $A$ and $B$ are not TSP-separated.
-    Then the optimal TSP tour on $A \cup B$ must contain at least four edges of the form $(a_i, b_i)$ where $a_i \in A$ and $b_i \in B$.
-    WLOG let these edges be $\{a_1, b_1\}, \{b_2, a_2\}, \{a_3, b_3\}, \{b_4, a_4\}$ ordered as they appear in the tour.
-    This gives the following partial structure of the tour:
-    $$a_1 \to b_1 \to \dots \to b_2 \to a_2 \to \dots \to a_3 \to b_3 \to \dots \to b_4 \to a_4 \to \dots \to a_1$$
-
-    Since the tour is optimal we know that it satisfies the 2-optimality condition implying the following:
-    $|b_2 a_2| + |b_4 a_4| \leq |b_2 b_4| + |a_2 a_4|$.
-    This is to say that the following tour must be at least as long as the original tour:
-    $$a_1 \to b_1 \to \dots \to b_2 \to b_4 \to \dots \to b_3 \to a_3 \to \dots \to a_2 \to a_4 \to \dots \to a_1$$
-
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{2}{s} |a_i b_i|$. From this we can conclude the following:
-    \begin{align*}
-        |b_2 a_2| + |b_4 a_4| &\leq |b_2 b_4| + |a_2 a_4| \\
-        &\leq \frac{2}{s} |b_2 a_2| + \frac{2}{s} |b_4 a_4| \\
-        &= \frac{2}{s} (|b_2 a_2| + |b_4 a_4|)
-    \end{align*}
-    This implies that $1 \leq \frac{2}{s}$ which in turn implies that $s \leq 2$ contradicting our original statement that $s > 2$.
-    Therefore $A$ and $B$ must be TSP-separated as desired.
-\end{proof}
-
 \begin{thm}\label{thm:wsp_path_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
 \end{thm}
@@ -191,15 +163,19 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ must only contain two edges between $A$ and $B$.
 \end{proof}
 
+\begin{corollary}\label{cor:wsp_tsp}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2$. Then $A$ and $B$ must be TSP-separated.
+\end{corollary}
+
 \subsection{Properly Structured WSPDs imply Tour Structure}
 
-\begin{thm}
+\begin{thm}\label{thm:bin_wspd_tour_structure}
     Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 2$. 
     Then for any given $k$-binary WSP $(A_i, B_i) \in \PairDecomp_s$ there must exist exactly one or two edges in the optimal TSP tour on $P$ connecting them. Furthermore, there are exactly two edges exiting $A_i \cup B_i$ if they are not a $1$-binary WSP (aka the root pair).
 \end{thm}
 \begin{proof}
     This can be proved via induction. 
-    For the top level pair of $(A_t, B_t) \in \PairDecomp_s$ where $A_t \cup B_t = P$ the result follows directly from Theorem~\ref{thm:wsp_tsp} which implies exactly two edges connect $A_t$ to $B_t$.
+    For the top level pair of $(A_t, B_t) \in \PairDecomp_s$ where $A_t \cup B_t = P$ the result follows directly from Corollary~\ref{cor:wsp_tsp} which implies exactly two edges connect $A_t$ to $B_t$.
     
     Next consider the second level cluster $(A_t', B_t') \in \PairDecomp_s$. WLOG let $A_t' \cup B_t' = A_t$.
     By the previous case we know that there are exactly two edges exiting $A_t$. WLOG let one of these edges be of the form $\{a_*, d_*\}$ where $a_* \in A_t'$ and $d_* \in B_t$. We proceed with a case analysis.
