@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import List, Sequence, Tuple, Optional
-import math
+from typing import List, TypeVar
 
 import numpy as np
 
+N = TypeVar("N", bound=int)
+M = TypeVar("M", bound=int)
 
-def balanced_metric_split(
-    D: Sequence[Sequence[float]] | np.ndarray, s: float, k: int
-) -> List[List[int]]:
+DistMatrix = np.ndarray[tuple[N, N], np.dtype[np.floating]]
+NodeList = np.ndarray[tuple[M], np.dtype[np.integer]]
+AdjMatrix = np.ndarray[tuple[N, N], np.dtype[np.bool_]]
+
+
+def balanced_metric_split(D: DistMatrix, s: float, k: int) -> List[List[int]]:
     """
     BalancedMetricSplit(D, s, k)
 
@@ -111,60 +114,55 @@ def balanced_metric_split(
     return best_components
 
 
-def connected_components(adj: Sequence[Sequence[int]]) -> List[List[int]]:
-    """Return components as lists of vertices (0..n-1) using DFS/BFS."""
-    n = len(adj)
-    seen = [False] * n
-    comps: List[List[int]] = []
-    for i in range(n):
-        if seen[i]:
-            continue
-        stack = [i]
-        seen[i] = True
-        comp: List[int] = []
-        while stack:
-            v = stack.pop()
-            comp.append(v)
-            for w in adj[v]:
-                if not seen[w]:
-                    seen[w] = True
-                    stack.append(w)
-        comps.append(comp)
+def connected_components(adj: AdjMatrix) -> List[NodeList]:
+    """
+    Return connected components of an undirected graph
+    given a boolean adjacency matrix.
+    """
+    n = adj.shape[0]
+    unseen = np.ones(n, dtype=np.bool_)
+    comps: List[NodeList] = []
+
+    while np.any(unseen):
+        # pick an unseen node to start a new component
+        start = np.argmax(unseen)
+
+        frontier = np.zeros(n, dtype=np.bool_)
+        frontier[start] = True
+        unseen[start] = False
+
+        comp_nodes = []
+
+        while np.any(frontier):
+            current = np.argmax(frontier)
+            frontier[current] = False
+            comp_nodes.append(current)
+
+            neighbors = adj[current]
+            for neighbor in neighbors:
+                if unseen[neighbor]:
+                    unseen[neighbor] = False
+                    frontier[neighbor] = True
+        comps.append(np.array(comp_nodes, dtype=np.int32))
     return comps
 
 
-def diameter_of_set(
-    D: Sequence[Sequence[float]] | np.ndarray, nodes: Sequence[int]
-) -> float:
-    """diam(C) = max_{x,y in C} D[x][y]. O(|C|^2)."""
-    m = len(nodes)
+def diameter_of_set(D: DistMatrix, nodes: NodeList) -> np.floating:
+    """diam(C) = max_{x,y in C} D[x,y]. O(|C|^2) but vectorized in NumPy."""
+    m = nodes.size
     if m <= 1:
-        return 0.0
-    diam = 0.0
-    for i in range(m):
-        xi = nodes[i]
-        Dxi = D[xi]
-        for j in range(i + 1, m):
-            d = Dxi[nodes[j]]
-            if d > diam:
-                diam = d
-    return diam
+        return D.dtype.type(0.0)
+    submatrix = D[np.ix_(nodes, nodes)]
+    return np.max(submatrix)
 
 
-def min_intercluster_distance(
-    D: Sequence[Sequence[float]] | np.ndarray, A: Sequence[int], B: Sequence[int]
-) -> float:
+def min_intercluster_distance(D: DistMatrix, A: NodeList, B: NodeList) -> np.floating:
     """Delta(A,B) = min_{x in A, y in B} D[x][y]. O(|A||B|)."""
-    best = math.inf
-    for x in A:
-        Dx = D[x]
-        for y in B:
-            d = Dx[y]
-            if d < best:
-                best = d
-                if best == 0.0:
-                    return 0.0
-    return best
+    if A.size == 0 or B.size == 0:
+        return D.dtype.type(np.inf)
+
+    submatrix = D[np.ix_(A, B)]
+    return np.min(submatrix)
 
 
 # -------------------------
@@ -172,9 +170,8 @@ def min_intercluster_distance(
 # -------------------------
 if __name__ == "__main__":
     # Example: points on a line => metric via absolute difference
-    pts = [0.0, 0.1, 0.2, 10.0, 10.1, 20.0]
-    n = len(pts)
-    D = [[abs(pts[i] - pts[j]) for j in range(n)] for i in range(n)]
+    pts = np.asarray([0.0, 0.1, 0.2, 10.0, 10.1, 20.0], dtype=np.float32)
+    D = np.abs(pts[:, None] - pts[None, :])
 
     clusters = balanced_metric_split(D, s=0.5, k=2)
     print("Clusters (0-indexed):", clusters)
