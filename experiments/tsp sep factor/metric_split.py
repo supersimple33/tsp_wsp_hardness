@@ -12,6 +12,48 @@ NodeList = np.ndarray[tuple[M], np.dtype[np.integer]]
 AdjMatrix = np.ndarray[tuple[N, N], np.dtype[np.bool_]]
 
 
+def _validate_distance_matrix(
+    D: DistMatrix, s: float, k: int
+) -> tuple[DistMatrix, int]:
+    D = np.asarray(D)
+    n = D.shape[0]
+    if s <= 0:
+        raise ValueError("s must be > 0")
+    if k < 2 or k >= n:
+        raise ValueError("k must be >= 2 and < n")
+    if n == 0:
+        return D, n
+    if D.ndim != 2 or D.shape[1] != n:
+        raise ValueError("D must be square")
+    if not np.allclose(np.diag(D), 0.0, atol=1e-12):
+        raise ValueError("D must have zero diagonal (metric distance matrix)")
+    if not np.allclose(D, D.T, atol=1e-9):
+        raise ValueError("D must be symmetric")
+    return D, n
+
+
+def _candidate_diameters(D: DistMatrix) -> np.ndarray:
+    n = D.shape[0]
+    if n < 2:
+        return np.array([], dtype=D.dtype)
+    upper = D[np.triu_indices(n, 1)]
+    return np.unique(upper[upper > 0])
+
+
+def _separation_ok(
+    D: DistMatrix, comps: List[NodeList], comp_diams: np.ndarray, s: float
+) -> bool:
+    for a, Ca in enumerate(comps):
+        da = comp_diams[a]
+        for b in range(a + 1, len(comps)):
+            Cb = comps[b]
+            db = comp_diams[b]
+            delta = min_intercluster_distance(D, Ca, Cb)
+            if delta < s * max(da, db) - 1e-12:
+                return False
+    return True
+
+
 def balanced_metric_split(D: DistMatrix, s: float, k: int) -> List[List[int]]:
     """
     BalancedMetricSplit(D, s, k)
@@ -29,89 +71,43 @@ def balanced_metric_split(D: DistMatrix, s: float, k: int) -> List[List[int]]:
         and among feasible candidates minimizes max cluster size.
       - Returns [] if no feasible partition is found.
     """
-    n = len(D)
-    if s <= 0:
-        raise ValueError("s must be > 0")
-    if k < 2 or k >= n:
-        raise ValueError("k must be >= 2 and < n")
-
-    n = len(D)
+    D, n = _validate_distance_matrix(D, s, k)
     if n == 0:
         return []
-    if any(len(row) != n for row in D):
-        raise ValueError("D must be square")
-    # Basic symmetry check (tolerant)
-    for i in range(n):
-        if abs(D[i][i]) > 1e-12:
-            raise ValueError("D must have zero diagonal (metric distance matrix)")
-        for j in range(i + 1, n):
-            if abs(D[i][j] - D[j][i]) > 1e-9:
-                raise ValueError("D must be symmetric")
 
     # Candidate diameter thresholds: all distinct positive pairwise distances
-    M_candidates = sorted(
-        {D[i][j] for i in range(n) for j in range(i + 1, n) if D[i][j] > 0}
-    )
+    M_candidates = _candidate_diameters(D)
 
     best_score = n
-    best_components: List[List[int]] = [list(range(n))]
-
-    # Pre-allocate buffers for speed
-    adj: List[List[int]] = [[] for _ in range(n)]
+    best_components: List[NodeList] = [np.arange(n, dtype=np.int32)]
 
     for M in M_candidates:
         thresh = s * M
 
-        # Build threshold graph edges E_M = {(i,j): D_ij < s*M}
-        for i in range(n):
-            adj[i].clear()
-        for i in range(n):
-            Di = D[i]
-            for j in range(i + 1, n):
-                if Di[j] < thresh:
-                    adj[i].append(j)
-                    adj[j].append(i)
+        # Build threshold graph adjacency matrix: D_ij < s*M
+        adj = D < thresh
+        np.fill_diagonal(adj, False)
 
         comps = connected_components(adj)
         if not 1 < len(comps) <= k:
             continue
 
         # Diameter feasibility: ensure each component has diameter <= M
-        comp_diams = []
-        ok = True
-        for comp in comps:
-            d = diameter_of_set(D, comp)
-            comp_diams.append(d)
-            if d > M + 1e-12:
-                ok = False
-                break
-        if not ok:
+        comp_diams = np.array([diameter_of_set(D, comp) for comp in comps])
+        if np.any(comp_diams > M + 1e-12):
             continue
 
         # Separation feasibility: delta(C,C') >= s * max(diam(C), diam(C'))
-        sep = True
-        for a in range(len(comps)):
-            Ca = comps[a]
-            da = comp_diams[a]
-            for b in range(a + 1, len(comps)):
-                Cb = comps[b]
-                db = comp_diams[b]
-                delta = min_intercluster_distance(D, Ca, Cb)
-                if delta < s * max(da, db) - 1e-12:
-                    sep = False
-                    break
-            if not sep:
-                break
-        if not sep:
+        if not _separation_ok(D, comps, comp_diams, s):
             continue
 
         # Balance objective: minimize size of largest cluster
-        score = max(len(c) for c in comps)
+        score = max(c.size for c in comps)
         if score < best_score:
             best_score = score
             best_components = comps
 
-    return best_components
+    return [c.tolist() for c in best_components]
 
 
 def connected_components(adj: AdjMatrix) -> List[NodeList]:
@@ -139,10 +135,10 @@ def connected_components(adj: AdjMatrix) -> List[NodeList]:
             comp_nodes.append(current)
 
             neighbors = adj[current]
-            for neighbor in neighbors:
-                if unseen[neighbor]:
-                    unseen[neighbor] = False
-                    frontier[neighbor] = True
+            newly_seen = neighbors & unseen
+            if np.any(newly_seen):
+                unseen[newly_seen] = False
+                frontier[newly_seen] = True
         comps.append(np.array(comp_nodes, dtype=np.int32))
     return comps
 
@@ -173,7 +169,7 @@ if __name__ == "__main__":
     pts = np.asarray([0.0, 0.1, 0.2, 10.0, 10.1, 20.0], dtype=np.float32)
     D = np.abs(pts[:, None] - pts[None, :])
 
-    clusters = balanced_metric_split(D, s=0.5, k=2)
+    clusters = balanced_metric_split(D, s=0.5, k=3)
     print("Clusters (0-indexed):", clusters)
     # Pretty print with point values
     print("Clusters (by value):", [[pts[i] for i in c] for c in clusters])
