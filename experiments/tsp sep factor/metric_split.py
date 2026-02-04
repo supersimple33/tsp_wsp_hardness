@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import List, TypeVar
+from typing import TypeVar
 
 import numpy as np
+from scipy.sparse.csgraph import connected_components
 
 N = TypeVar("N", bound=int)
 M = TypeVar("M", bound=int)
@@ -10,26 +11,6 @@ M = TypeVar("M", bound=int)
 DistMatrix = np.ndarray[tuple[N, N], np.dtype[np.floating]]
 NodeList = np.ndarray[tuple[M], np.dtype[np.integer]]
 AdjMatrix = np.ndarray[tuple[N, N], np.dtype[np.bool_]]
-
-
-def _validate_distance_matrix(
-    D: DistMatrix, s: float, k: int
-) -> tuple[DistMatrix, int]:
-    D = np.asarray(D)
-    n = D.shape[0]
-    if s <= 0:
-        raise ValueError("s must be > 0")
-    if k < 2 or k >= n:
-        raise ValueError("k must be >= 2 and < n")
-    if n == 0:
-        return D, n
-    if D.ndim != 2 or D.shape[1] != n:
-        raise ValueError("D must be square")
-    if not np.allclose(np.diag(D), 0.0, atol=1e-12):
-        raise ValueError("D must have zero diagonal (metric distance matrix)")
-    if not np.allclose(D, D.T, atol=1e-9):
-        raise ValueError("D must be symmetric")
-    return D, n
 
 
 def _candidate_diameters(D: DistMatrix) -> np.ndarray:
@@ -41,7 +22,7 @@ def _candidate_diameters(D: DistMatrix) -> np.ndarray:
 
 
 def _separation_ok(
-    D: DistMatrix, comps: List[NodeList], comp_diams: np.ndarray, s: float
+    D: DistMatrix, comps: list[NodeList], comp_diams: np.ndarray, s: float, tol=1e-12
 ) -> bool:
     for a, Ca in enumerate(comps):
         da = comp_diams[a]
@@ -49,105 +30,76 @@ def _separation_ok(
             Cb = comps[b]
             db = comp_diams[b]
             delta = min_intercluster_distance(D, Ca, Cb)
-            if delta < s * max(da, db) - 1e-12:
+            if delta < s * max(da, db) - tol:
                 return False
     return True
 
 
-def balanced_metric_split(D: DistMatrix, s: float, k: int) -> List[List[int]]:
+def balanced_metric_split(D: DistMatrix, s: float, k: int, tol=1e-12) -> list[NodeList]:
     """
-    BalancedMetricSplit(D, s, k)
+    BalancedMetricSplit(D, s, k, tol=1e-12) -> list of clusters
 
     Inputs:
       - D: n x n metric distance matrix (symmetric, triangle inequality assumed)
       - s: separation factor > 0
       - k: desired number of clusters >= 2
+      - tol: tolerance for diameter and separation checks
 
     Output:
-      - A list of k clusters (each a list of vertex indices 0..n-1) that:
+      - A list of up to k clusters (each a list of vertex indices 0..n-1) that:
           * arises as the connected components of threshold graph G_M with edges D_ij < s*M
-          * each component has diameter <= M
           * pairwise separation holds: delta(C,C') >= s * max(diam(C), diam(C'))
         and among feasible candidates minimizes max cluster size.
-      - Returns [] if no feasible partition is found.
+      - Returns [0...n-1] if no feasible partition is found.
     """
-    D, n = _validate_distance_matrix(D, s, k)
-    if n == 0:
-        return []
-
-    # Candidate diameter thresholds: all distinct positive pairwise distances
-    M_candidates = _candidate_diameters(D)
+    n = D.shape[0]
+    M_candidates = np.sort(_candidate_diameters(D))
 
     best_score = n
-    best_components: List[NodeList] = [np.arange(n, dtype=np.int32)]
+    best_components: list[NodeList] = [np.arange(n, dtype=np.int32)]
 
     for M in M_candidates:
         thresh = s * M
-
-        # Build threshold graph adjacency matrix: D_ij < s*M
-        adj = D < thresh
+        adj = D < thresh + tol
         np.fill_diagonal(adj, False)
 
-        comps = connected_components(adj)
-        if not 1 < len(comps) <= k:
+        n_components, labels = connected_components(
+            csgraph=adj,
+            directed=False,
+            return_labels=True,
+        )
+
+        if n_components > k:
+            # Not enough or too many components
+            continue
+        elif n_components == 1:
+            # graph is full at this threshold and cannot improve
+            break
+
+        score = np.bincount(labels, minlength=n_components).max()
+        if best_score <= score:
+            # No improvement
             continue
 
-        # Diameter feasibility: ensure each component has diameter <= M
+        comps: list[NodeList] = [
+            np.flatnonzero(labels == g) for g in range(n_components)
+        ]
         comp_diams = np.array([diameter_of_set(D, comp) for comp in comps])
-        if np.any(comp_diams > M + 1e-12):
+        if not _separation_ok(D, comps, comp_diams, s, tol):
+            # Separation condition failed
             continue
 
-        # Separation feasibility: delta(C,C') >= s * max(diam(C), diam(C'))
-        if not _separation_ok(D, comps, comp_diams, s):
-            continue
+        best_score = score
+        best_components = comps
+        if best_score == (n + k - 1) // k:
+            # Optimal possible score achieved
+            break
 
-        # Balance objective: minimize size of largest cluster
-        score = max(c.size for c in comps)
-        if score < best_score:
-            best_score = score
-            best_components = comps
-
-    return [c.tolist() for c in best_components]
-
-
-def connected_components(adj: AdjMatrix) -> List[NodeList]:
-    """
-    Return connected components of an undirected graph
-    given a boolean adjacency matrix.
-    """
-    n = adj.shape[0]
-    unseen = np.ones(n, dtype=np.bool_)
-    comps: List[NodeList] = []
-
-    while np.any(unseen):
-        # pick an unseen node to start a new component
-        start = np.argmax(unseen)
-
-        frontier = np.zeros(n, dtype=np.bool_)
-        frontier[start] = True
-        unseen[start] = False
-
-        comp_nodes = []
-
-        while np.any(frontier):
-            current = np.argmax(frontier)
-            frontier[current] = False
-            comp_nodes.append(current)
-
-            neighbors = adj[current]
-            newly_seen = neighbors & unseen
-            if np.any(newly_seen):
-                unseen[newly_seen] = False
-                frontier[newly_seen] = True
-        comps.append(np.array(comp_nodes, dtype=np.int32))
-    return comps
+    return best_components
 
 
 def diameter_of_set(D: DistMatrix, nodes: NodeList) -> np.floating:
     """diam(C) = max_{x,y in C} D[x,y]. O(|C|^2) but vectorized in NumPy."""
-    m = nodes.size
-    if m <= 1:
-        return D.dtype.type(0.0)
     submatrix = D[np.ix_(nodes, nodes)]
     return np.max(submatrix)
 
