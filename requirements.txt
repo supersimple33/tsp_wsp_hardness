@@ -1,5 +1,5 @@
 pyconcorde @ git+https://github.com/supersimple33/pyconcorde
-tsplib95 @ git+https://github.com/supersimple33/tsplib95@patch-2
+tsplib95 @ git+https://github.com/supersimple33/tsplib95@newmain
 wspd>=0.7.0
 python_tsp>=0.5.0
 elkai>=2.0.1
