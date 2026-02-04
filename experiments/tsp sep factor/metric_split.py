@@ -69,8 +69,8 @@ def balanced_metric_split(D: DistMatrix, s: float, k: int, tol=1e-12) -> list[No
             return_labels=True,
         )
 
-        if n_components > k:
-            # Not enough or too many components
+        if n_components > k or n_components == n:
+            # too many components
             continue
         elif n_components == 1:
             # graph is full at this threshold and cannot improve
