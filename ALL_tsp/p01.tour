@@ -1,0 +1,23 @@
+NAME : p01.tour
+COMMENT : Optimum tour for p01.tsp (Length 291)
+TYPE : TOUR
+DIMENSION : 15
+TOUR_SECTION
+  1
+ 13
+  2
+ 15
+  9
+  5
+  7
+  3
+ 12
+ 14
+ 10
+  8
+  6
+  4
+ 11
+ -1
+-1
+EOF
