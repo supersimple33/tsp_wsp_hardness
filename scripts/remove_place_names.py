@@ -13,7 +13,7 @@ def strip_names(text):
             out.append(line)
             continue
         if in_section:
-            if line.strip().upper().startswith("EOF"):
+            if line.strip().upper().startswith("EOF") or line.strip().upper().startswith("DISPLAY_DATA_SECTION") or line.strip().upper().startswith("TOUR_SECTION") or line.strip().upper().startswith("EDGE_WEIGHT_SECTION"):
                 in_section = False
                 out.append(line)
                 continue
