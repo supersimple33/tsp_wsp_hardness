@@ -470,62 +470,41 @@ There may be a way to deterministically say which of the two cases will occur ba
 \section{Algorithms}
 
 \begin{algorithm}[H]
-\caption{\textsc{BalancedMetricSplit}$(D,s,k)$}
-\label{alg:balanced_metric_split}
+\caption{\textsc{FindBestBalancedSeparation}$(D,s)$}
+\label{alg:find_best_balanced_separation}
 \begin{algorithmic}[1]
-\Require A metric distance matrix $D \in \mathbb{R}^{n\times n}$ (symmetric, triangle inequality), separation factor $s>0$, and number of clusters $k \ge 2$
-\Ensure A $k$-partition $\mathcal{P}=\{S_1,\dots,S_k\}$ that maximizes balance such that every pair of clusters is $s$-well-separated
+\Require A metric distance matrix $D \in \mathbb{R}^{n \times n}$ (symmetric, triangle inequality), separation factor $s > 0$
+\Ensure A bi-partition $(A,B)$ that is $s$-well-separated and maximally balanced, or \textsc{NULL} if no such partition exists
 
-\State $\mathcal{M} \gets \{D_{ij} \mid 1 \le i < j \le n\}$ \Comment{candidate diameter thresholds}
-\State $\mathcal{S}^\star \gets \emptyset$; $\text{bestScore} \gets \infty$
+\State $E \gets \textsc{BuildMST}(D)$ \Comment{$n-1$ edges}
+\State $\text{bestScore} \gets +\infty$
+\State $\text{bestPartition} \gets \textsc{NULL}$
 
-\ForAll{$M \in \mathcal{M}$}
-    \State $E_M \gets \{(i,j)\mid 1\le i<j\le n,\; D_{ij} < s\cdot M\}$
-    \State $G_M \gets (V=\{1,\dots,n\}, E_M)$
-    \State $\mathcal{C} \gets \textsc{ConnectedComponents}(G_M)$
+\ForAll{edges $e = (u,v)$ in $E$}
+    \State $(A,B) \gets \textsc{ConnectedComponents}(E \setminus \{e\})$
+    \State $\delta \gets w(e)$ \Comment{Single-linkage separation distance}
+    
+    \State $\operatorname{diam}(A) \gets \textsc{ComputeDiameter}(A,D)$
+    \State $\operatorname{diam}(B) \gets \textsc{ComputeDiameter}(B,D)$
+    \State $M \gets \max\{\operatorname{diam}(A), \operatorname{diam}(B)\}$
 
-    \If{$|\mathcal{C}| \neq k$}
-        \State \textbf{continue}
-    \EndIf
-
-    \Comment{Diameter feasibility: ensure each component has diameter $\le M$}
-    \State $\text{ok} \gets \textbf{true}$
-    \ForAll{$C \in \mathcal{C}$}
-        \If{$\diam(C) > M$}
-            \State $\text{ok} \gets \textbf{false}$
-            \State \textbf{break}
+    \If{$\delta \ge s \cdot M$} \Comment{$s$-well-separated condition}
+        \State $\text{balance} \gets \max(|A|, |B|)$ \Comment{Balance score: size of larger cluster}
+        \If{$\text{balance} < \text{bestScore}$}
+            \State $\text{bestScore} \gets \text{balance}$
+            \State $\text{bestPartition} \gets (A,B)$
+            \If{$\text{bestScore} = \lceil n/2 \rceil$} \Comment{Perfectly balanced partition found}
+                \State \textbf{break}
+            \EndIf
         \EndIf
-    \EndFor
-    \If{\textbf{not} ok}
-        \State \textbf{continue}
-    \EndIf
-
-    \Comment{Separation feasibility: ensure pairwise separation}
-    \State $\text{sep} \gets \textbf{true}$
-    \ForAll{distinct $C, C' \in \mathcal{C}$}
-        \State $\Delta(C,C') \gets \min\{D_{xy}\mid x\in C,\; y\in C'\}$
-        \If{$\Delta(C,C') < s \cdot \max(\diam(C),\diam(C'))$}
-            \State $\text{sep} \gets \textbf{false}$
-            \State \textbf{break}
-        \EndIf
-    \EndFor
-    \If{\textbf{not} sep}
-        \State \textbf{continue}
-    \EndIf
-
-    \Comment{Balance objective: minimize size of largest cluster}
-    \State $\text{score} \gets \max_{C\in\mathcal{C}} \bigl|C\bigr|$
-    \If{$\text{score} < \text{bestScore}$}
-        \State $\text{bestScore} \gets \text{score}$
-        \State $\mathcal{S}^\star \gets \mathcal{C}$
     \EndIf
 \EndFor
 
-\State \Return $\mathcal{S}^\star$
+\State \Return $\text{bestPartition}$
 \end{algorithmic}
 \end{algorithm}
 
-Analyzing the program there are $O(n^2)$ candidate diameter thresholds, and building the edge set takes $O(n^2)$ time, connected components takes $O(n+n^2)$ time, checking diameters takes $O(n^2)$ time, checking separation takes $O(k^2 (n-k)^2)$ [or $O(k^2 n^2)$], and updating the best score takes $O(k)$ time. Therefore the overall time complexity is $O(n^4 + k^2 n^4)$.
+Analyzing the program there are $n-1$ edges in the MST, and for each edge we computer the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time. Thus the overall runtime is $O(n^3)$.
 
 \subsubsection{Second Version}
 
