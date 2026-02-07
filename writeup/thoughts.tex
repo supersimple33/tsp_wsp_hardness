@@ -455,16 +455,17 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then $A$, $B$, and $C$ must be TSP-separated.
 \end{corollary}
 
-%\begin{thm}
-%    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 2$. 
-%    Then a hamiltonian which starts on a point in $a' \in A$ and ends on a point in $c' \in C$ must visit all points in $B$ consecutively.
-%    Furthermore, one of either $A$ or $C$ must be visited consecutively as well.
-%\end{thm}
-%\begin{proof}
-%    Define $D = B \cup C$ and $E = A \cup B$.
-%    Assume by contradiction that both $A$ and $C$s points are not visited consecutively.
-%    Therefore we must have at least four edges of the following form $\{a_1, d_1\}$,
-%\end{proof}
+\subsection{Other Theorems}
+
+\begin{lem}
+    Let $e = (u,v)$ be an edge in the MST of a set of points $P$ in a metric space. Then removing $e$ from the MST creates two disjoint sets of points $A$ and $B$. The weight of edge $e$ is strictly the minimum distance between any point in $A$ and any point in $B$.
+\end{lem}
+\begin{proof}
+    Assume by contradiction that there exists a edge $e' = (x,y)$ where $x \in A$ and $y \in B$ such that the weight of $e' < e$.
+    Then if we add edge $e'$ to the MST we create a cycle. This cycle must cross $A$ and $B$ exactly twice (once at $e'$ and once at $e$).
+    Then we can remove edge $e$ from the cycle to get a new spanning tree with weight less than the original MST which is a contradiction.
+    Therefore the weight of edge $e$ must be strictly the minimum distance between any point in $A$ and any point in $B$.
+\end{proof}
 
 \section{Algorithms}
 
