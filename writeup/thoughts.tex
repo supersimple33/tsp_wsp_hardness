@@ -3,6 +3,7 @@
 \usepackage[style=trad-abbrv]{biblatex}
 \usepackage{amsmath,amsthm,amssymb,dsfont}
 \usepackage{algorithm,algpseudocodex}
+\usepackage{cleveref}
 \usepackage[section]{placeins}
 %\usepackage{draftwatermark}
 %\SetWatermarkScale{8}
@@ -458,10 +459,10 @@ There may be a way to deterministically say which of the two cases will occur ba
 \section{Algorithms}
 
 \begin{algorithm}[H]
-\caption{\textsc{FindBestBalancedSeparation}$(D,s)$}
-\label{alg:find_best_balanced_separation}
+\caption{\textsc{BestBalancedBiPartition}$(D,s)$}
+\label{alg:balanced-bipartition}
 \begin{algorithmic}[1]
-\Require A metric distance matrix $D \in \mathbb{R}^{n \times n}$ (symmetric, triangle inequality), separation factor $s > 0$
+\Require A metric distance matrix $D \in \mathbb{R}^{n \times n}$ (symmetric, triangle inequality), separation factor $s > 1$
 \Ensure A bi-partition $(A,B)$ that is $s$-well-separated and maximally balanced, or \textsc{NULL} if no such partition exists
 
 \State $E \gets \textsc{BuildMST}(D)$ \Comment{$n-1$ edges}
@@ -494,7 +495,7 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 Analyzing the program there are $n-1$ edges in the MST, and for each edge we computer the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time. Thus the overall runtime is $O(n^3)$.
 
-\begin{lem}
+\begin{lem}\label{lem:mst-contains-min-edge}
     Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Then any MST of $P$ must contain an edge which represents the minimum distance between $A$ and $B$.
 \end{lem}
 \begin{proof}
@@ -506,6 +507,16 @@ Analyzing the program there are $n-1$ edges in the MST, and for each edge we com
     However by the minimax property of the MST we know that $\omega(e') \leq \omega(e)$.
     Thus $\omega(e) = \omega(e')$ and therefore the MST contains an edge representing the minimum distance between $A$ and $B$.
 \end{proof}
+
+\begin{thm}
+    If there exists a bi-partition of the points that is $s$-well-separated, then \cref{alg:balanced-bipartition} will find a bi-partition that is $s$-well-separated and maximally balanced.
+\end{thm}
+\begin{proof}[Sketch of Proof]
+    It follows from \cref{lem:mst-contains-min-edge} that if there exists a bi-partition of the points that is $s$-well-separated, then there must be an edge in the MST that represents the minimum distance between the two clusters in that bi-partition.
+    If it were the case that more than one edge needed to be cut from the MST to create the two clusters in the bi-partition, then it would have a separation factor of $s \leq 1$ contradicting the assumption that the bi-partition is $s$-well-separated for $s > 1$ (this argument can be observed by noting the diameter of the outer set must be at least as long as the cut edge).
+    Therefore, we can conclude that the algorithm iterates over all applicable bi-partitions of the points and selects the most balanced one among them.
+\end{proof}
+
 
 
 \subsubsection{Second Version}
