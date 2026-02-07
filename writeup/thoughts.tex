@@ -455,18 +455,6 @@ There may be a way to deterministically say which of the two cases will occur ba
     Then $A$, $B$, and $C$ must be TSP-separated.
 \end{corollary}
 
-\subsection{Other Theorems}
-
-\begin{lem}
-    Let $e = (u,v)$ be an edge in the MST of a set of points $P$ in a metric space. Then removing $e$ from the MST creates two disjoint sets of points $A$ and $B$. The weight of edge $e$ is strictly the minimum distance between any point in $A$ and any point in $B$.
-\end{lem}
-\begin{proof}
-    Assume by contradiction that there exists a edge $e' = (x,y)$ where $x \in A$ and $y \in B$ such that the weight of $e' < e$.
-    Then if we add edge $e'$ to the MST we create a cycle. This cycle must cross $A$ and $B$ exactly twice (once at $e'$ and once at $e$).
-    Then we can remove edge $e$ from the cycle to get a new spanning tree with weight less than the original MST which is a contradiction.
-    Therefore the weight of edge $e$ must be strictly the minimum distance between any point in $A$ and any point in $B$.
-\end{proof}
-
 \section{Algorithms}
 
 \begin{algorithm}[H]
@@ -505,6 +493,20 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{algorithm}
 
 Analyzing the program there are $n-1$ edges in the MST, and for each edge we computer the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time. Thus the overall runtime is $O(n^3)$.
+
+\begin{lem}
+    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Then any MST of $P$ must contain an edge which represents the minimum distance between $A$ and $B$.
+\end{lem}
+\begin{proof}
+    Let $e = (u,v)$ be an edge representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$. 
+    Suppose that $e$ is not in some MST of $P$. 
+    Then by adding $e$ to the MST we create a cycle.
+    Since $u \in A$ and $v \in B$ there must exist another edge $e' = (u', v')$ in the cycle where $u' \in A$ and $v' \in B$.
+    Since $e$ represents the minimum distance between $A$ and $B$ we have that $\omega(e) \leq \omega(e')$.
+    However by the minimax property of the MST we know that $\omega(e') \leq \omega(e)$.
+    Thus $\omega(e) = \omega(e')$ and therefore the MST contains an edge representing the minimum distance between $A$ and $B$.
+\end{proof}
+
 
 \subsubsection{Second Version}
 
