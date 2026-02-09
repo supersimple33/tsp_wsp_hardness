@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TypeVar
 
 import numpy as np
-from scipy.sparse.csgraph import connected_components
+from scipy.sparse.csgraph import connected_components, minimum_spanning_tree
 
 N = TypeVar("N", bound=int)
 M = TypeVar("M", bound=int)
@@ -12,6 +12,11 @@ DistMatrix = np.ndarray[tuple[N, N], np.dtype[np.floating]]
 NodeList = np.ndarray[tuple[M], np.dtype[np.integer]]
 AdjMatrix = np.ndarray[tuple[N, N], np.dtype[np.bool_]]
 
+def csr_entries(A):
+    for i in range(A.shape[0]):
+        start, end = A.indptr[i], A.indptr[i+1]
+        for k in range(start, end):
+            yield i, A.indices[k], A.data[k]
 
 def _candidate_diameters(D: DistMatrix) -> np.ndarray:
     n = D.shape[0]
@@ -113,6 +118,37 @@ def min_intercluster_distance(D: DistMatrix, A: NodeList, B: NodeList) -> np.flo
     return np.min(submatrix)
 
 
+def best_bipartition(D: DistMatrix, s: float, tol=1e-12) -> tuple[NodeList, NodeList] | None:
+    """Convenience wrapper for k=2 case."""
+    mst_edge_weights = minimum_spanning_tree(D)
+    
+    best_score = D.shape[0] # larger than any possible score
+    best_partition: tuple[NodeList, NodeList] | None = None
+    
+    for i, j, e in csr_entries(mst_edge_weights):
+        mst_edge_weights[i, j] = 0  # Temporarily remove edge (i, j)
+        mst_edge_weights.eliminate_zeros()  # Remove zero entries to maintain sparsity
+        _, labels = connected_components(
+            csgraph=mst_edge_weights,
+            directed=False,
+            return_labels=True,
+        )
+        mst_edge_weights[i, j] = e  # Restore edge (i, j)
+        A, B = [np.flatnonzero(labels == g) for g in range(2)]
+        balance_score = max(A.size, B.size)
+        if balance_score >= best_score:
+            continue
+        
+        diam_a = diameter_of_set(D, A)
+        if e >= s * diam_a - tol:
+            diam_b = diameter_of_set(D, B)
+            if e >= s * diam_b - tol:
+                best_score = balance_score
+                best_partition = (A, B)
+                if best_score == (D.shape[0] + 1) // 2:
+                    break
+    return best_partition
+
 # -------------------------
 # Small usage example
 # -------------------------
@@ -121,7 +157,7 @@ if __name__ == "__main__":
     pts = np.asarray([0.0, 0.1, 0.2, 10.0, 10.1, 20.0], dtype=np.float32)
     D = np.abs(pts[:, None] - pts[None, :])
 
-    clusters = balanced_metric_split(D, s=0.5, k=3)
+    clusters = best_bipartition(D, s=0.5)
     print("Clusters (0-indexed):", clusters)
     # Pretty print with point values
     print("Clusters (by value):", [[pts[i] for i in c] for c in clusters])
