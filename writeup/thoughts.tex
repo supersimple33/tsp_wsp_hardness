@@ -493,19 +493,31 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{algorithmic}
 \end{algorithm}
 
-Analyzing the program there are $n-1$ edges in the MST, and for each edge we computer the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time. Thus the overall runtime is $O(n^3)$.
+Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time to compute, and for each edge we compute the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time. Thus the overall runtime is $O(n^3)$.
 
 \begin{lem}\label{lem:mst-contains-min-edge}
-    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Then any MST of $P$ must contain an edge which represents the minimum distance between $A$ and $B$.
+    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Then any MST of $P$ must contain at least on edge connecting the two clusters $A$ and $B$ that is minimal among all edges connecting $A$ and $B$.
 \end{lem}
 \begin{proof}
-    Let $e = (u,v)$ be an edge representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$. 
+    Let $e = (u,v)$ be an edge representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$.
     Suppose that $e$ is not in some MST of $P$. 
     Then by adding $e$ to the MST we create a cycle.
     Since $u \in A$ and $v \in B$ there must exist another edge $e' = (u', v')$ in the cycle where $u' \in A$ and $v' \in B$.
     Since $e$ represents the minimum distance between $A$ and $B$ we have that $\omega(e) \leq \omega(e')$.
     However by the minimax property of the MST we know that $\omega(e') \leq \omega(e)$.
     Thus $\omega(e) = \omega(e')$ and therefore the MST contains an edge representing the minimum distance between $A$ and $B$.
+\end{proof}
+
+\begin{lem}\label{lem:multiple-cuts-bound-separation}
+    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Suppose that more than one cut of any MST is required to separate $A$ and $B$. Then $(A,B)$ cannot be $s$-well-separated for any $s > 1$.
+\end{lem}
+\begin{proof}
+    Let $e = (u, v)$ be the edge in the MST representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$ which must exist by \cref{lem:mst-contains-min-edge}.
+    Since more than one cut is required to separate $A$ and $B$, there must be another edge $e' = (v', u')$ in the MST where $u' \in A$ and $v' \in B$.
+    Let $M = \max\{\diam(A), \diam(B)\}$.
+    Define $e^* = (u, u')$ then we know that $\omega(e^*) \leq M$ by the definition of diameter.
+    However by the minimax property of the MST we have that $\omega(e) \leq \omega(e^*)$.
+    Thus $\omega(e) \leq M$ and therefore $(A,B)$ cannot be $s$-well-separated for any $s > 1$.
 \end{proof}
 
 \begin{thm}
