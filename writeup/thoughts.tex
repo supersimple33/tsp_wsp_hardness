@@ -472,20 +472,22 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 \ForAll{edges $e = (u,v)$ in $E$}
     \State $(A,B) \gets \textsc{ConnectedComponents}(E \setminus \{e\})$
+    \State $\text{balance} \gets \max(|A|, |B|)$ \Comment{Balance score: size of larger cluster}
+    \If{$\text{balance} \geq \text{bestScore}$}
+        \State \textbf{continue} \Comment{Skip if not better than current best}
+    \EndIf
+
     \State $\delta \gets w(e)$ \Comment{Single-linkage separation distance}
-    
+
     \State $\operatorname{diam}(A) \gets \textsc{ComputeDiameter}(A,D)$
     \State $\operatorname{diam}(B) \gets \textsc{ComputeDiameter}(B,D)$
     \State $M \gets \max\{\operatorname{diam}(A), \operatorname{diam}(B)\}$
 
     \If{$\delta \ge s \cdot M$} \Comment{$s$-well-separated condition}
-        \State $\text{balance} \gets \max(|A|, |B|)$ \Comment{Balance score: size of larger cluster}
-        \If{$\text{balance} < \text{bestScore}$}
-            \State $\text{bestScore} \gets \text{balance}$
-            \State $\text{bestPartition} \gets (A,B)$
-            \If{$\text{bestScore} = \lceil n/2 \rceil$} \Comment{Perfectly balanced partition found}
-                \State \textbf{break}
-            \EndIf
+        \State $\text{bestScore} \gets \text{balance}$
+        \State $\text{bestPartition} \gets (A,B)$
+        \If{$\text{bestScore} = \lceil n/2 \rceil$} \Comment{Perfectly balanced partition found}
+            \State \textbf{break}
         \EndIf
     \EndIf
 \EndFor
