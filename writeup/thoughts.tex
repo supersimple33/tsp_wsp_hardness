@@ -2,6 +2,7 @@
 \usepackage[colorlinks=true, linkcolor=blue, citecolor=black, urlcolor=black]{hyperref}
 \usepackage[style=trad-abbrv]{biblatex}
 \usepackage{amsmath,amsthm,amssymb,dsfont}
+\usepackage{thmtools}
 \usepackage{algorithm,algpseudocodex}
 \usepackage{cleveref}
 \usepackage[section]{placeins}
@@ -512,7 +513,7 @@ Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time
     Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Suppose that more than one cut of any MST is required to separate $A$ and $B$. Then $(A,B)$ cannot be $s$-well-separated for any $s > 1$.
 \end{lem}
 \begin{proof}
-    Let $e = (u, v)$ be the edge in the MST representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$ which must exist by \cref{lem:mst-contains-min-edge}.
+    Let $e = (u, v)$ be the edge in the MST representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$ which must exist by \Cref{lem:mst-contains-min-edge}.
     Since more than one cut is required to separate $A$ and $B$, there must be another edge $e' = (v', u')$ in the MST where $u' \in A$ and $v' \in B$.
     Let $M = \max\{\diam(A), \diam(B)\}$.
     Define $e^* = (u, u')$ then we know that $\omega(e^*) \leq M$ by the definition of diameter.
@@ -521,15 +522,14 @@ Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time
 \end{proof}
 
 \begin{thm}
-    If there exists a bi-partition of the points that is $s$-well-separated, then \cref{alg:balanced-bipartition} will find a bi-partition that is $s$-well-separated and maximally balanced.
+    If there exists a bi-partition of the points that is $s$-well-separated (where $s>1$), then \Cref{alg:balanced-bipartition} will find a bi-partition that is $s$-well-separated and maximally balanced.
 \end{thm}
-\begin{proof}[Sketch of Proof]
-    It follows from \cref{lem:mst-contains-min-edge} that if there exists a bi-partition of the points that is $s$-well-separated, then there must be an edge in the MST that represents the minimum distance between the two clusters in that bi-partition.
-    If it were the case that more than one edge needed to be cut from the MST to create the two clusters in the bi-partition, then it would have a separation factor of $s \leq 1$ contradicting the assumption that the bi-partition is $s$-well-separated for $s > 1$ (this argument can be observed by noting the diameter of the outer set must be at least as long as the cut edge).
-    Therefore, we can conclude that the algorithm iterates over all applicable bi-partitions of the points and selects the most balanced one among them.
+\begin{proof}
+    It follows from \Cref{lem:multiple-cuts-bound-separation} that since $s>1$ then any bi-partition that is $s$-well-separated must be separable by a single cut of any MST.
+    Since \Cref{alg:balanced-bipartition} iterates through all edges of the MST and checks the bi-partition induced by cutting that edge, it will find all bi-partitions that are $s$-well-separated.
+    Among these bi-partitions, the algorithm keeps track of the one with the best balance score (size of larger cluster) and returns it at the end.
+    Therefore if there exists a bi-partition that is $s$-well-separated, the algorithm will find and return a bi-partition that is $s$-well-separated and maximally balanced.
 \end{proof}
-
-
 
 \subsubsection{Second Version}
 
