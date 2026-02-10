@@ -533,6 +533,20 @@ Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time
     Therefore if there exists a bi-partition that is $s$-well-separated, the algorithm will find and return a bi-partition that is $s$-well-separated and maximally balanced.
 \end{proof}
 
+\begin{thm}
+    Any algorithm that finds the best balanced bi-partition that is $s$-well-separated for $s\leq1$ is NP-hard.
+\end{thm}
+\begin{proof}
+    This can be shown by a reduction from the Partition problem.
+    Given a multiset of $n$ positive integers $S = \{x_1, x_2, \dots, x_n\}$, the Partition problem asks whether $S$ can be
+    partitioned into two subsets $S_1$ and $S_2$ such that the sum of the elements in each subset is equal.
+    We can construct a special set of points $P$ in the following way: for each integer $x_i$ in $S$, create $x_i$ points that are clumped on a unique vertex of the $n$ simplex. 
+    Assume that the solution to the partition problem has each partition made up of at least two integers (if not we can trivially check for this case).
+    Since every clump lies on a unique vertex of the simplex, the diameter of any partition is 1 and the distance between any two partitions is 1 thus making the separation factor exactly 1.
+    Therefore any bi-partition of $P$ is 1-well-separated.
+    It can then be noted that after solving for the best balanced bi-partition of $P$ that is $s$-well-separated for $s \leq 1$, if the resulting bi-partition has both clusters with equal size, then the answer to the Partition problem is yes and if not then the answer must be no.
+\end{proof}
+
 \subsubsection{Second Version}
 
 \begin{algorithm}[H]
