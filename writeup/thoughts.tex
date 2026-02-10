@@ -18,6 +18,7 @@
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{lem}[thm]{Lemma}
 \newtheorem{corollary}{Corollary}[thm]
+\newtheorem*{rem*}{Remark}
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{Definition}
 
@@ -191,6 +192,16 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \begin{corollary}\label{cor:wsp_tsp}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 1$. Then $A$ and $B$ must be TSP-separated.
 \end{corollary}
+
+\begin{rem*}
+    The previous corollary cannot be guaranteed for $s \leq 0.5$
+\end{rem*}
+\begin{proof}
+    If $s \leq 0.5$ a evil problem can be created in 1d. 
+    Consider $A=\{0,1\}$ and $B=\{0.5,1.5\}$. 
+    The diameter of each set is 1 and distance between the two sets is 0.5 making them 0.5-well-separated.
+    However the optimal TSP tour on $A \cup B$ is $0 \to 0.5 \to 1 \to 1.5 \to 0$ which would contradict \Cref{cor:wsp_tsp} if it applied for $s \leq 0.5$.
+\end{proof}
 
 \subsection{Properly Structured WSPDs imply Tour Structure}
 
