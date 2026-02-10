@@ -58,8 +58,9 @@ The main theorem I am proving here is Corollary~\ref{cor:wsp_tsp} and Theorem~\r
 \subsection{My definitions}
 
 \begin{defn}
-    Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ visits all points in $A$ before any point in $B$ (or vice versa). 
-    Furthermore, Let $P = A \cup B \cup C$ (with all three pairwise disjoint). We say that $A$, $B$, and $C$ are \textbf{TSP-Separated} if the \emph{any} optimal TSP tour on $P$ has exactly 3 or 4 edges connecting the three sets. 
+    Let $P = A \cup B$ (with $A \cap B = \emptyset$). We say that $A$ and $B$ are \textbf{TSP-Separated} if there exists an optimal TSP tour on $P$ that visits all points in $A$ before any point in $B$ (or vice versa). 
+    Furthermore, Let $P = A \cup B \cup C$ (with all three pairwise disjoint). We say that $A$, $B$, and $C$ are \textbf{TSP-Separated} if 
+    there exists an optimal TSP tour on $P$ that has exactly 3 or 4 edges connecting the three sets. 
 \end{defn}
 
 \begin{defn}
@@ -135,15 +136,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \subsection{Well-Separated Sets are Path/Tour Separated}
 
 \begin{thm}\label{thm:wsp_path_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 1$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then there exists an optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ that visits all points in $A$ before any point in $B$. Furthermore if $s > 1$ then all optimal hamiltonians must visit all points in $A$ before any point in $B$.
 \end{thm}
 \begin{proof}
-    Let $|A| = n$ and $|B| = m$.
-    WLOG assume that $n,m \geq 3$.
-
-    Assume by contradiction that the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ does not visit all points in $A$ before any point in $B$ (or vice versa).
-    Then the optimal hamiltonian path on $A \cup B$ must contain at least three edges of the form $(a_i, b_i)$ where $a_i \in A$ and $b_i \in B$.
-    WLOG let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3)$ ordered as they appear in the path.
+    Assume that for some optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ it does not visit all points in $A$ before any point in $B$.
+    Then it must contain at least three edges crossing between $A$ and $B$.
+    Let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
     $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b'$$
 
@@ -158,19 +156,19 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
         &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_3 b_3| \\
         &= \frac{1}{s} (|a_1 b_1| + |a_3 b_3|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
-    Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a' \in A$ and $b' \in B$ must visit all points in $A$ before any point in $B$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$. 
+    If $s > 1$ this is a contradiction and therefore any non-consecutive path cannot be optimal.
+    If $s=1$ then we can conclude that $|a_1 b_1| + |a_3 b_3| = |a_1 a_3| + |b_1 b_3|$ which implies that the newly constructed path is also optimal. 
+    It follows via induction that any extra loop between $A$ and $B$ can be removed to construct an optimal hamiltonian path that visits all points in $A$ before any point in $B$.
 \end{proof}
 
 \begin{thm}\label{thm:wsp_path_aa}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 1$. Then the optimal hamiltonian path on $A \cup B$ with endpoints $a',a'' \in A$ must only contain two edges between $A$ and $B$.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then there exists an optimal hamiltonian path between endpoints $a', a'' \in A$ over $A \cup B$ that visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
 \end{thm}
 \begin{proof}
-    Let $|A| = n$ and $|B| = m$.
-    WLOG assume that $n,m \geq 4$.
-
-    Assume by contradiction that the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ contains at least four edges of the form $(a_i, b_i)$ where $a_i \in A$ and $b_i \in B$.
-    WLOG let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3), (b_4, a_4)$ ordered as they appear in the path.
+    Assume that for some optimal hamiltonian path between endpoints $a', a'' \in A$ over $A \cup B$ it does not visit all points in $B$ consecutively.
+    Then the path must contain at least four edges crossing between $A$ and $B$.
+    Let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3), (b_4, a_4)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
     $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
 
@@ -185,12 +183,14 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
         &\leq \frac{1}{s} |b_2 a_2| + \frac{1}{s} |b_4 a_4| \\
         &= \frac{1}{s} (|b_2 a_2| + |b_4 a_4|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
-    Therefore the optimal hamiltonian path on $A \cup B$ with endpoints $a', a'' \in A$ must only contain two edges between $A$ and $B$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ this is a contradiction and therefore any non-consecutive path cannot be optimal.
+    If $s=1$ then we can conclude that $|b_2 a_2| + |b_4 a_4| = |b_2 b_4| + |a_2 a_4|$ which implies that the newly constructed path is also optimal. 
+    It follows via induction that any extra loop between $A$ and $B$ can be removed to construct an optimal hamiltonian path that visits all points in $B$ consecutively.
 \end{proof}
 
 \begin{corollary}\label{cor:wsp_tsp}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 1$. Then $A$ and $B$ must be TSP-separated.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Furthermore if $s > 1$ then all optimal TSP tours on $A \cup B$ must visit all points in $A$ before any point in $B$ (or vice versa).
 \end{corollary}
 
 \begin{rem*}
@@ -204,6 +204,8 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \subsection{Properly Structured WSPDs imply Tour Structure}
+
+\emph{TODO: Update these to have $s=1.0$}
 
 \begin{thm}\label{thm:bin_wspd_tour_structure}
     Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 1$. 
@@ -253,6 +255,8 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 There may be a way to deterministically say which of the two cases will occur based on the structure of the WSPD but I have not yet found it.
 
 \subsection{Moving beyond binary WSPDs}
+
+\emph{TODO: Update these to have $s=1.0$}
 
 \begin{thm}
     Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 1$. 
