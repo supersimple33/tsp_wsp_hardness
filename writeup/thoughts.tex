@@ -194,13 +194,13 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{corollary}
 
 \begin{rem*}
-    The previous corollary cannot be guaranteed for $s \leq 0.5$
+    The previous corollary cannot be guaranteed for $s \leq \frac{1}{\sqrt{2}}$
 \end{rem*}
 \begin{proof}
-    If $s \leq 0.5$ a evil problem can be created in 1d. 
-    Consider $A=\{0,1\}$ and $B=\{0.5,1.5\}$. 
-    The diameter of each set is 1 and distance between the two sets is 0.5 making them 0.5-well-separated.
-    However the optimal TSP tour on $A \cup B$ is $0 \to 0.5 \to 1 \to 1.5 \to 0$ which would contradict \Cref{cor:wsp_tsp} if it applied for $s \leq 0.5$.
+    If $s \leq \frac{1}{\sqrt{2}}$ a evil problem can be created in euclidean 2d. 
+    Consider $A=\{(0,0), (1,1)\}$ and $B=\{(0,1), (1,0)\}$.
+    The diameter of each set is $\sqrt{2}$ and distance between the two sets is $1$ making them $\frac{1}{\sqrt{2}}$-well-separated.
+    However the optimal TSP tour on $A \cup B$ is $(0,0) \to (0,1) \to (1,1) \to (1,0) \to (0,0)$ which would contradict \Cref{cor:wsp_tsp} if it applied for $s \leq \frac{1}{\sqrt{2}}$.
 \end{proof}
 
 \subsection{Properly Structured WSPDs imply Tour Structure}
@@ -622,6 +622,16 @@ Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time
 \begin{thm}[There is a better bound]
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s > 2.5$. Then $A$ and $B$ must be TSP-separated.
 \end{thm}
+
+\begin{rem*}
+    The previous corollary cannot be guaranteed for $s \leq 0.5$
+\end{rem*}
+\begin{proof}
+    If $s \leq 0.5$ a evil problem can be created in 1d. 
+    Consider $A=\{0,1\}$ and $B=\{0.5,1.5\}$. 
+    The diameter of each set is 1 and distance between the two sets is 0.5 making them 0.5-well-separated.
+    However the optimal TSP tour on $A \cup B$ is $0 \to 0.5 \to 1 \to 1.5 \to 0$ which would contradict \Cref{cor:wsp_tsp} if it applied for $s \leq 0.5$.
+\end{proof}
 
 \section{Dead ends}
 % these theorems are false
