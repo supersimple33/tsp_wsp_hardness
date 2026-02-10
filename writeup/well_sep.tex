@@ -60,9 +60,9 @@
     Despite their widespread use, comparatively little is known about how well-separation constrains the structure of tours in the metric Traveling Salesman Problem (TSP). 
     
     In this work, we investigate the relationship between WSPDs and TSP tours, providing new insights into how well-separation can be leveraged to design efficient heuristics for the metric TSP. 
-    Our main results revolves around proving that if a point set can be partitioned into well-separated sets, then any optimal TSP tour must respect the structure of the partitioning.
-    We then show how stronger constraints can be obtained when the point set admits a well-separated pair decomposition with certain separation properties.
-    Furthermore, we develop efficient algorithms for testing whether a given point set can be partitioned into well-separated sets, and how to leverage such a partitioning to efficiently compute optimal TSP tours in special cases.
+    Our main results revolves around proving that if a point set can be partitioned into two well-separated sets, then any optimal TSP tour must visit the points in each set consecutively.
+    We then show how if the separation holds in a hierarchical manner, then the optimal TSP tour must respect the hierarchical structure of the WSPD, meaning that there is exactly one or two edges connecting the points of each well-separated pair in the decomposition.
+    Furthermore, we develop efficient algorithms for testing whether a given point set can be partitioned into well-separated sets, and how to leverage such a partitioning to efficiently compute optimal TSP tours.
     Finally, we discuss the relevance of these results by observing the existence of TSPLIB instances that can be partitioned into well-separated sets. We further determine that when randomly generating point sets down to a separation factor of $s\approx0.5$ the problems still obey the results of the theorem which was proved for $s>1$.
 \end{abstract}
 
