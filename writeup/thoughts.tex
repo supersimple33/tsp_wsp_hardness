@@ -298,6 +298,17 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     By \Cref{thm:wsp_path_ab} we know that there exists an optimal hamiltonian path between the two endpoints in $A' \cup B$ that visits all points in $A'$ before any point in $B$ and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $A'$ before any point in $B$.
 \end{proof}
 
+\begin{lem}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $b'_e,b''_e \in B$ has a solution where each path has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{lem}
+\begin{proof}
+    Suppose that for some solution one of its paths has more than one edge connecting $A$ to $B$.
+    Then we can define the set of points in $A,B$ from the first path as $A^*, B^*$. 
+    Then we can note that $A^*$ and $B^*$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
+    By \Cref{thm:wsp_path_ab} we know that there exists an optimal hamiltonian path between the two endpoints in $A^* \cup B^*$ that only has a single edge connecting $A^*$ to $B^*$ and furthermore if $s > 1$ then all optimal hamiltonian paths must only have a single edge connecting $A^*$ to $B^*$.
+    If $s=1$ and the other path also has more than one edge connecting $A$ to $B$ then we can apply the same argument to construct an optimal solution where both paths only have a single edge connecting $A$ to $B$.
+\end{proof}
+
 
 \subsubsection{Full Structure Analysis}
 
