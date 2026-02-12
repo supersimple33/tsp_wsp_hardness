@@ -215,14 +215,17 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \subsubsection{Second Level Analysis}
 
 \begin{lem}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e, a''_e \in A$ has a solution where one path only has points in $A$ and another visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal hamiltonian paths must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
+    Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e, a''_e \in A$ has a solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
     Assume that for some solution to the problem the two optimal paths each visit some points in $B$.
     We will define the set of points in $A,B$ from the first path as $A^*, B^*$ and the set of points in $A,B$ from the second path as $A^\dagger, B^\dagger$.
     Then we can note that there must be the following edges in the first path:
-    $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in the second path: 
-    $(a^\dagger_1, b^\dagger_1), (b^\dagger_2, a^\dagger_2)$ all ordered as they appear in their respective paths.
+    $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in the other path: 
+    $(a^\dagger_1, b^\dagger_1)$ all ordered as they appear in their respective paths.
+    WLOG let the first path have endpoints $a'_s$ and $a'_e$ and let the second path have endpoints $a''_s$ and $a''_e$.
     This gives the following partial structure of the paths:
     $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
     \quad\quad
@@ -245,11 +248,54 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$. 
     If $s > 1$ this is a contradiction and therefore any solution where both paths visit some points in $B$ cannot be optimal.
     If $s=1$ then we can conclude that $|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| = |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1|$ which implies that the newly constructed paths are also optimal.
-    It follows via induction that all the extra loops between $A$ and $B$ can be removed from one of the paths to construct a solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
+    It follows via induction that all the extra loops between $A$ and $B$ can be removed from one of the paths to construct a solution where one path only has points in $A$ and another visits all points in $B$.
 
-    From here we can take the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
+    From here we can examine the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
     We can then note that $A'$ and $B$ are $s$-well-separated.
     By \Cref{thm:wsp_path_aa} we know that there exists an optimal hamiltonian path between the two endpoints in $A'$ that visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
+\end{proof}
+
+%\begin{corollary}
+%    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between where all starting and ending nodes are in $A$ has a solution where all but one path has only points in $A$ and one path visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+%\end{corollary}
+
+\begin{lem}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{lem}
+\begin{proof}
+    Assume that for some solution to the problem the two optimal paths each visit some points in $B$.
+    We will define the set of points in $A,B$ from the first path as $A^*, B^*$ and the set of points in $A,B$ from the second path as $A^\dagger, B^\dagger$.
+    Then we can note that there must be the following edges in the first path:
+    $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in the other path: 
+    $(a^\dagger_1, b^\dagger_1)$ all ordered as they appear in their respective paths.
+    WLOG let the first path have endpoints $a'_s$ and $a'_e$ and let the second path have endpoints $a''_s$ and $b'_e$.
+    This gives the following partial structure of the paths:
+    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
+    \quad\quad
+    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b'_e$$
+
+    Since the paths are optimal we know that they satisfy the 2-optimality condition implying the following:
+    $|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| \leq |b^*_2 b^\dagger_1| + |a^\dagger_1 a^*_2|$.
+    This is to say that the following paths must have a combined length at least as long as the original paths:
+    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to b^\dagger_1 \leadsto b'_e
+    \quad\quad
+    a''_s \leadsto a^\dagger_1 \to a^*_2 \leadsto a'_e$$
+
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{1}{s} |a_i b_i|$. From this we can conclude the following:
+    \begin{align*}
+        |b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| &\leq |b^*_2 b^\dagger_1| + |a^\dagger_1 a^*_2| \\
+        &\leq \frac{1}{s} |b^*_2 a^*_2| + \frac{1}{s} |a^\dagger_1 b^\dagger_1| \\
+        &= \frac{1}{s} (|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1|)
+    \end{align*}
+
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ this is a contradiction and therefore any solution where both paths visit some points in $B$ cannot be optimal.
+    If $s=1$ then we can conclude that $|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| = |b^*_2 b^\dagger_1| + |a^\dagger_1 a^*_2|$ which implies that the newly constructed paths are also optimal.
+    It follows via induction that all the extra loops between $A$ and $B$ can be removed from one of the paths to construct a solution where one path only has points in $A$ and the other visits all points in $B$.
+
+    From here we can examine the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
+    We can then note that $A'$ and $B$ are $s$-well-separated.
+    By \Cref{thm:wsp_path_ab} we know that there exists an optimal hamiltonian path between the two endpoints in $A' \cup B$ that visits all points in $A'$ before any point in $B$ and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $A'$ before any point in $B$.
 \end{proof}
 
 
