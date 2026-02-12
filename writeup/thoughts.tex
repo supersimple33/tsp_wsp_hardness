@@ -1,6 +1,5 @@
 \documentclass{article}
 \usepackage[colorlinks=true, linkcolor=blue, citecolor=black, urlcolor=black]{hyperref}
-\usepackage[style=trad-abbrv]{biblatex}
 \usepackage{amsmath,amsthm,amssymb,dsfont}
 \usepackage{thmtools}
 \usepackage{algorithm,algpseudocodex}
@@ -134,6 +133,7 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
 I haven't been able to prove it either way yet, but I believe the bound can be tightened for this theorem. 
 
 \subsection{Well-Separated Sets are Path/Tour Separated}
+\subsubsection{Base Level Analysis}
 
 \begin{thm}\label{thm:wsp_path_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then there exists an optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ that visits all points in $A$ before any point in $B$. Furthermore if $s > 1$ then all optimal hamiltonians must visit all points in $A$ before any point in $B$.
@@ -212,9 +212,48 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Any tour which visits all points in $A$ before any point in $B$ (or vice versa) must have length at least $2 \cdot 2^{1/p} + 2$ which is strictly greater than the optimal tour which has length $4$.
 \end{proof}
 
-\subsection{Properly Structured WSPDs imply Tour Structure}
+\subsubsection{Second Level Analysis}
 
-\emph{TODO: Update these to have $s=1.0$}
+\begin{lem}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e, a''_e \in A$ has a solution where one path only has points in $A$ and another visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal hamiltonian paths must satisfy this property.
+\end{lem}
+\begin{proof}
+    Assume that for some solution to the problem the two optimal paths each visit some points in $B$.
+    We will define the set of points in $A,B$ from the first path as $A^*, B^*$ and the set of points in $A,B$ from the second path as $A^\dagger, B^\dagger$.
+    Then we can note that there must be the following edges in the first path:
+    $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in the second path: 
+    $(a^\dagger_1, b^\dagger_1), (b^\dagger_2, a^\dagger_2)$ all ordered as they appear in their respective paths.
+    This gives the following partial structure of the paths:
+    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
+    \quad\quad
+    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b^\dagger_2 \to a^\dagger_2 \leadsto a''_e$$
+    
+    Since the paths are optimal we know that they satisfy the 2-optimality condition implying the following:
+    $|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| \leq |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1|$.
+    This is to say that the following paths must have a combined length at least as long as the original paths:
+    $$a'_s \leadsto a^*_1 \to a^\dagger_2 \leadsto a''_e
+    \quad\quad
+    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b^\dagger_2 \to a^\dagger_2 \leadsto a''_e$$
+
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j; |a_i a_j| \leq \frac{1}{s} |a_i b_i|$. From this we can conclude the following:
+    \begin{align*}
+        |a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| &\leq |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1| \\
+        &\leq \frac{1}{s} |a^*_1 b^*_1| + \frac{1}{s} |b^\dagger_2 a^\dagger_2| \\
+        &= \frac{1}{s} (|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2|)
+    \end{align*}
+
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$. 
+    If $s > 1$ this is a contradiction and therefore any solution where both paths visit some points in $B$ cannot be optimal.
+    If $s=1$ then we can conclude that $|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| = |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1|$ which implies that the newly constructed paths are also optimal.
+    It follows via induction that all the extra loops between $A$ and $B$ can be removed from one of the paths to construct a solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
+
+    From here we can take the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
+    We can then note that $A'$ and $B$ are $s$-well-separated.
+    By \Cref{thm:wsp_path_aa} we know that there exists an optimal hamiltonian path between the two endpoints in $A'$ that visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
+\end{proof}
+
+
+\subsubsection{Full Structure Analysis}
 
 \begin{thm}\label{thm:bin_wspd_tour_structure}
     Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 1$. 
