@@ -118,12 +118,13 @@ def min_intercluster_distance(D: DistMatrix, A: NodeList, B: NodeList) -> np.flo
     return np.min(submatrix)
 
 
-def best_bipartition(D: DistMatrix, s: float, tol=1e-12) -> tuple[NodeList, NodeList] | None:
+def best_bipartition(D: DistMatrix, s: float, tol=1e-12, report_s=False) -> tuple[tuple[NodeList, NodeList] | None, float | None]:
     """Convenience wrapper for k=2 case."""
     mst_edge_weights = minimum_spanning_tree(D)
     
     best_score = D.shape[0] # larger than any possible score
     best_partition: tuple[NodeList, NodeList] | None = None
+    best_s = 0.0
     
     for i, j, e in csr_entries(mst_edge_weights):
         mst_edge_weights[i, j] = 0  # Temporarily remove edge (i, j)
@@ -140,14 +141,17 @@ def best_bipartition(D: DistMatrix, s: float, tol=1e-12) -> tuple[NodeList, Node
             continue
         
         diam_a = diameter_of_set(D, A)
-        if e >= s * diam_a - tol:
+        if e >= s * diam_a - tol or report_s:
             diam_b = diameter_of_set(D, B)
+            if report_s:
+                candidate_s = e / max(diam_a, diam_b)
+                best_s = max(best_s, candidate_s)
             if e >= s * diam_b - tol:
                 best_score = balance_score
                 best_partition = (A, B)
                 if best_score == (D.shape[0] + 1) // 2:
                     break
-    return best_partition
+    return best_partition, best_s if report_s else None
 
 # -------------------------
 # Small usage example
