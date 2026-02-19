@@ -1,0 +1,3 @@
+[submodule "writeup/MSThesis"]
+	path = writeup/MSThesis
+	url = https://github.com/supersimple33/MSThesis.git
