@@ -132,6 +132,33 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
 \end{proof}
 I haven't been able to prove it either way yet, but I believe the bound can be tightened for this theorem. 
 
+
+\begin{thm}
+    Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - d(k+b)$ where $b$ is the number of non-contiguous blocks of points removed (under $H$).
+\end{thm}
+\begin{proof}
+    Let $Q \subseteq P \setminus \{x,y\}$ be the set of $k$ intermediate points that we remove from $P$.
+    We then partition $Q$ into $b$ blocks of consecutive vertices such that $B_j = \{v_{j,1}, \dots, v_{j,m_j}\}$ is the $j$-th block of points in $Q$ and furthermore there are no edges in $H$ between any two blocks of points in $Q$. 
+    Thus we will have $\sum_j m_j = k$.
+
+    We define $H'$ to be an optimal hamiltonian path between $x$ and $y$ over $P \setminus Q$ and to have length $L'$.
+
+    We can then build a new hamiltonian path $\widehat H$ by inserting the blocks of points in $Q$ back into $H'$ in their same order as they appear in $H$.
+    For a block $B_j$ we select any edge $(u_1, u_2)$ in the current version of $\widehat H$ and replace it with 
+    $(u_1, v_{j,1}), (v_{j,1}, v_{j,2}), \dots, (v_{j,m_j}, u_2)$.
+    The increase in length will be
+    $$\dist(u_1, v_{j,1}) + \sum_{i=1}^{m_j-1} \dist(v_{j,i}, v_{j,i+1}) + \dist(v_{j,m_j}, u_2) - \dist(u_1, u_2)$$
+    
+    Since all distances are at most $d$, the increase is at most $(m_j + 1)d$.
+    Then summing over all $b$ blocks we have the total increase at most $\sum_{j=1}^b (m_j + 1)d = d(k+b)$.
+
+    Then since $H$ is optimal we have that $L \leq L' + d(k+b)$ which implies that $L' \geq L - d(k+b)$ as desired.
+\end{proof}
+
+\begin{corollary}
+     Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - 2dk$.
+\end{corollary}
+
 \subsection{Well-Separated Sets are Path/Tour Separated}
 \subsubsection{Base Level Analysis}
 
