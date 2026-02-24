@@ -462,6 +462,24 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{thm}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has all starting and ending nodes in $A$ has a optimal solution where all paths but one stay within $A$ and the remaining path visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{thm}
+\begin{proof}
+    Suppose that for some optimal solution there are at least two paths that visit some points in $B$.
+    Then we can define two new sets of points $A', B'$ where $A'$ is the set of points in $A$ that are visited by these two paths and $B'$ is the set of points in $B$ that are visited by these two paths.
+    Then we can note that $A'$ and $B'$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
+    If $s > 1$ then this would cause a contradiction as such a solution would also be optimal on the subproblem and thus violate \Cref{lem:wsp_twopath_aa_aa}.
+    If $s = 1$ then we can apply \Cref{lem:wsp_twopath_aa_aa} to construct a solution to the subproblem where one path visits only points in $A'$ and the other path visits all points in $B'$ consecutively.
+    
+    We can then apply this logic repeatedly to construct a solution where only one path visits some points in $B$ and all other paths only have points in $A$.
+    We can then apply \Cref{thm:wsp_path_aa} to the path that visits some points in $B$ to construct a solution where this path visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{proof}
+
+\begin{corollary}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal tsp problem of $k \geq 2$ tours which has all starting and ending nodes in $A$ has a optimal solution where all tours but one stay within $A$ and the remaining tour visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{corollary}
+
+\begin{thm}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has $n$ starting nodes in $A$ and $m$ ending nodes in $A$ with $\min(n,m) \neq k$ and $0 \neq \max(n,m)$ has a solution where there are $|n-m|$ paths with exactly one edge connecting $A$ to $B$. There are $\min(n,m)$ paths with only points in $A$ and there are $k - \max(n,m)$ paths with only points in $B$. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
