@@ -32,6 +32,7 @@
 
 \begin{document}
 \maketitle
+
 \tableofcontents
 
 \section{Work Area}
@@ -112,7 +113,7 @@ Then the following inequalities hold:
 \section{My Theorems}
 \subsection{Hamiltonian Endpoint Distance Bound}
 
-\begin{thm}[You can ignore]
+\begin{thm}
 Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
 \end{thm}
 \begin{proof}
@@ -241,7 +242,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \subsubsection{Second Level Analysis}
 
-\begin{lem}
+\begin{lem}\label{lem:wsp_twopath_aa_aa}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
     Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e, a''_e \in A$ has a solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
     Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
@@ -282,7 +283,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     By \Cref{thm:wsp_path_aa} we know that there exists an optimal hamiltonian path between the two endpoints in $A'$ that visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
 \end{proof}
 
-\begin{lem}\label{lem:wsp_mpath_abab}
+\begin{lem}\label{lem:wsp_twopath_ab_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the optimal multiple hamiltonian paths problem solution between starting nodes $a'_s \in A$ and $b'_s \in B$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where each neither path has a edge connecting $A$ to $B$. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property. 
     Furthermore no optimal solution can have both paths connecting $A$ and $B$.
 \end{lem}
@@ -410,11 +411,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Therefore the first solution is not optimal and thus there does not exist an optimal solution where neither path has an edge connecting $A$ to $B$.
 \end{proof}
 
-%\begin{corollary}
-%    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between where all starting and ending nodes are in $A$ has a solution where all but one path has only points in $A$ and one path visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-%\end{corollary}
-
-\begin{lem}
+\begin{lem}\label{lem:wsp_twopath_aa_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
@@ -453,7 +450,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     By \Cref{thm:wsp_path_ab} we know that there exists an optimal hamiltonian path between the two endpoints in $A' \cup B$ that visits all points in $A'$ before any point in $B$ and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $A'$ before any point in $B$.
 \end{proof}
 
-\begin{lem}
+\begin{lem}\label{lem:wsp_twopath_aa_bb}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $b'_e,b''_e \in B$ has a solution where each path has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
@@ -462,6 +459,50 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Then we can note that $A^*$ and $B^*$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
     By \Cref{thm:wsp_path_ab} we know that there exists an optimal hamiltonian path between the two endpoints in $A^* \cup B^*$ that only has a single edge connecting $A^*$ to $B^*$ and furthermore if $s > 1$ then all optimal hamiltonian paths must only have a single edge connecting $A^*$ to $B^*$.
     If $s=1$ and the other path also has more than one edge connecting $A$ to $B$ then we can apply the same argument to construct an optimal solution where both paths only have a single edge connecting $A$ to $B$.
+\end{proof}
+
+\begin{thm}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has $n$ starting nodes in $A$ and $m$ ending nodes in $A$ with $\min(n,m) \neq k$ and $0 \neq \max(n,m)$ has a solution where there are $|n-m|$ paths with exactly one edge connecting $A$ to $B$. There are $\min(n,m)$ paths with only points in $A$ and there are $k - \max(n,m)$ paths with only points in $B$. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+\end{thm}
+\begin{proof}
+    Say we take a given optimal solution to the problem.
+
+    \textbf{Case 1:} There are not $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
+
+    \textbf{Case 1a:} There are less than $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
+    This is impossible since if there are less than $|n-m|$ paths with one endpoint in $A$ and the other in $B$ then there must be more than $\min(n,m)$ paths with only endpoints points in $A$ or more than $k - \max(n,m)$ paths with only endpoints in $B$ which is a contradiction since those values represent the maximum number of paths that can have only endpoints in $A$ and $B$ respectively.
+
+    \textbf{Case 1b:} There are more than $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
+    In order for this extra path to come about there must be at least one less path from the $\min(n,m)$ paths with only points in $A$ and one less path from the $k - \max(n,m)$ paths with only points in $B$.
+    This would then imply that there are at least two extra paths with one endpoint in $A$ and the other in $B$.
+    However by \Cref{lem:wsp_twopath_ab_ab} we know that if $s > \frac{3}{2}$ then there cannot be two paths with one endpoint in $A$ and the other in $B$ and if $s = \frac{3}{2}$ then there exists an optimal solution where these two extra paths are replaced by two paths that start and end in the same sets (one in $A$ and one in $B$).
+    It follows from structural induction that if $s = \frac{3}{2}$ then there exists an optimal solution where there are exactly $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
+
+    \textbf{Case 2:} There are less than $\min(n,m)$ paths with only endpoints points in $A$ or less than $k - \max(n,m)$ paths with only endpoints in $B$.
+    For this to be the case there must be at least one more path with one endpoint in $A$ and the other in $B$ than $|n-m|$ which is a contradiction since then case 1. would have applied.
+
+    \textbf{Case 3:} There are exactly $|n-m|$ paths with one endpoint in $A$ and the other in $B$ and there are exactly $\min(n,m)$ paths with only endpoints points in $A$ and exactly $k - \max(n,m)$ paths with only endpoints in $B$.
+
+    \textbf{Case 3a:} There is a path with one endpoint in $A$ and the other in $B$ that has more than one edge connecting $A$ to $B$.
+    This is impossible since by \Cref{thm:wsp_path_ab} we know that such a path cannot be optimal when $s > 1$.
+
+    \textbf{Case 3b:} There is a path with both endpoints in $A$ xor $B$ that has an edge connecting $A$ to $B$.
+    WLOG assume that there is a path with both endpoints in $A$ that has an edge connecting $A$ to $B$.
+    Since $\min(n,m) \neq k$ and $0 \neq \max(n,m)$ we know that there must exist at least one other path with an endpoint from $B$
+
+    \textbf{Case 3b.i:} $|m - n| > 0$.
+    We can then choose a single path from the $|n-m|$ paths with one endpoint in $A$ and the other in $B$ and add it to the path with both endpoints in $A$ that has an edge connecting $A$ to $B$ to construct a new multiple hamiltonian paths problem of the points from these two paths.
+    It then follows from \Cref{lem:wsp_twopath_aa_ab} that if the optimal solution to this new problem had the original path with both endpoints in $A$ travelling to $B$ this would be a contradiction since such a path cannot be optimal when $s > 1$.
+
+    \textbf{Case 3b.ii:} $|m - n| = 0$.
+    Then since another path must exist this path must have both endpoints in $B$.
+    We can then form a new multiple hamiltonian paths problem of the points from these two paths.
+    It then follows from \Cref{lem:wsp_twopath_ab_ab} that if $s > \frac{3}{2}$ then having the original path cross into $B$ is impossible.
+    If $s = \frac{3}{2}$ then there exists an optimal solution to this new problem where neither path has an edge connecting $A$ to $B$.
+    It then follows by structural induction that for all paths with the endpoints in the same set (either $A$ or $B$) there exists an optimal solution where none of these paths have an edge connecting $A$ to $B$.
+
+    If $s = \frac{3}{2}$ then there exists an optimal solution that satisfies the property that there are $|n-m|$ paths with exactly one edge connecting $A$ to $B$, there are $\min(n,m)$ paths with only points in $A$ and there are $k - \max(n,m)$ paths with only points in $B$.
+    If $s > \frac{3}{2}$ then all optimal solutions must satisfy the previous properties.
 \end{proof}
 
 
