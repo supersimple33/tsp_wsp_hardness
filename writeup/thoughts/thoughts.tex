@@ -527,6 +527,16 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the multiple optimal travelling salesman problem of $k \geq 2$ paths which has a mixture of starting nodes in $A$ and $B$ has a solution where there are no edges connecting $A$ to $B$ in any of the paths. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{corollary}
 
+\subsubsection{Single WSP Endpoint Set Multi Path Analysis}
+
+\begin{lem}\label{lem:wsp_twopath_aaab}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''' \in A$ and $b' \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{lem}
+\begin{proof}
+    WLOG assume that for some optimal solution to the problem we have one path with endpoints $a', a''$ and another path with endpoints $a''', b'$ (if this is not the case then we can just shuffle the $a$ endpoint names).
+    If $s = 1$ and the solution has both paths visiting some points in $B$ then we can apply \Cref{lem:wsp_twopath_aa_ab} to construct a optimal solution where one path only has points in $A$ and the other path visits all points in $B$ consecutively.
+    If $s > 1$ and the solution doesn't have a path that visits all of $B$ consecutively then this would be a contradiction since by \Cref{lem:wsp_twopath_aa_ab} we know that generating a optimal path with starting nodes $a', a'''$ and ending nodes $a'', b'$ that has more than one edge connecting $A$ to $B$ is impossible.
+\end{proof}
 
 \subsubsection{Binary Nested WSP Single Path Analysis}
 
