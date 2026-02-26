@@ -161,7 +161,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{corollary}
 
 \subsection{Well-Separated Sets are Path/Tour Separated}
-\subsubsection{Base Level Analysis}
+\subsubsection{Single WSP Single Path Analysis}
 
 \begin{thm}\label{thm:wsp_path_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then there exists an optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ that visits all points in $A$ before any point in $B$. Furthermore if $s > 1$ then all optimal hamiltonians must visit all points in $A$ before any point in $B$.
@@ -240,7 +240,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Any tour which visits all points in $A$ before any point in $B$ (or vice versa) must have length at least $2 \cdot 2^{1/p} + 2$ which is strictly greater than the optimal tour which has length $4$.
 \end{proof}
 
-\subsubsection{Second Level Analysis}
+\subsubsection{Single WSP Entry/Exit Fixed Multi Path Analysis}
 
 \begin{lem}\label{lem:wsp_twopath_aa_aa}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
@@ -528,7 +528,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{corollary}
 
 
-\subsubsection{Full Structure Analysis}
+\subsubsection{Binary Nested WSP Single Path Analysis}
 
 \begin{thm}\label{thm:bin_wspd_tour_structure}
     Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s > 1$. 
