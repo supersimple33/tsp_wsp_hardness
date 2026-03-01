@@ -548,6 +548,16 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     It follows from \Cref{lem:wsp_twopath_ab_ab} that under either case if $s > \frac{3}{2}$ then any optimal solution must have no edges connecting $A$ to $B$ and if $s = \frac{3}{2}$ then there exists an optimal solution where there are no edges connecting $A$ to $B$.
 \end{proof}
 
+\begin{lem}\label{lem:wsp_twopath_aaaa}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''',a'''' \in A$ has a solution where only a single path has two edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{lem}
+\begin{proof}
+    Consider two labellings for the endpoints the first where $a', a''$ are required starting nodes and $a''', a''''$ are required ending nodes and the second where $a', a'''$ are required starting nodes and $a'', a''''$ are required ending nodes.
+
+    Then any solution must fall into one of the previous cases.
+    It follows from \Cref{lem:wsp_twopath_aa_aa} that under either case if $s > 1$ then any optimal solution must exactly two edges connecting $A$ to $B$ and if $s = 1$ then there exists an optimal solution where there are exactly two edges connecting $A$ to $B$.
+\end{proof}
+
 \subsubsection{Binary Nested WSP Single Path Analysis}
 
 \begin{thm}\label{thm:bin_wspd_tour_structure}
