@@ -135,7 +135,8 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 
 \begin{thm}
-    Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - d(k+b)$ where $b$ is the number of non-contiguous blocks of points removed (under $H$).
+    Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. 
+    Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - d(k+b)$ where $b$ is the number of non-contiguous blocks of points removed (under $H$).
 \end{thm}
 \begin{proof}
     Let $Q \subseteq P \setminus \{x,y\}$ be the set of $k$ intermediate points that we remove from $P$.
@@ -157,14 +158,18 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{corollary}
-     Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - 2dk$.
+    Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. 
+    Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. 
+    Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - 2dk$.
 \end{corollary}
 
 \subsection{Well-Separated Sets are Path/Tour Separated}
 \subsubsection{Single WSP Single Path Analysis}
 
 \begin{thm}\label{thm:wsp_path_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then there exists an optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ that visits all points in $A$ before any point in $B$. Furthermore if $s > 1$ then all optimal hamiltonians must visit all points in $A$ before any point in $B$.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
+    Then there exists an optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ that visits all points in $A$ before any point in $B$.
+    Furthermore if $s > 1$ then all optimal hamiltonians must visit all points in $A$ before any point in $B$.
 \end{thm}
 \begin{proof}
     Assume that for some optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ it does not visit all points in $A$ before any point in $B$.
@@ -191,7 +196,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{thm}\label{thm:wsp_path_aa}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then there exists an optimal hamiltonian path between endpoints $a', a'' \in A$ over $A \cup B$ that visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
+    Then there exists an optimal hamiltonian path between endpoints $a', a'' \in A$ over $A \cup B$ that visits all points in $B$ consecutively.
+    Furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
 \end{thm}
 \begin{proof}
     Assume that for some optimal hamiltonian path between endpoints $a', a'' \in A$ over $A \cup B$ it does not visit all points in $B$ consecutively.
@@ -218,7 +225,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{corollary}\label{cor:wsp_tsp}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Furthermore if $s > 1$ then all optimal TSP tours on $A \cup B$ must visit all points in $A$ before any point in $B$ (or vice versa).
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
+    Then there exists an optimal TSP tour on $A \cup B$ that visits all points in $A$ before any point in $B$ (or vice versa).
+    Furthermore if $s > 1$ then all optimal TSP tours must satisfy this property.
 \end{corollary}
 
 \begin{rem*}
@@ -284,7 +293,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{lem}\label{lem:wsp_twopath_ab_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the optimal multiple hamiltonian paths problem solution between starting nodes $a'_s \in A$ and $b'_s \in B$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where each neither path has a edge connecting $A$ to $B$. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property. 
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
+    Then the optimal multiple hamiltonian paths problem solution between starting nodes $a'_s \in A$ and $b'_s \in B$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where each neither path has a edge connecting $A$ to $B$. 
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property. 
     Furthermore no optimal solution can have both paths connecting $A$ and $B$.
 \end{lem}
 \begin{proof}
@@ -412,7 +423,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{lem}\label{lem:wsp_twopath_aa_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
+    Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$. 
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
     Assume that for some solution to the problem the two optimal paths each visit some points in $B$.
@@ -451,7 +464,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{lem}\label{lem:wsp_twopath_aa_bb}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $b'_e,b''_e \in B$ has a solution where each path has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
+    Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $b'_e,b''_e \in B$ has a solution where each path has exactly one edge connecting $A$ to $B$.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
     Suppose that for some solution one of its paths has more than one edge connecting $A$ to $B$.
@@ -462,7 +477,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{thm}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has all starting and ending nodes in $A$ has a optimal solution where all paths but one stay within $A$ and the remaining path visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
+    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has all starting and ending nodes in $A$ has a optimal solution where all paths but one stay within $A$ and the remaining path visits all points in $B$ consecutively. 
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     Suppose that for some optimal solution there are at least two paths that visit some points in $B$.
@@ -476,11 +493,16 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{corollary} % follows since deviation would cause contradiction
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal travelling salesman problem of $k \geq 2$ tours which has all starting and ending nodes in $A$ has a optimal solution where all tours but one stay within $A$ and the remaining tour visits all points in $B$ consecutively. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
+    Then the multiple optimal travelling salesman problem of $k \geq 2$ tours which has all starting and ending nodes in $A$ has a optimal solution where all tours but one stay within $A$ and the remaining tour visits all points in $B$ consecutively.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{corollary}
 
 \begin{thm}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has $n$ starting nodes in $A$ and $m$ ending nodes in $A$ with $\min(n,m) \neq k$ and $0 \neq \max(n,m)$ has a solution where there are $|n-m|$ paths with exactly one edge connecting $A$ to $B$. There are $\min(n,m)$ paths with only points in $A$ and there are $k - \max(n,m)$ paths with only points in $B$. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. 
+    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has $n$ starting nodes in $A$ and $m$ ending nodes in $A$ with $\min(n,m) \neq k$ and $0 \neq \max(n,m)$ has a solution where there are $|n-m|$ paths with exactly one edge connecting $A$ to $B$. 
+    There are $\min(n,m)$ paths with only points in $A$ and there are $k - \max(n,m)$ paths with only points in $B$.
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     Say we take a given optimal solution to the problem.
@@ -524,13 +546,17 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{corollary} % follows since deviation would cause contradiction
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the multiple optimal travelling salesman problem of $k \geq 2$ paths which has a mixture of starting nodes in $A$ and $B$ has a solution where there are no edges connecting $A$ to $B$ in any of the tours. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
+    Then the multiple optimal travelling salesman problem of $k \geq 2$ paths which has a mixture of starting nodes in $A$ and $B$ has a solution where there are no edges connecting $A$ to $B$ in any of the tours.
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{corollary}
 
 \subsubsection{Single WSP Endpoint Set Multi Path Analysis}
 
 \begin{lem}\label{lem:wsp_twopath_aaab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''' \in A$ and $b' \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
+    Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''' \in A$ and $b' \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
     WLOG assume that for some optimal solution to the problem we have one path with endpoints $a', a''$ and another path with endpoints $a''', b'$ (if this is not the case then we can just shuffle the $a$ endpoint names).
@@ -539,7 +565,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{lem}\label{lem:wsp_twopath_aabb}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. Then the multiple optimal hamiltonian paths problem solution over endpoints $a',a'' \in A$ and $b',b'' \in B$ has a solution where there are no edges connecting $A$ to $B$. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
+    Then the multiple optimal hamiltonian paths problem solution over endpoints $a',a'' \in A$ and $b',b'' \in B$ has a solution where there are no edges connecting $A$ to $B$.
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
     Consider two labellings for the endpoints the first where $a', b'$ are required starting nodes and $a'', b''$ are required ending nodes and the second where $a', b''$ are required starting nodes and $a'', b'$ are required ending nodes.
@@ -549,7 +577,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{lem}\label{lem:wsp_twopath_aaaa}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''',a'''' \in A$ has a solution where only a single path has two edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
+    Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''',a'''' \in A$ has a solution where only a single path has two edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
     Consider two labellings for the endpoints the first where $a', a''$ are required starting nodes and $a''', a''''$ are required ending nodes and the second where $a', a'''$ are required starting nodes and $a'', a''''$ are required ending nodes.
@@ -559,7 +589,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{thm}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where all endpoints are in $A$. Then there exists an optimal solution where a single path visits all points in $B$ consecutively and all other paths only have points in $A$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where all endpoints are in $A$.
+    Then there exists an optimal solution where a single path visits all points in $B$ consecutively and all other paths only have points in $A$.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     Consider some optimal solution to the problem.
@@ -572,7 +604,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{thm} 
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where there are an odd number of endpoints in $A$. Then there exists an optimal solution where a single path has exactly one edge connecting $A$ to $B$ and all other paths have no edges connecting $A$ to $B$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where there are an odd number of endpoints in $A$.
+    Then there exists an optimal solution where a single path has exactly one edge connecting $A$ to $B$ and all other paths have no edges connecting $A$ to $B$.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     Consider some optimal solution to the problem.
@@ -605,7 +639,9 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \end{proof}
 
 \begin{thm}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where there are a non-zero even number of endpoints in $A$ and a non-zero even number of endpoints in $B$. Then there exists an optimal solution where there are no edges connecting $A$ to $B$ in any of the paths. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where there are a non-zero even number of endpoints in $A$ and a non-zero even number of endpoints in $B$.
+    Then there exists an optimal solution where there are no edges connecting $A$ to $B$ in any of the paths.
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     Consider some optimal solution to the problem.
@@ -888,10 +924,12 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{algorithmic}
 \end{algorithm}
 
-Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time to compute, and for each edge we compute the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time. Thus the overall runtime is $O(n^3)$.
+Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time to compute, and for each edge we compute the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time.
+Thus the overall runtime is $O(n^3)$.
 
 \begin{lem}\label{lem:mst-contains-min-edge}
-    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Then any MST of $P$ must contain at least on edge connecting the two clusters $A$ and $B$ that is minimal among all edges connecting $A$ and $B$.
+    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space.
+    Then any MST of $P$ must contain at least on edge connecting the two clusters $A$ and $B$ that is minimal among all edges connecting $A$ and $B$.
 \end{lem}
 \begin{proof}
     Let $e = (u,v)$ be an edge representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$.
