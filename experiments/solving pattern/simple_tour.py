@@ -121,25 +121,35 @@ def solve_tsp_3d(points: List[Point3D], start: int = 0) -> Tuple[List[int], floa
 def main() -> None:
     # This confirms that all entrance / exit out of just A is possible
     points = [
+        ## C set of 4
         (0.0, 0.0, 0.0, 0.0),    # node 0 A
-        (0.0, 1.0, 0.0, 0.0),    # node 1
-        (-1.0, 0.0, 0.0, 0.0),   # node 2
-        (-1.0, 1.0, 0.0, 0.0),   # node 3
+        (1.0, 0.0, 0.0, 0.0),    # node 1
+        (0.0, 1.5, 0.0, 0.0),   # node 2
+        (1.0, 1.5, 0.0, 0.0),   # node 3
 
         (-15.0, 0.0, 0.0, 0.0),  # node 4 D
-        (-15.0, 1.0, 0.0, 0.0),  # node 5
+        (-15.0, 1.5, 0.0, 0.0),  # node 5
 
         (40.0, 0.0, 0.0, 0.0),   # node 6 E
 
-        (-0.5, 0.0, 1.1, 0.0),   # node 7 B
+        (0.5, 0.75, 1.7, 0.0),   # node 7 B
+
+        #(0.0,0.0,0,0),(1.0,0.0,0,0),(0.0,1.5,0,0),(1.0,1.5,0,0),
+        #(-15.0,0.0,0,0),(-15.0,1.5,0,0),
+        #(40.0,0.0,0,0),(40.0,0.5,0,0),
+        #(200.0,0.0,0,0),(200.0,0.5,0,0)
     ]
 
     tour, length = solve_tsp_3d(points, start=0)
     print("Optimal tour (node ids):", " -> ".join(map(str, tour)))
     print("Total length:", length)
 
-# C has 4 exits and 2 edges
+# C=AB has 4 exits and 2 interior edges
 # A has 6 exits
+
+# E: ABD R=15 D=40
+# D: AB  R=sqrt(2) D=16
+# A: B
 
 if __name__ == "__main__":
     main()
