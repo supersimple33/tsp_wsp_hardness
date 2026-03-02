@@ -558,6 +558,19 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     It follows from \Cref{lem:wsp_twopath_aa_aa} that under either case if $s > 1$ then any optimal solution must exactly two edges connecting $A$ to $B$ and if $s = 1$ then there exists an optimal solution where there are exactly two edges connecting $A$ to $B$.
 \end{proof}
 
+\begin{thm}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where all endpoints are in $A$. Then there exists an optimal solution where a single path visits all points in $B$ consecutively and all other paths only have points in $A$. Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{thm}
+\begin{proof}
+    Consider some optimal solution to the problem.
+    Suppose that there are at least two paths that have edges connecting $A$ to $B$.
+    Then we can define two new sets of points $A', B'$ where $A'$ is the set of points in $A$ that are visited by these two paths and $B'$ is the set of points in $B$ that are visited by these two paths.
+    Then we can note that $A'$ and $B'$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
+    By \Cref{lem:wsp_twopath_aaaa} we know that there exists an optimal solution to the subproblem of the points in these two paths where only a single path has two edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$ and furthermore if $s > 1$ then all optimal solutions to this subproblem must satisfy this property.
+    We can then apply this logic repeatedly to construct a solution where only a single path has edges connecting $A$ to $B$ and all other paths have no edges connecting $A$ to $B$.
+    We can then apply \Cref{thm:wsp_path_aa} to the path that has edges connecting $A$ to $B$ to construct a solution where this path visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{proof}
+
 \subsubsection{Binary Nested WSP Single Path Analysis}
 
 \begin{thm}\label{thm:bin_wspd_tour_structure}
