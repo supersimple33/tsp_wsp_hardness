@@ -604,6 +604,23 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We can then apply this logic repeatedly to construct a solution where only a single path has an edge connecting $A$ to $B$ and all other paths have no edges connecting $A$ to $B$.
 \end{proof}
 
+\begin{thm}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where there are a non-zero even number of endpoints in $A$ and a non-zero even number of endpoints in $B$. Then there exists an optimal solution where there are no edges connecting $A$ to $B$ in any of the paths. Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+\end{thm}
+\begin{proof}
+    Consider some optimal solution to the problem.
+    Suppose that there are at least two paths that have endpoints in different sets (one in $A$ and the other in $B$).
+    Let the first path have endpoints $a', b'$ and the second path have endpoints $a'', b''$.
+    Next we can define $A', B'$ where $A'$ is the set of points in $A$ that are visited by these two paths and $B'$ is the set of points in $B$ that are visited by these two paths.
+    Then we can note that $A'$ and $B'$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
+    We can then apply \Cref{lem:wsp_twopath_aabb} to construct a solution to the subproblem of the points in these two paths where each path has its endpoints in the same set furthermore if $s > \frac{3}{2}$ then all optimal solutions to this subproblem must satisfy this property.
+    We can then apply this logic repeatedly to construct a solution where there are no paths with endpoints in different sets.
+    
+    Then for any path with endpoints both in $A$ (resp. $B$) we can take any other path with endpoints both in $B$ (resp. $A$) and apply \Cref{lem:wsp_twopath_aabb} to construct a solution to the subproblem of the points in these two paths where neither path has an edge connecting $A$ to $B$ and furthermore if $s > \frac{3}{2}$ then all optimal solutions to this subproblem must satisfy this property.
+    We can then apply this logic repeatedly to construct a solution where there are no edges connecting $A$ to $B$ in any of the paths.
+\end{proof}
+
+
 \subsubsection{Binary Nested WSP Single Path Analysis}
 
 \begin{thm}\label{thm:bin_wspd_tour_structure}
