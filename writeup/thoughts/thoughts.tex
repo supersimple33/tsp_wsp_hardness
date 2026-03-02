@@ -659,11 +659,48 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \subsubsection{Binary Nested WSP Single Path Analysis}
 
+\begin{lem} % I think this has to do with showing that one of these in on the "left" and the other is on the "right" of the current parent pair and thus any third pair would already be in one of these directions
+    Suppose we have a given set of points $A$ which is individually $s$-well-separated from the sets of points $B,C,D$.
+    
+    If we were connected to two subseteq sets of $A$ direct pair it immediately follows that those cannot contribute.
+
+    Suppose two were subseteq sets of $A$s parent pairs. [somehow this leads to a big problem] probably that those two themselves are Well separated from each other and thus we can 
+\end{lem}
+
+
 \begin{thm}\label{thm:bin_wspd_tour_structure}
     Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s \geq 1$. 
-    Then there must exist a optimal TSP tour over $P$ such that for any $k$-binary WSP $(A_i, B_i) \in \PairDecomp_s$ there is exactly zero, one, or two edges in the tour connecting $A_i,B_i$ and correspondingly there are either four, two, or two edges exiting $A_i \cup B_i$ respectively if they are not a $1$-binary WSP (aka the root pair).
+    Then there must exist a optimal TSP tour over $P$ such that for any $k$-binary WSP $(A_i, B_i) \in \PairDecomp_s$ there is exactly zero, one, or two edges in the tour connecting $A_i,B_i$. Furthermore no more than four edges exit $A_i \cup B_i$.
     If $s > 1$ then all optimal TSP tours satisfy these properties.
 \end{thm}
+\begin{proof}
+    % MARK: - The top level base case
+    This can be proved via induction. 
+    For the top level pair of $(A_t, B_t) \in \PairDecomp_s$ where $A_t \cup B_t = P$ the result follows directly from \Cref{cor:wsp_tsp} which implies there exists a tour where exactly two edges connect $A_t$ to $B_t$ and if $s > 1$ then all optimal tours have exactly two edges connecting $A_t$ to $B_t$.
+    
+    % MARK: - The second level base case
+    Next consider the second level cluster $(A', B') \in \PairDecomp_s$. Let $C_t = A' \cup B'$ which is well separated from $D_t = P \setminus C_t$.
+    By the previous case we know that there are exactly two edges exiting $C_t$ in some optimal TSP tour.
+    WLOG let one of these edges be of the form $(a_*, d_*)$ where $a_* \in A'$ and $d_* \in D_t$ (we assume that $A'$ contains a connecting edge and if not then we can just swap $A'$ and $B'$).
+    We proceed with a case analysis.
+
+    \textbf{Case 1:} The second edge exiting $C_t$ is of the form $(b_*, d_\dagger)$ where $b_* \in B'$ and $d_\dagger \in D_t$.
+    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A_t$ with endpoints $a_*$ and $b_*$.
+    By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A'$ to $B'$ and that all optimal paths must satisfy this if $s > 1$.
+
+    \textbf{Case 2:} The second edge exiting $C_t$ is of the form $(a_\dagger, d_\dagger)$ where $a_\dagger \in A'$ and $d_\dagger \in D_t$.
+    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A'$ with endpoints $a_*$ and $a_\dagger$.
+    By \Cref{thm:wsp_path_aa} we know that there exists an optimal path which has exactly two edges connecting $A'$ to $B'$ and that all optimal paths must satisfy this if $s > 1$.
+
+    % MARK: - The general case
+    Now consider the third level or lower pair $(A_i, B_i) \in \PairDecomp_s$ of depth $i$ and let the parent pair to be $(C_p, D_p) \in \PairDecomp_s$ where $C_p = A_i \cup B_i$. 
+    Assume by induction that there is some optimal tour where there is exactly zero, one, or two edges connecting $C_p$ to $D_p$ and furthermore let the number of edges exiting $C_p \cup D_p$ be $\ell \leq 2(i-2)$.
+
+    It then immediately follows that the number of edges is at most $\ell + 2 \leq 2(i-1)$ since we can have at most two edges connecting $C_p$ to $D_p$ and at most two edges connecting $A_i$ to $B_i$.
+
+    
+\end{proof}
+
 
 There may be a way to deterministically say which of the two cases will occur based on the structure of the WSPD but I have not yet found it.
 
@@ -672,7 +709,7 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 \emph{TODO: Update these to have $s=1.0$}
 
-\begin{thm}
+\begin{thm}\label{thm:triple_wsp_path_aa}
     Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 1$. 
     Then a hamiltonian path which starts on a point $a' \in A$ and ends on a point $a'' \in A$ must have only three or four edges connecting the three sets.
 \end{thm}
@@ -885,6 +922,16 @@ There may be a way to deterministically say which of the two cases will occur ba
     Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 1$. 
     Then $A$, $B$, and $C$ must be TSP-separated.
 \end{corollary}
+
+\subsubsection{Generalization to \texorpdfstring{$k$}{k} pairwise separation}
+\begin{thm}
+    Let $P = \bigcup_{i=1}^n A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+    Then there exists a optimal hamiltonian path over $P$ which starts at $a' \in A_1$ and ends at $a'' \in A_1$ where no set is ever connected to another set more than twice.
+    If $s > 1$ then all optimal hamiltonian paths must satisfy this property.
+    % TODO: what if we got A to B to A then to C to B to C to A? we would have four paths connecting A to B
+\end{thm}
+\begin{proof}
+\end{proof}
 
 \section{Algorithms}
 
