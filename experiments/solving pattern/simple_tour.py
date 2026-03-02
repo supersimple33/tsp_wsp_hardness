@@ -4,14 +4,15 @@ from math import sqrt
 from typing import List, Tuple, Optional
 
 
-Point3D = Tuple[float, float, float]
+Point3D = Tuple[float, float, float, float]
 
 
 def dist(a: Point3D, b: Point3D) -> float:
     dx = a[0] - b[0]
     dy = a[1] - b[1]
     dz = a[2] - b[2]
-    return sqrt(dx * dx + dy * dy + dz * dz)
+    di = a[3] - b[3]
+    return sqrt(dx * dx + dy * dy + dz * dz + di * di)
 
 
 def solve_tsp_3d(points: List[Point3D], start: int = 0) -> Tuple[List[int], float]:
@@ -19,7 +20,7 @@ def solve_tsp_3d(points: List[Point3D], start: int = 0) -> Tuple[List[int], floa
     Exact TSP solver (minimum Hamiltonian cycle) for small n using Held–Karp DP.
 
     Args:
-        points: list of (x, y, z) coordinates; node id is its index in this list.
+        points: list of (x, y, z, w) coordinates; node id is its index in this list.
         start: starting node id (default 0). Tour is returned starting at this node.
 
     Returns:
@@ -120,23 +121,25 @@ def solve_tsp_3d(points: List[Point3D], start: int = 0) -> Tuple[List[int], floa
 def main() -> None:
     # This confirms that all entrance / exit out of just A is possible
     points = [
-        (0.0, 0.0, 0.0),   # node 0 A
-        (0.0, 1.0, 0.0),   # node 1
-        (-1.0, 0.0, 0.0),   # node 2
-        (-1.0, 1.0, 0.0),   # node 3
+        (0.0, 0.0, 0.0, 0.0),    # node 0 A
+        (0.0, 1.0, 0.0, 0.0),    # node 1
+        (-1.0, 0.0, 0.0, 0.0),   # node 2
+        (-1.0, 1.0, 0.0, 0.0),   # node 3
 
-        (-5, 0.0, 0.0),   # node 4 D
-        (-5, 1.0, 0.0),   # node 5
+        (-15.0, 0.0, 0.0, 0.0),  # node 4 D
+        (-15.0, 1.0, 0.0, 0.0),  # node 5
 
-        (15.0, 0.0, 0.0),   # node 6 E
+        (40.0, 0.0, 0.0, 0.0),   # node 6 E
 
-        (-0.5, 0.0, 1.1),   # node 7 B
+        (-0.5, 0.0, 1.1, 0.0),   # node 7 B
     ]
 
     tour, length = solve_tsp_3d(points, start=0)
     print("Optimal tour (node ids):", " -> ".join(map(str, tour)))
     print("Total length:", length)
 
+# C has 4 exits and 2 edges
+# A has 6 exits
 
 if __name__ == "__main__":
     main()
