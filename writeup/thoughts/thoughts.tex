@@ -20,6 +20,7 @@
 \newtheorem*{rem*}{Remark}
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{Definition}
+\crefname{thm}{Theorem}{Theorems}
 
 
 \newcommand{\BigLength}{\mathcal{L}}
@@ -355,7 +356,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
     \textbf{Case 2b:} $P_B$ does not traverse any part of $A$.
     Then we must have two edges in $P_A$: $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and one edge in $P_B$: $(b^\dagger_1, b^\dagger_2)$ all ordered as they appear in their respective paths.
-    Furthermore it follows from $\Cref{thm:wsp_path_aa}$ that these must be the only two edges between $A$ and $B$.
+    Furthermore it follows from \Cref{thm:wsp_path_aa} that these must be the only two edges between $A$ and $B$.
     This gives the following partial structure of the paths:
     $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
     \quad\quad
@@ -667,7 +668,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Suppose two were subseteq sets of $A$s parent pairs. [somehow this leads to a big problem] probably that those two themselves are Well separated from each other and thus we can 
 \end{lem}
 
-
+% TODO: Finish this proof by showing more than three sets is impossible
 \begin{thm}\label{thm:bin_wspd_tour_structure}
     Let $P$ be a set of points and suppose we have a WSPD $\PairDecomp_s$ of $P$ with separation factor $s \geq 1$. 
     Then there must exist a optimal TSP tour over $P$ such that for any $k$-binary WSP $(A_i, B_i) \in \PairDecomp_s$ there is exactly zero, one, or two edges in the tour connecting $A_i,B_i$. Furthermore no more than four edges exit $A_i \cup B_i$.
@@ -954,6 +955,39 @@ There may be a way to deterministically say which of the two cases will occur ba
     We can repeat this process over all pairs until every set is connected by no more than one edge to another set in a given direction.
 
     Therefore there exists an optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no set is ever directly connected to another set more than twice in the same direction.
+\end{proof}
+
+% TODO: THIS PROOF IN NOT FINISHED
+\begin{thm}
+    Let $P = \bigcup_i A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+    Then there exists a optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no two non-overlapping subpaths of the hamiltonian path both start in the same set $A_k$ and end in the same set $A_l$ for any $k,l$ (where $k \neq l$).
+    If $s > 1$ then all optimal hamiltonian paths must satisfy this property.
+\end{thm}
+\begin{proof}
+    Consider some optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Assume there is two pairs of sets $B = A_k$ and $C = A_l$ which are directly connected by two edges in the same direction (where $k \neq l$).
+    WLOG let these edges be $(b_1, c_1)$ and $(b_2, c_2)$ where $b_1, b_2 \in B$ and $c_1, c_2 \in C$ ordered as they appear in the path (if $C$ occurs before $B$ then flip the names).
+
+    This can be shown via induction on the number of sets $n$.
+
+    \textbf{Base case:} $n=2$. This follows directly from \Cref{thm:wsp_path_ab,thm:wsp_path_aa}.
+
+    \textbf{Base case:} $n=3$. This follows directly from \Cref{thm:triple_wsp_path_aa,thm:triple_wsp_path_ab}.
+
+    \textbf{Inductive step:} Assume the statement is true for all $n' < n$.
+
+    Consider some optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Assume there is two pairs of sets $B = A_k$ and $C = A_l$ such that there are two non-overlapping subpaths of the hamiltonian path which both start in $B$ and end in $C$.
+    Let one path start at $b_1$ and end at $c_1$ and the other path start at $b_2$ and end at $c_2$.
+
+    Let $t$ represent the number of sets from $A_1, A_2, \ldots, A_n$ that are visited by the path from $b_1$ to $c_2$ (including $B$ and $C$).
+    
+    \textbf{Case 1:} $t < n$. Then we can then create a new instance $P'$ by only including the set of points visited by the path from $b_1$ to $c_2$.
+    If $s > 1$ then it follows from the inductive hypothesis that this path could not be optimal.
+    If $s = 1$ then it follows from the inductive hypothesis that there exists a separate optimal path that does not have two non-overlapping subpaths between $b_1$ and $c_2$.
+
+    \textbf{Case 2:} $t = n$. Then the path from $b_1$ to $c_2$ visits all sets in $P$.
+    They cannot both be direct connects as this follows from \Cref{thm:original}
 \end{proof}
 
 \section{Algorithms}
