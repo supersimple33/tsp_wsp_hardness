@@ -185,34 +185,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \subsection{Well-Separated Sets are Path/Tour Separated}
 \subsubsection{Single WSP Single Path Analysis}
 
-\begin{thm}\label{thm:wsp_path_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
-    Then there exists an optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ that visits all points in $A$ before any point in $B$.
-    Furthermore if $s > 1$ then all optimal hamiltonians must visit all points in $A$ before any point in $B$.
-\end{thm}
-\begin{proof}
-    Assume that for some optimal hamiltonian path between endpoints $a' \in A$ and $b' \in B$ over $A \cup B$ it does not visit all points in $A$ before any point in $B$.
-    Then it must contain at least three edges crossing between $A$ and $B$.
-    Let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3)$ ordered as they appear in the path.
-    This gives the following partial structure of the path:
-    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b'$$
 
-    Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
-    $|a_1 b_1| + |a_3 b_3| \leq |a_1 a_3| + |b_1 b_3|$.
-    This is to say that the following path must be at least as long as the original path
-    $$a' \leadsto a_1 \to a_3 \leadsto a_2 \to b_2 \leadsto b_1 \to b_3 \leadsto b'$$
-
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$). From this we can conclude the following:
-    \begin{align*}
-        |a_1 b_1| + |a_3 b_3| &\leq |a_1 a_3| + |b_1 b_3| \\
-        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_3 b_3| \\
-        &= \frac{1}{s} (|a_1 b_1| + |a_3 b_3|)
-    \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$. 
-    If $s > 1$ this is a contradiction and therefore any non-consecutive path cannot be optimal.
-    If $s=1$ then we can conclude that $|a_1 b_1| + |a_3 b_3| = |a_1 a_3| + |b_1 b_3|$ which implies that the newly constructed path is also optimal. 
-    It follows via induction that any extra loop between $A$ and $B$ can be removed to construct an optimal hamiltonian path that visits all points in $A$ before any point in $B$.
-\end{proof}
 
 \begin{thm}\label{thm:wsp_path_aa}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
@@ -240,7 +213,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
     If $s > 1$ this is a contradiction and therefore any non-consecutive path cannot be optimal.
     If $s=1$ then we can conclude that $|b_2 a_2| + |b_4 a_4| = |b_2 b_4| + |a_2 a_4|$ which implies that the newly constructed path is also optimal. 
-    It follows via induction that any extra loop between $A$ and $B$ can be removed to construct an optimal hamiltonian path that visits all points in $B$ consecutively.
+    Since the new path has strictly fewer alternating loops between $A$ and $B$ than the original path, it follows from induction that all but the required two edges crossing between $A$ and $B$ can be removed to construct an optimal hamiltonian path that visits all points in $B$ consecutively.
 \end{proof}
 
 \begin{corollary}\label{cor:wsp_tsp}
@@ -275,13 +248,13 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e, a''_e \in A$ has a solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
     Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
-\begin{proof}
+\begin{proof} % gemini checked
     Assume that for some solution to the problem the two optimal paths each visit some points in $B$.
     We will define the set of points in $A,B$ from the first path as $A^*, B^*$ and the set of points in $A,B$ from the second path as $A^\dagger, B^\dagger$.
     Then we can note that there must be the following edges in the first path:
     $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in the other path: 
-    $(a^\dagger_1, b^\dagger_1)$ all ordered as they appear in their respective paths.
-    WLOG let the first path have endpoints $a'_s$ and $a'_e$ and let the second path have endpoints $a''_s$ and $a''_e$.
+    $(a^\dagger_1, b^\dagger_1), (b^\dagger_2, a^\dagger_2)$ all ordered as they appear in their respective paths.
+    Let the first path have endpoints $a'_s$ and $a'_e$ and let the second path have endpoints $a''_s$ and $a''_e$.
     This gives the following partial structure of the paths:
     $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
     \quad\quad
@@ -292,9 +265,10 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     This is to say that the following paths must have a combined length at least as long as the original paths:
     $$a'_s \leadsto a^*_1 \to a^\dagger_2 \leadsto a''_e
     \quad\quad
-    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b^\dagger_2 \to a^\dagger_2 \leadsto a''_e$$
+    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b^\dagger_2 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e$$
 
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$). From this we can conclude the following:
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$).
+    From this we can conclude the following:
     \begin{align*}
         |a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| &\leq |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1| \\
         &\leq \frac{1}{s} |a^*_1 b^*_1| + \frac{1}{s} |b^\dagger_2 a^\dagger_2| \\
@@ -304,7 +278,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$. 
     If $s > 1$ this is a contradiction and therefore any solution where both paths visit some points in $B$ cannot be optimal.
     If $s=1$ then we can conclude that $|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| = |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1|$ which implies that the newly constructed paths are also optimal.
-    It follows via induction that all the extra loops between $A$ and $B$ can be removed from one of the paths to construct a solution where one path only has points in $A$ and another visits all points in $B$.
+    Since the new path has strictly fewer alternating loops between $A$ and $B$, it follows via induction that there must exist an optimal solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
 
     From here we can examine the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
     We can then note that $A'$ and $B$ are $s$-well-separated.
@@ -345,7 +319,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
     If $s > 1$ this is a contradiction and therefore any solution where both paths visit some points in $B$ cannot be optimal.
     If $s=1$ then we can conclude that $|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| = |b^*_2 b^\dagger_1| + |a^\dagger_1 a^*_2|$ which implies that the newly constructed paths are also optimal.
-    It follows via induction that all the extra loops between $A$ and $B$ can be removed from one of the paths to construct a solution where one path only has points in $A$ and the other visits all points in $B$.
+    Since the new path has strictly fewer alternating loops between $A$ and $B$ then by induction we can construct an optimal solution where one path only has points in $A$ and another visits all points in $B$.
 
     From here we can examine the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
     We can then note that $A'$ and $B$ are $s$-well-separated.
@@ -1176,6 +1150,10 @@ Thus the overall runtime is $O(n^3)$.
 \end{proof}
 
 \section{Dead ends}
+
+$$\binom{n^2}{2} \cdot 2 \binom{(n/2)^2}{2} \cdot 4 \binom{(n/4)^2}{2} \cdot \dots$$
+$$x^{\log(x)}$$
+
 % these theorems are false
 
 %Let $A$ and $B$ be two finite sets of points that are TSP-separated. 
