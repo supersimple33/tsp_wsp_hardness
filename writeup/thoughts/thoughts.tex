@@ -185,61 +185,13 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 \subsection{Well-Separated Sets are Path/Tour Separated}
 \subsubsection{Single WSP Single Path Analysis}
 
+\input{../MSThesis/theorems/wsp_path_ab.tex}
 
+\input{../MSThesis/theorems/wsp_path_aa.tex}
 
-\begin{thm}\label{thm:wsp_path_aa}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
-    Then there exists an optimal hamiltonian path between endpoints $a', a'' \in A$ over $A \cup B$ that visits all points in $B$ consecutively.
-    Furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
-\end{thm}
-\begin{proof}
-    Assume that for some optimal hamiltonian path between endpoints $a', a'' \in A$ over $A \cup B$ it does not visit all points in $B$ consecutively.
-    Then the path must contain at least four edges crossing between $A$ and $B$.
-    Let these edges be $(a_1, b_1), (b_2, a_2), (a_3, b_3), (b_4, a_4)$ ordered as they appear in the path.
-    This gives the following partial structure of the path:
-    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
+\input{../MSThesis/theorems/wsp_tsp.tex}
 
-    Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
-    $|b_2 a_2| + |b_4 a_4| \leq |b_2 b_4| + |a_2 a_4|$.
-    This is to say that the following path must be at least as long as the original path:
-    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to b_4 \leadsto b_3 \to a_3 \leadsto a_2 \to a_4 \leadsto a''$$
-
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$). From this we can conclude the following:
-    \begin{align*}
-        |b_2 a_2| + |b_4 a_4| &\leq |b_2 b_4| + |a_2 a_4| \\
-        &\leq \frac{1}{s} |b_2 a_2| + \frac{1}{s} |b_4 a_4| \\
-        &= \frac{1}{s} (|b_2 a_2| + |b_4 a_4|)
-    \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ this is a contradiction and therefore any non-consecutive path cannot be optimal.
-    If $s=1$ then we can conclude that $|b_2 a_2| + |b_4 a_4| = |b_2 b_4| + |a_2 a_4|$ which implies that the newly constructed path is also optimal. 
-    Since the new path has strictly fewer alternating loops between $A$ and $B$ than the original path, it follows from induction that all but the required two edges crossing between $A$ and $B$ can be removed to construct an optimal hamiltonian path that visits all points in $B$ consecutively.
-\end{proof}
-
-\begin{corollary}\label{cor:wsp_tsp}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
-    Then there exists an optimal TSP tour on $A \cup B$ that visits all points in $A$ before any point in $B$ (or vice versa).
-    Furthermore if $s > 1$ then all optimal TSP tours must satisfy this property.
-\end{corollary}
-
-\begin{rem*}
-    The bound on $s$ in the previous corollary is tight.
-\end{rem*}
-\begin{proof}
-    Fix any $s < 1$. 
-    Next we define $p > -\frac{1}{\log_2(s)}$ and consider the lp norm on $\mathbb{R}^2$.
-    We can then note that $s < 2^{-1/p}$.
-    Now we can consider the following partition of the unit square $A=\{(0,0), (1,1)\}$ and $B = \{(0,1), (1,0)\}$.
-
-    The diameter of each set is the length of the diagonal of the unit square within the lp norm. 
-    This distance is equal to $(1^p + 1^p)^{1/p} = 2^{1/p}$.
-    The distance between the two sets is one since the closest points between the two sets are one unit apart in either the x or y direction.
-    Thus the separation factor of these two sets is $\frac{1}{2^{1/p}} = 2^{-1/p}$.
-    Since $s < 2^{-1/p}$ we know that $s$ the two sets are $s$-well-separated.
-
-    We can then note that the optimal TSP tour on $A \cup B$ has length $4$ and must be $((0,0) \to (0,1) \to (1,1) \to (1,0) \to (0,0))$ or $((0,0) \to (1,0) \to (1,1) \to (0,1) \to (0,0))$ both of which visit points in $A$ and $B$ alternately.
-    Any tour which visits all points in $A$ before any point in $B$ (or vice versa) must have length at least $2 \cdot 2^{1/p} + 2$ which is strictly greater than the optimal tour which has length $4$.
-\end{proof}
+\input{../MSThesis/theorems/wsp_tsp_tightness.tex}
 
 \subsubsection{Single WSP Entry/Exit Set Multi Path Analysis}
 
