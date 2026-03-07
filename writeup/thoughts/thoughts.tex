@@ -21,6 +21,8 @@
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{Definition}
 \crefname{thm}{Theorem}{Theorems}
+\crefname{lem}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
 
 
 \newcommand{\BigLength}{\mathcal{L}}
@@ -57,7 +59,7 @@ The main theorem I am proving here is Corollary~\ref{cor:wsp_tsp} and Theorem~\r
 \end{defn}
 
 \begin{corollary}
-    If $A$ and $B$ are $s$-well-separated then $\dist(A,B) > 0$.
+    Given two sets of points $A$ and $B$, there exists an $s$ such that $A$ and $B$ are $s$-well-separated if and only if $\dist(A,B) > 0$.
 \end{corollary}
 
 \subsection{My definitions}
@@ -117,7 +119,7 @@ Then the following inequalities hold:
 
 \section{My Theorems}
 
-\begin{lem}
+\begin{lem}\label[lem]{lem:wsp_subset}
     Let $A$ and $B$ be two sets of points that are $s$-well-separated.
     Then $A' \subseteq A$ and $B' \subseteq B$ (where $|A'|, |B'| \geq 1$) are also $s$-well-separated.
 \end{lem}
@@ -195,231 +197,15 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \subsubsection{Single WSP Entry/Exit Set Multi Path Analysis}
 
-\begin{lem}\label{lem:wsp_twopath_aa_aa}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
-    Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e, a''_e \in A$ has a solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
-    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-\end{lem}
-\begin{proof} % gemini checked
-    Assume that for some solution to the problem the two optimal paths each visit some points in $B$.
-    We will define the set of points in $A,B$ from the first path as $A^*, B^*$ and the set of points in $A,B$ from the second path as $A^\dagger, B^\dagger$.
-    Then we can note that there must be the following edges in the first path:
-    $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in the other path: 
-    $(a^\dagger_1, b^\dagger_1), (b^\dagger_2, a^\dagger_2)$ all ordered as they appear in their respective paths.
-    Let the first path have endpoints $a'_s$ and $a'_e$ and let the second path have endpoints $a''_s$ and $a''_e$.
-    This gives the following partial structure of the paths:
-    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
-    \quad\quad
-    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b^\dagger_2 \to a^\dagger_2 \leadsto a''_e$$
-    
-    Since the paths are optimal we know that they satisfy the 2-optimality condition implying the following:
-    $|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| \leq |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1|$.
-    This is to say that the following paths must have a combined length at least as long as the original paths:
-    $$a'_s \leadsto a^*_1 \to a^\dagger_2 \leadsto a''_e
-    \quad\quad
-    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b^\dagger_2 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e$$
+\input{../MSThesis/theorems/wsp_twopath_aa_aa.tex}
 
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$).
-    From this we can conclude the following:
-    \begin{align*}
-        |a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| &\leq |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1| \\
-        &\leq \frac{1}{s} |a^*_1 b^*_1| + \frac{1}{s} |b^\dagger_2 a^\dagger_2| \\
-        &= \frac{1}{s} (|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2|)
-    \end{align*}
+\input{../MSThesis/theorems/wsp_twopath_aa_ab.tex}
 
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$. 
-    If $s > 1$ this is a contradiction and therefore any solution where both paths visit some points in $B$ cannot be optimal.
-    If $s=1$ then we can conclude that $|a^*_1 b^*_1| + |b^\dagger_2 a^\dagger_2| = |a^*_1 a^\dagger_2| + |b^\dagger_2 b^*_1|$ which implies that the newly constructed paths are also optimal.
-    Since the new path has strictly fewer alternating loops between $A$ and $B$, it follows via induction that there must exist an optimal solution where one path only has points in $A$ and another visits all points in $B$ consecutively.
+\input{../MSThesis/theorems/wsp_twopath_aa_bb.tex}
 
-    From here we can examine the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
-    We can then note that $A'$ and $B$ are $s$-well-separated.
-    By \Cref{thm:wsp_path_aa} we know that there exists an optimal hamiltonian path between the two endpoints in $A'$ that visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $B$ consecutively.
-\end{proof}
+\input{../MSThesis/theorems/wsp_twopath_ab_ab.tex}
 
-\begin{lem}\label{lem:wsp_twopath_aa_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
-    Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$. 
-    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-\end{lem}
-\begin{proof}
-    Assume that for some solution to the problem the two optimal paths each visit some points in $B$.
-    We will define the set of points in $A,B$ from the first path as $A^*, B^*$ and the set of points in $A,B$ from the second path as $A^\dagger, B^\dagger$.
-    Then we can note that there must be the following edges in the first path:
-    $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in the other path: 
-    $(a^\dagger_1, b^\dagger_1)$ all ordered as they appear in their respective paths.
-    WLOG let the first path have endpoints $a'_s$ and $a'_e$ and let the second path have endpoints $a''_s$ and $b'_e$.
-    This gives the following partial structure of the paths:
-    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
-    \quad\quad
-    a''_s \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b'_e$$
-
-    Since the paths are optimal we know that they satisfy the 2-optimality condition implying the following:
-    $|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| \leq |b^*_2 b^\dagger_1| + |a^\dagger_1 a^*_2|$.
-    This is to say that the following paths must have a combined length at least as long as the original paths:
-    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to b^\dagger_1 \leadsto b'_e
-    \quad\quad
-    a''_s \leadsto a^\dagger_1 \to a^*_2 \leadsto a'_e$$
-
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$). From this we can conclude the following:
-    \begin{align*}
-        |b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| &\leq |b^*_2 b^\dagger_1| + |a^\dagger_1 a^*_2| \\
-        &\leq \frac{1}{s} |b^*_2 a^*_2| + \frac{1}{s} |a^\dagger_1 b^\dagger_1| \\
-        &= \frac{1}{s} (|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1|)
-    \end{align*}
-
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ this is a contradiction and therefore any solution where both paths visit some points in $B$ cannot be optimal.
-    If $s=1$ then we can conclude that $|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| = |b^*_2 b^\dagger_1| + |a^\dagger_1 a^*_2|$ which implies that the newly constructed paths are also optimal.
-    Since the new path has strictly fewer alternating loops between $A$ and $B$ then by induction we can construct an optimal solution where one path only has points in $A$ and another visits all points in $B$.
-
-    From here we can examine the path that visits all the points in $B$ and take all the points it visits in $A$ and label this as $A'$.
-    We can then note that $A'$ and $B$ are $s$-well-separated.
-    By \Cref{thm:wsp_path_ab} we know that there exists an optimal hamiltonian path between the two endpoints in $A' \cup B$ that visits all points in $A'$ before any point in $B$ and furthermore if $s > 1$ then all optimal hamiltonian paths must visit all points in $A'$ before any point in $B$.
-\end{proof}
-
-\begin{lem}\label{lem:wsp_twopath_aa_bb}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
-    Then the multiple optimal hamiltonian paths problem solution between starting nodes $a'_s,a''_s \in A$ and ending nodes $b'_e,b''_e \in B$ has a solution where each path has exactly one edge connecting $A$ to $B$.
-    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-\end{lem}
-\begin{proof}
-    Suppose that for some solution one of its paths has more than one edge connecting $A$ to $B$.
-    Then we can define the set of points in $A,B$ from the first path as $A^*, B^*$. 
-    Then we can note that $A^*$ and $B^*$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
-    By \Cref{thm:wsp_path_ab} we know that there exists an optimal hamiltonian path between the two endpoints in $A^* \cup B^*$ that only has a single edge connecting $A^*$ to $B^*$ and furthermore if $s > 1$ then all optimal hamiltonian paths must only have a single edge connecting $A^*$ to $B^*$.
-    If $s=1$ and the other path also has more than one edge connecting $A$ to $B$ then we can apply the same argument to construct an optimal solution where both paths only have a single edge connecting $A$ to $B$.
-\end{proof}
-
-\begin{lem}\label{lem:wsp_twopath_ab_ab}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
-    Then the optimal multiple hamiltonian paths problem solution between starting nodes $a'_s \in A$ and $b'_s \in B$ and ending nodes $a'_e \in A$ and $b'_e \in B$ has a solution where each neither path has a edge connecting $A$ to $B$. 
-    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property. 
-    Furthermore no optimal solution can have both paths connecting $A$ and $B$.
-\end{lem}
-\begin{proof}
-    Assume that for some solution one of its path has an edge connecting $A$ to $B$.
-
-    \textbf{Case 1:} The path has one endpoint in $A$ and the other in $B$.
-    Let the first path have endpoints $a'_s$ and $b'_e$ and let the second path have endpoints $b'_s$ and $a'_e$.
-    Then we can note that there must be the following edges in the path:
-    $(a^*_1, b^*_1)$ in the first path and in the other path $(b^\dagger_1, a^\dagger_1)$ all ordered as they appear in their respective paths.
-    This gives the following partial structure of the paths:
-    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b'_e
-    \quad\quad
-    b'_s \leadsto b^\dagger_1 \to a^\dagger_1 \leadsto a'_e$$
-
-    Since the paths are optimal we know that they satisfy the 2-optimality condition implying the following:
-    $|a^*_1 b^*_1| + |b^\dagger_1 a^\dagger_1| \leq |a^*_1 a^\dagger_1| + |b^\dagger_1 b^*_1|$.
-    This is to say that the following paths must have a combined length at least as long as the original paths:
-    $$a'_s \leadsto a^*_1 \to a^\dagger_1 \leadsto a'_e
-    \quad\quad
-    b'_s \leadsto b^\dagger_1 \to b^*_1 \leadsto b'_e$$
-
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$). From this we can conclude the following:
-    \begin{align*}
-        |a^*_1 b^*_1| + |b^\dagger_1 a^\dagger_1| &\leq |a^*_1 a^\dagger_1| + |b^\dagger_1 b^*_1| \\
-        &\leq \frac{1}{s} |a^*_1 b^*_1| + \frac{1}{s} |b^\dagger_1 a^\dagger_1| \\
-        &= \frac{1}{s} (|a^*_1 b^*_1| + |b^\dagger_1 a^\dagger_1|)
-    \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    This however is a contradiction since we assumed that $s \geq \frac{3}{2}$.
-
-    \textbf{Case 2:} The path has both endpoints in either $A$ xor $B$.
-    WLOG assume that the path which starts at $a'_s$ and ends at $a'_e$ and traverses part of $B$.
-    We will call this path $P_A$ and the other path $P_B$.
-    
-    \textbf{Case 2a:} $P_B$ also traverses part of $A$.
-    Therefore we have the following two edges in $P_A$: $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and the following edges in $P_B$: $(b^\dagger_1, a^\dagger_1), (a^\dagger_2, b^\dagger_2)$ all ordered as they appear in their respective paths.
-    This gives the following partial structure of the paths:
-    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
-    \quad\quad
-    b'_s \leadsto b^\dagger_1 \to a^\dagger_1 \leadsto a^\dagger_2 \to b^\dagger_2 \leadsto b'_e$$
-
-    Since the paths are optimal we know that they satisfy the 4-optimality condition implying the following:
-    $|a^*_1 b^*_1| + |b^*_2 a^*_2| + |b^\dagger_1 a^\dagger_1| + |a^\dagger_2 b^\dagger_2| \leq |a^*_1 a^\dagger_1| + |a^\dagger_2 a^*_2| + |b^\dagger_1 b^*_1| + |b^*_2 b^\dagger_2|$.
-    This is to say that the following paths must have a combined length at least as long as the original paths:
-    $$a'_s \leadsto a^*_1 \to a^\dagger_1 \leadsto a^\dagger_2 \leadsto a'_e
-    \quad\quad
-    b'_s \leadsto b^\dagger_1 \to b^*_1 \leadsto b^*_2 \to b^\dagger_2 \leadsto b'_e$$
-
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$). From this we can conclude the following:
-    \begin{align*}
-        |a^*_1 b^*_1| + |b^*_2 a^*_2| + |b^\dagger_1 a^\dagger_1| + |a^\dagger_2 b^\dagger_2| &\leq |a^*_1 a^\dagger_1| + |a^\dagger_2 a^*_2| + |b^\dagger_1 b^*_1| + |b^*_2 b^\dagger_2| \\
-        &\leq \frac{1}{s} |a^*_1 b^*_1| + \frac{1}{s} |b^*_2 a^*_2| + \frac{1}{s} |b^\dagger_1 a^\dagger_1| + \frac{1}{s} |a^\dagger_2 b^\dagger_2| \\
-        &= \frac{1}{s} (|a^*_1 b^*_1| + |b^*_2 a^*_2| + |b^\dagger_1 a^\dagger_1| + |a^\dagger_2 b^\dagger_2|)
-    \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    This however is a contradiction since we assumed that $s \geq \frac{3}{2}$.
-
-    \textbf{Case 2b:} $P_B$ does not traverse any part of $A$.
-    Then we must have two edges in $P_A$: $(a^*_1, b^*_1), (b^*_2, a^*_2)$ and one edge in $P_B$: $(b^\dagger_1, b^\dagger_2)$ all ordered as they appear in their respective paths.
-    Furthermore it follows from \Cref{thm:wsp_path_aa} that these must be the only two edges between $A$ and $B$.
-    This gives the following partial structure of the paths:
-    $$a'_s \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a'_e
-    \quad\quad
-    b'_s \leadsto b^\dagger_1 \to b^\dagger_2 \leadsto b'_e$$
-
-    Since the paths are optimal we know that they satisfy the 3-optimality condition implying the following:
-    $|a^*_1 b^*_1| + |b^*_2 a^*_2| + |b^\dagger_1 b^\dagger_2| \leq |a^*_1 a^*_2| + |b^\dagger_1 b^*_1| + |b^*_2 b^\dagger_2|$
-    This is to say that the following paths must have a combined length at least as long as the original paths:
-    $$a'_s \leadsto a^*_1 \to a^*_2 \leadsto a'_e
-    \quad\quad
-    b'_s \leadsto b^\dagger_1 \to b^*_1 \leadsto b^*_2 \to b^\dagger_2 \leadsto b'_e$$
-
-    We can define $L$ to be the total length of the two paths as is. We can then build a new solution by shortcutting the path by directly connecting $a^*_1$ to $a^*_2$ within $P_A$ to form $P'_A$ and we can break the edge $(b^\dagger_1, b^\dagger_2)$ in $P_B$ and then connect $b^\dagger_1$ to $b^*_1$ and $b^*_2$ to $b^\dagger_2$ to form $P'_B$.
-    Let $L'$ be the total length of the two paths after this modification.
-    We can then note the following about the reduction in length from this modification:
-    $L - L' = (|a^*_1 b^*_1| + |b^*_2 a^*_2| + |b^\dagger_1 b^\dagger_2|) - (|a^*_1 a^*_2| + |b^\dagger_1 b^*_1| + |b^*_2 b^\dagger_2|)$.
-    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$). From this we can conclude the following
-
-    Using the separation bounds we have:
-    \[
-        |a^*_1b^*_1| \ge \delta,\quad |b^*_2a^*_2| \ge \delta,\quad
-        |a^*_1a^*_2|\le \frac{\delta}{s},\quad |b^\dagger_1 b^*_1|\le \frac{\delta}{s},\quad
-        |b^*_2 b^\dagger_2|\le \frac{\delta}{s},\quad |b^\dagger_1 b^\dagger_2|\ge 0,
-    \]
-
-    We can then conclude the following:
-    \begin{align*}
-        L - L' &= (|a^*_1 b^*_1| + |b^*_2 a^*_2| + |b^\dagger_1 b^\dagger_2|) - (|a^*_1 a^*_2| + |b^\dagger_1 b^*_1| + |b^*_2 b^\dagger_2|) \\
-        &\geq (|a^*_1 b^*_1| + |b^*_2 a^*_2|) - (|a^*_1 a^*_2| + |b^\dagger_1 b^*_1| + |b^*_2 b^\dagger_2|) \\ 
-        &\geq 2\delta - (|a^*_1 a^*_2| + |b^\dagger_1 b^*_1| + |b^*_2 b^\dagger_2|) \\
-        &\geq 2\delta - \frac{3\delta}{s} \\
-        &= \delta \left(2 - \frac{3}{s}\right)
-    \end{align*}
-
-    Thus if $s > \frac{3}{2}$ then we have that $L - L' > 0$ which is a contradiction since we assumed that the original paths were optimal (ie $L-L' \leq 0$).
-    If $s = \frac{3}{2}$ then we have that $L - L' \geq 0$ which combined with the optimality of the original paths implies that $L - L' = 0$ which implies that the newly constructed paths are also optimal.
-    Therefore starting from any solution where one of the paths has an edge connecting $A$ to $B$ we can repeatedly apply this logic to construct a solution where neither path has an edge connecting $A$ to $B$.
-
-    Combining case 1 and case 2 we have that if $s > \frac{3}{2}$ then all optimal solutions must satisfy the property that neither path has an edge connecting $A$ to $B$.
-    Instead if $s = \frac{3}{2}$ then there exists an optimal solution where neither path has an edge connecting $A$ to $B$.
-    It further follows from case 1 and case 2a that no optimal solution can have both paths connecting $A$ and $B$.
-\end{proof}
-
-\begin{rem*}
-    The bound on $s$ in the previous lemma is tight.
-\end{rem*}
-\begin{proof}
-    Let $s < \frac{3}{2}$.
-    Let $a_1 = \left(0,0\right), a_2 = \left(0,\frac{2}{3}\right)$ and $b_1 = \left(\frac{2\sqrt{2}}{3}+\frac{1}{s},\frac{1}{3}\right), b_2 = \left(\frac{2\sqrt{2}}{3},\frac{1}{3}\right), b_3 = \left(\frac{2\sqrt{2}}{3}+\frac{1}{s},\frac{1}{3}\right)$.
-    Next we define $A = \{a_1, a_2\}$ and $B = \{b_1, b_2, b_3\}$.
-    We can then note that the diameter of $A$ is $\frac{2}{3}$ and the diameter of $B$ is $\frac{1}{s}$.
-    The distance between the two sets is $1$ since $|a_1 b_2| = |a_2 b_2| = 1$ and all other distances between points in $A$ and $B$ are strictly greater than $1$.
-    Thus the separation factor of these two sets is $\frac{1}{\frac{1}{s}} = s$.
-    
-    Consider the multiple optimal hamiltonian paths problem between starting nodes $a_1, b_1$ and ending nodes $a_2, b_3$.
-    We can then compare the following two solutions to this problem (which represent the only two viable solutions):
-    \begin{itemize}
-        \item $P_A: a_1 \to a_2$ and $P_B: b_1 \to b_2 \to b_3$
-        \item $P'_A: a_1 \to b_2 \to a_2$ and $P'_B: b_1 \to b_3$
-    \end{itemize}
-
-    We can then note that the total length of the second solution is $1+1 = 2$.
-    The total length of the first solution is $\frac{2}{3} + \frac{1}{s} + \frac{1}{s} = \frac{2}{3} + \frac{2}{s} > 2$ since $s < \frac{3}{2}$.
-    Therefore the first solution is not optimal and thus there does not exist an optimal solution where neither path has an edge connecting $A$ to $B$.
-\end{proof}
+\input{../MSThesis/theorems/wsp_twopath_ab_ab_tightness.tex}
 
 \begin{thm}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
@@ -498,7 +284,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \subsubsection{Single WSP Endpoint Set Multi Path Analysis}
 
-\begin{lem}\label{lem:wsp_twopath_aaab}
+\begin{lem}\label[lem]{lem:wsp_twopath_aaab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
     Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''' \in A$ and $b' \in B$ has a solution where one path only has points in $A$ and another has exactly one edge connecting $A$ to $B$.
     Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
@@ -509,7 +295,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     If $s > 1$ and the solution doesn't have a path that visits all of $B$ consecutively then this would be a contradiction since by \Cref{lem:wsp_twopath_aa_ab} we know that generating a optimal path with starting nodes $a', a'''$ and ending nodes $a'', b'$ that has more than one edge connecting $A$ to $B$ is impossible.
 \end{proof}
 
-\begin{lem}\label{lem:wsp_twopath_aabb}
+\begin{lem}\label[lem]{lem:wsp_twopath_aabb}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
     Then the multiple optimal hamiltonian paths problem solution over endpoints $a',a'' \in A$ and $b',b'' \in B$ has a solution where there are no edges connecting $A$ to $B$.
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
@@ -521,7 +307,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     It follows from \Cref{lem:wsp_twopath_ab_ab} that under either case if $s > \frac{3}{2}$ then any optimal solution must have no edges connecting $A$ to $B$ and if $s = \frac{3}{2}$ then there exists an optimal solution where there are no edges connecting $A$ to $B$.
 \end{proof}
 
-\begin{lem}\label{lem:wsp_twopath_aaaa}
+\begin{lem}\label[lem]{lem:wsp_twopath_aaaa}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
     Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''',a'''' \in A$ has a solution where only a single path has two edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$.
     Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
@@ -976,7 +762,7 @@ There may be a way to deterministically say which of the two cases will occur ba
 Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time to compute, and for each edge we compute the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time.
 Thus the overall runtime is $O(n^3)$.
 
-\begin{lem}\label{lem:mst-contains-min-edge}
+\begin{lem}\label[lem]{lem:mst-contains-min-edge}
     Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space.
     Then any MST of $P$ must contain at least on edge connecting the two clusters $A$ and $B$ that is minimal among all edges connecting $A$ and $B$.
 \end{lem}
@@ -990,7 +776,7 @@ Thus the overall runtime is $O(n^3)$.
     Thus $\omega(e) = \omega(e')$ and therefore the MST contains an edge representing the minimum distance between $A$ and $B$.
 \end{proof}
 
-\begin{lem}\label{lem:multiple-cuts-bound-separation}
+\begin{lem}\label[lem]{lem:multiple-cuts-bound-separation}
     Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Suppose that more than one cut of any MST is required to separate $A$ and $B$. Then $(A,B)$ cannot be $s$-well-separated for any $s > 1$.
 \end{lem}
 \begin{proof}
