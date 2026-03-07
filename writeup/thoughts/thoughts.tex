@@ -52,9 +52,13 @@ The main theorem I am proving here is Corollary~\ref{cor:wsp_tsp} and Theorem~\r
 \end{defn}
 
 \begin{defn}
-    The pair $\{Q,R\}$ is \textbf{$s$-well-separated} if
+    The pair $\{Q,R\}$ (where $Q \cap R = \emptyset$) is \textbf{$s$-well-separated} if
     $$\max\{\diam(Q), \diam(R)\} \leq \frac{1}{s} \cdot \dist(Q,R)$$
 \end{defn}
+
+\begin{corollary}
+    If $A$ and $B$ are $s$-well-separated then $\dist(A,B) > 0$.
+\end{corollary}
 
 \subsection{My definitions}
 
@@ -112,6 +116,20 @@ Then the following inequalities hold:
 \end{proof}
 
 \section{My Theorems}
+
+\begin{lem}
+    Let $A$ and $B$ be two sets of points that are $s$-well-separated.
+    Then $A' \subseteq A$ and $B' \subseteq B$ (where $|A'|, |B'| \geq 1$) are also $s$-well-separated.
+\end{lem}
+\begin{proof}
+    Let $A$ and $B$ be two sets of points that are $s$-well-separated and let $A' \subseteq A$ and $B' \subseteq B$ (where $|A'|, |B'| \geq 1$).
+    We can then note that $\dist(A', B') \geq \dist(A,B)$ due to the triangle inequality.
+    We can also note that $\diam(A') \leq \diam(A)$ and $\diam(B') \leq \diam(B)$ since $A' \subseteq A$ and $B' \subseteq B$.
+    Thus we have the following:
+    $$\max\{\diam(A'), \diam(B')\} \leq \max\{\diam(A), \diam(B)\} \leq \frac{1}{s} \cdot \dist(A,B) \leq \frac{1}{s} \cdot \dist(A', B')$$
+    as desired.
+\end{proof}
+
 \subsection{Hamiltonian Endpoint Distance Bound}
 
 \begin{thm}
