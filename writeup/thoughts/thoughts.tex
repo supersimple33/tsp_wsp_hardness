@@ -207,80 +207,13 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \input{../MSThesis/theorems/wsp_twopath_ab_ab_tightness.tex}
 
-\begin{thm}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$. 
-    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has all starting and ending nodes in $A$ has a optimal solution where all paths but one stay within $A$ and the remaining path visits all points in $B$ consecutively. 
-    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-\end{thm}
-\begin{proof}
-    Suppose that for some optimal solution there are at least two paths that visit some points in $B$.
-    Then we can define two new sets of points $A', B'$ where $A'$ is the set of points in $A$ that are visited by these two paths and $B'$ is the set of points in $B$ that are visited by these two paths.
-    Then we can note that $A'$ and $B'$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
-    If $s > 1$ then this would cause a contradiction as such a solution would also be optimal on the subproblem and thus violate \Cref{lem:wsp_twopath_aa_aa}.
-    If $s = 1$ then we can apply \Cref{lem:wsp_twopath_aa_aa} to construct a solution to the subproblem where one path visits only points in $A'$ and the other path visits all points in $B'$ consecutively.
-    
-    We can then apply this logic repeatedly to construct a solution where only one path visits some points in $B$ and all other paths only have points in $A$.
-    We can then apply \Cref{thm:wsp_path_aa} to the path that visits some points in $B$ to construct a solution where this path visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-\end{proof}
+\input{../MSThesis/theorems/wsp_mpath_start_a_end_a.tex}
 
-\begin{corollary} % follows since deviation would cause contradiction
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
-    Then the multiple optimal travelling salesman problem of $k \geq 2$ tours which has all starting and ending nodes in $A$ has a optimal solution where all tours but one stay within $A$ and the remaining tour visits all points in $B$ consecutively.
-    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-\end{corollary}
+\input{../MSThesis/theorems/wsp_mtour_all_a.tex}
 
-\begin{thm}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. 
-    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths which has $n$ starting nodes in $A$ and $m$ ending nodes in $A$ with $\min(n,m) \neq k$ and $0 \neq \max(n,m)$ has a solution where there are $|n-m|$ paths with exactly one edge connecting $A$ to $B$. 
-    There are $\min(n,m)$ paths with only points in $A$ and there are $k - \max(n,m)$ paths with only points in $B$.
-    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{thm}
-\begin{proof}
-    Say we take a given optimal solution to the problem.
+\input{../MSThesis/theorems/wsp_mpath_start_end_mixed.tex}
 
-    \textbf{Case 1:} There are not $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
-
-    \textbf{Case 1a:} There are less than $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
-    This is impossible since if there are less than $|n-m|$ paths with one endpoint in $A$ and the other in $B$ then there must be more than $\min(n,m)$ paths with only endpoints points in $A$ or more than $k - \max(n,m)$ paths with only endpoints in $B$ which is a contradiction since those values represent the maximum number of paths that can have only endpoints in $A$ and $B$ respectively.
-
-    \textbf{Case 1b:} There are more than $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
-    In order for this extra path to come about there must be at least one less path from the $\min(n,m)$ paths with only points in $A$ and one less path from the $k - \max(n,m)$ paths with only points in $B$.
-    This would then imply that there are at least two extra paths with one endpoint in $A$ and the other in $B$.
-    However by \Cref{lem:wsp_twopath_ab_ab} we know that if $s > \frac{3}{2}$ then there cannot be two paths with one endpoint in $A$ and the other in $B$ and if $s = \frac{3}{2}$ then there exists an optimal solution where these two extra paths are replaced by two paths that start and end in the same sets (one in $A$ and one in $B$).
-    It follows from structural induction that if $s = \frac{3}{2}$ then there exists an optimal solution where there are exactly $|n-m|$ paths with one endpoint in $A$ and the other in $B$.
-
-    \textbf{Case 2:} There are less than $\min(n,m)$ paths with only endpoints points in $A$ or less than $k - \max(n,m)$ paths with only endpoints in $B$.
-    For this to be the case there must be at least one more path with one endpoint in $A$ and the other in $B$ than $|n-m|$ which is a contradiction since then case 1. would have applied.
-
-    \textbf{Case 3:} There are exactly $|n-m|$ paths with one endpoint in $A$ and the other in $B$ and there are exactly $\min(n,m)$ paths with only endpoints points in $A$ and exactly $k - \max(n,m)$ paths with only endpoints in $B$.
-
-    \textbf{Case 3a:} There is a path with one endpoint in $A$ and the other in $B$ that has more than one edge connecting $A$ to $B$.
-    This is impossible since by \Cref{thm:wsp_path_ab} we know that such a path cannot be optimal when $s > 1$.
-
-    \textbf{Case 3b:} There is a path with both endpoints in $A$ xor $B$ that has an edge connecting $A$ to $B$.
-    WLOG assume that there is a path with both endpoints in $A$ that has an edge connecting $A$ to $B$.
-    Since $\min(n,m) \neq k$ and $0 \neq \max(n,m)$ we know that there must exist at least one other path with an endpoint from $B$
-
-    \textbf{Case 3b.i:} $|m - n| > 0$.
-    We can then choose a single path from the $|n-m|$ paths with one endpoint in $A$ and the other in $B$ and add it to the path with both endpoints in $A$ that has an edge connecting $A$ to $B$ to construct a new multiple hamiltonian paths problem of the points from these two paths.
-    It then follows from \Cref{lem:wsp_twopath_aa_ab} that if the optimal solution to this new problem had the original path with both endpoints in $A$ travelling to $B$ this would be a contradiction since such a path cannot be optimal when $s > 1$.
-
-    \textbf{Case 3b.ii:} $|m - n| = 0$.
-    Then since another path must exist this path must have both endpoints in $B$.
-    We can then form a new multiple hamiltonian paths problem of the points from these two paths.
-    It then follows from \Cref{lem:wsp_twopath_ab_ab} that if $s > \frac{3}{2}$ then having the original path cross into $B$ is impossible.
-    If $s = \frac{3}{2}$ then there exists an optimal solution to this new problem where neither path has an edge connecting $A$ to $B$.
-    It then follows by structural induction that for all paths with the endpoints in the same set (either $A$ or $B$) there exists an optimal solution where none of these paths have an edge connecting $A$ to $B$.
-
-    If $s = \frac{3}{2}$ then there exists an optimal solution that satisfies the property that there are $|n-m|$ paths with exactly one edge connecting $A$ to $B$, there are $\min(n,m)$ paths with only points in $A$ and there are $k - \max(n,m)$ paths with only points in $B$.
-    If $s > \frac{3}{2}$ then all optimal solutions must satisfy the previous properties.
-\end{proof}
-
-\begin{corollary} % follows since deviation would cause contradiction
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
-    Then the multiple optimal travelling salesman problem of $k \geq 2$ paths which has a mixture of starting nodes in $A$ and $B$ has a solution where there are no edges connecting $A$ to $B$ in any of the tours.
-    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{corollary}
+\input{../MSThesis/theorems/wsp_mtour_mixed.tex}
 
 \subsubsection{Single WSP Endpoint Set Multi Path Analysis}
 
