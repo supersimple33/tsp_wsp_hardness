@@ -234,22 +234,38 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{lem}
 \begin{proof}
-    Consider two labellings for the endpoints the first where $a', b'$ are required starting nodes and $a'', b''$ are required ending nodes and the second where $a', b''$ are required starting nodes and $a'', b'$ are required ending nodes.
+    Assume that for some optimal solution it has a edge connecting $A$ to $B$.
 
-    Then any solution must fall into one of the previous cases.
-    It follows from \Cref{lem:wsp_twopath_ab_ab} that under either case if $s > \frac{3}{2}$ then any optimal solution must have no edges connecting $A$ to $B$ and if $s = \frac{3}{2}$ then there exists an optimal solution where there are no edges connecting $A$ to $B$.
-\end{proof}
+    \textbf{Case 1:} The path with an edge connecting $A$ to $B$ has endpoints in different sets.
+    Then the other path must also have endpoints in different sets.
+    WLOG let one path have endpoints $a',b'$ and the other have endpoints $a'', b''$ (if not then we can shuffle the endpoint names).
+    Then we can note that there must exist one edge of the form $(a^*, b^*)$ in the first path and one edge of the form $(a^\dagger, b^\dagger)$ in the second path where $a^*, a^\dagger \in A$ and $b^*, b^\dagger \in B$.
+    This gives the following partial structure to the paths:
+    $$a' \leadsto a^* \to b^* \leadsto b' \quad\quad a'' \leadsto a^\dagger \to b^\dagger \leadsto b''$$
 
-\begin{lem}\label[lem]{lem:wsp_twopath_aaaa}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
-    Then the multiple optimal hamiltonian paths problem solution between endpoints $a',a'',a''',a'''' \in A$ has a solution where only a single path has two edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$.
-    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
-\end{lem}
-\begin{proof}
-    Consider two labellings for the endpoints the first where $a', a''$ are required starting nodes and $a''', a''''$ are required ending nodes and the second where $a', a'''$ are required starting nodes and $a'', a''''$ are required ending nodes.
+    Since the paths are optimal we know that they satisfy the 2-optimality condition implying that $|a^* b^*| + |a^\dagger b^\dagger| \leq |a^* a^\dagger| + |b^* b^\dagger|$.
+    That is to say the following paths must have a combined length at least as long as the original paths:
+    $$a' \leadsto a^* \to a^\dagger \leadsto a'' \quad\quad b' \leadsto b^* \to b^\dagger \leadsto b''$$
 
-    Then any solution must fall into one of the previous cases.
-    It follows from \Cref{lem:wsp_twopath_aa_aa} that under either case if $s > 1$ then any optimal solution must exactly two edges connecting $A$ to $B$ and if $s = 1$ then there exists an optimal solution where there are exactly two edges connecting $A$ to $B$.
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$).
+    From this we can conclude the following:
+    \begin{align*}
+        |a^* b^*| + |a^\dagger b^\dagger| &\leq |a^* a^\dagger| + |b^* b^\dagger| \\
+        &\leq \frac{1}{s} |a^* b^*| + \frac{1}{s} |a^\dagger b^\dagger| \\
+        &= \frac{1}{s} (|a^* b^*| + |a^\dagger b^\dagger|)
+    \end{align*}
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ this is a contradiction and therefore any solution where a path has endpoints in different sets cannot be optimal.
+    If $s = 1$ then we can conclude that $|a^* b^*| + |a^\dagger b^\dagger| = |a^* a^\dagger| + |b^* b^\dagger|$ which implies that the newly constructed paths are also optimal.
+
+    \textbf{Case 2:} The path with an edge connecting $A$ to $B$ has endpoints in the same set.
+    Then the other path must also have endpoints in the same set.
+    WLOG let one path have endpoints $a', a''$ and the other have endpoints $b', b''$ (if not then we can shuffle the endpoint names).
+    We can then label $a',b'$ as the starting nodes and $a'', b''$ as the ending nodes.
+    It then follows from \Cref{lem:wsp_twopath_ab_ab} that we can construct a solution where there are no edges connecting $A$ to $B$ and furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+    
+    If $s > \frac{3}{2}$ then either case leads to a contradiction and thus all optimal solutions must have no edges connecting $A$ to $B$.
+    If $s = \frac{3}{2}$ then either case leads to a optimal solution where there are no edges connecting $A$ to $B$.
 \end{proof}
 
 \begin{thm}
