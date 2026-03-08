@@ -195,6 +195,64 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \input{../MSThesis/theorems/wsp_tsp_tightness.tex}
 
+\subsubsection{Single WSP Endpoint Pair Multi Path Analysis}
+
+\begin{thm}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
+    Then the multiple optimal hamiltonian paths problem where one path had fixed endpoints $a', a'' \in A$ and the other path had fixed endpoints $a''', a'''' \in A$ has a solution where one of the path visits all points in $B$ consecutively and the other path has no edges connecting $A$ to $B$.
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+\end{thm}
+\begin{proof}
+    Consider some optimal solution to the problem.
+    Suppose that both paths have edges connecting $A$ to $B$.
+    Then there must be two edges of the form $(a^*_1, b^*_1)$ and $(b^*_2, a^*_2)$ in the first set and two edges of the form $(a^\dagger_1, b^\dagger_1)$ and $(b^\dagger_2, a^\dagger_2)$ in the second set where $a^*_1, a^*_2, a^\dagger_1, a^\dagger_2 \in A$ and $b^*_1, b^*_2, b^\dagger_1, b^\dagger_2 \in B$.
+    Thus these paths have the following partial structure:
+    $$a' \leadsto a^*_1 \to b^*_1 \leadsto b^*_2 \to a^*_2 \leadsto a''
+    \quad\quad
+    a''' \leadsto a^\dagger_1 \to b^\dagger_1 \leadsto b^\dagger_2 \to a^\dagger_2 \leadsto a''''$$
+
+    Since the paths are optimal we know that they satisfy the 3-optimality condition implying the following:
+    $|a^*_1 b^*_1| + |b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1| \leq |a^*_1 a^*_2| + |a^\dagger_1 b^*_1| + |b^*_2 b^\dagger_1|$.
+    This is to say that the following paths must have a combined length at least as long as the original paths:
+    $$a' \leadsto a^*_1 \to a^*_2 \leadsto a'' \quad\quad a''' \leadsto a^\dagger_1 \to b^*_1 \leadsto b^*_2 \to b^\dagger_1 \leadsto b^\dagger_2 \to a^\dagger_2 \leadsto a''''$$
+
+    We can define $L$ to be the combined length of the original paths and $L'$ to be the combined length of the newly constructed paths.
+    We can then note the following about the change in length between $L$ and $L'$:
+    $L - L' = (|a^*_1 b^*_1| + |b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1|) - (|a^*_1 a^*_2| + |a^\dagger_1 b^*_1| + |b^*_2 b^\dagger_1|)$.
+
+    $L - L' \leq 0$ L' is bigger than L
+
+    Define $\omega = \dist(A,B)$.
+    Using the definitions of well separation and rules of a metric space we have:
+    \[
+        |b^*_2 a^*_2| \geq \omega \quad\quad
+        |a^\dagger_1 b^\dagger_1| \geq \omega \quad\quad
+        |a^*_1 a^*_2| \leq \frac{1}{s} \omega \quad\quad
+        |a^\dagger_1 a^*_1| \leq \frac{1}{s} \omega \quad\quad
+        |b^*_2 b^\dagger_1| \leq \frac{1}{s} \omega
+    \]
+
+    \begin{align*}
+        L - L' &= (|a^*_1 b^*_1| + |b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1|) - (|a^*_1 a^*_2| + |a^\dagger_1 b^*_1| + |b^*_2 b^\dagger_1|)\\
+        &\geq (|a^*_1 b^*_1| + |b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1|) - (|a^*_1 a^*_2| + |a^\dagger_1 a^*_1| + |a^*_1 b^*_1| + |b^*_2 b^\dagger_1|) \\
+        &= (|b^*_2 a^*_2| + |a^\dagger_1 b^\dagger_1|) - (|a^*_1 a^*_2| + |a^\dagger_1 a^*_1| + |b^*_2 b^\dagger_1|) \\
+        &\geq 2\omega - (|a^*_1 a^*_2| + |a^\dagger_1 a^*_1| + |b^*_2 b^\dagger_1|) \\
+        &\geq 2\omega - \frac{3}{s} \omega \\
+    \end{align*}
+
+    If $s > \frac{3}{2}$ then we have that $L - L' > 0$ which is a contradiction since if the original path were optimal then we would have $L - L' \leq 0$.
+    Therefore no optimal path can have both paths visiting both $A$ and $B$ if $s > \frac{3}{2}$.
+    If $s = \frac{3}{2}$ then we have that $L - L' \geq 0$ which combined with $L - L' \leq 0$ (by optimality) implies that $L - L' = 0$.
+    Therefore the newly constructed paths must also be optimal solutions to the problem.
+    Since the number of crossings between $A$ and $B$ has strictly decreased we can apply this logic repeatedly to construct an optimal solution where only a single path has edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$ as desired.
+
+    We can then consider a case where only a single path has edges connecting $A$ to $B$.
+    We can then mark $A'$ to be the set of points in $A$ that are visited by this path and $B'$ to be the set of points in $B$ that are visited by this path.
+    Then we can note that $A'$ and $B'$ are still $s$-well-separated by \Cref{lem:wsp_subset}.
+    We can then apply \Cref{thm:wsp_path_aa} to construct a solution where this path visits all points in $B$ consecutively if it was not already the case.
+\end{proof}
+
+
 \subsubsection{Single WSP Entry/Exit Set Multi Path Analysis}
 
 \input{../MSThesis/theorems/wsp_twopath_aa_aa.tex}
