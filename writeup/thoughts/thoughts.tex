@@ -294,209 +294,247 @@ There may be a way to deterministically say which of the two cases will occur ba
 \emph{TODO: Update these to have $s=1.0$}
 
 \begin{thm}\label{thm:triple_wsp_path_aa}
-    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 1$. 
-    Then a hamiltonian path which starts on a point $a' \in A$ and ends on a point $a'' \in A$ must have only three or four edges connecting the three sets.
+    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s \geq 1$. 
+    Then there exists an optimal hamiltonian path which starts on a point $a' \in A$ and ends on a point $a'' \in A$ and must have only three or four edges connecting the three sets.
+    Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     To prove this we can observe two different cases. 
+    First consider some optimal hamiltonian path on $P$ with endpoints $a'$ and $a''$.
 
-    \textbf{Case 1:} The optimal hamiltonian path on $P$ contains at least one edge connecting each pair of sets.
-    WLOG let these edges be $(a_1, b_1), (b_2, c_1), (c_2, a_2)$ ordered as they appear in the path (if $c$ occurs before $b$ then flip the names).
-    Assume by contradiction that the optimal hamiltonian path from $a'$ to $a''$ over $P$ requires more than four edges connecting the three sets.
+    \textbf{Case 1:} The path contains at least one edge connecting each pair of sets.
+    WLOG let these edges be $(a_1, b_1), (b_2, c_1), (c_2, a_2)$ ordered as they appear in the path (a looped ordering is guaranteed up to the swapping of $B$ and $C$).
+    Assume that the optimal hamiltonian path from $a'$ to $a''$ over $P$ has more than four edges connecting the three sets.
     Then there must either be another loop connecting the three sets or there must be at least two more edges connecting one of the pairs of sets.
 
     \textbf{Subcase 1a:} There is another loop connecting the three sets both in the same orientation.
     Then the optimal path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, b_3)^*$, $(b_4, c_3)^*$, $(c_4, a_4)^*$ ordered as they appear in the path. This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to c_3 \leadsto c_4 \to a_4 \leadsto a''$$
+    Let these edges be $(a_1, b_1), (b_2, c_1), (c_2, a_2), (a_3, b_3)^*, (b_4, c_3)^*, (c_4, a_4)^*$ ordered as they appear in the path. This gives the following partial structure of the path:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to c_3 \leadsto c_4 \to a_4 \leadsto a''$$
 
-    Since the path is optimal we know that it satisfies the 6-optimality condition implying the following:
-    $|a_1 b_1| + |b_2 c_1| + |c_2 a_2| + |a_3 b_3| + |b_4 c_3| + |c_4 a_4| \leq |a_1 a_2| + |a_3 b_3| + |b_4 b_1| + |b_2 c_1| + |c_2 c_3| + |c_4 a_4|$.
-    We can then rearrange this to get:
+    Since the path is optimal we know that it satisfies the 3-optimality condition implying the following:
+    $|a_1 b_1| + |c_2 a_2| + |b_4 c_3| \leq |a_1 a_2| + |b_4 b_1| + |c_2 c_3|$.
+    This is to say the following path must be at least as long:
+    $$a' \leadsto a_1 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to c_3 \leadsto c_4 \to a_4 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |a_1 b_1| + |c_2 a_2| + |b_4 c_3| &\leq |a_1 a_2| + |b_4 b_1| + |c_2 c_3| \\
         &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |c_2 a_2| + \frac{1}{s} |b_4 c_3| \\
         &= \frac{1}{s} (|a_1 b_1| + |c_2 a_2| + |b_4 c_3|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_1 b_1| + |c_2 a_2| + |b_4 c_3| = |a_1 a_2| + |b_4 b_1| + |c_2 c_3|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1b:} There is another loop connecting the three sets in the opposite orientation.
     Then the optimal path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, c_3)^*$, $(c_4, b_3)^*$, $(b_4, a_4)^*$ ordered as they appear in the path. This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c_4 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
+    Let these edges be $(a_1, b_1), (b_2, c_1), (c_2, a_2), (a_3, c_3)^*, (c_4, b_3)^*, (b_4, a_4)^*$ ordered as they appear in the path. This gives the following partial structure of the path:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c_4 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
 
-    Since the path is optimal we know that it satisfies the 6-optimality condition implying the following:
-    $|a_1 b_1| + |b_2 c_1| + |c_2 a_2| + |a_3 c_3| + |c_4 b_3| + |b_4 a_4| \leq |a_1 a_2| + |a_3 c_3| + |c_4 c_2| + |c_1 b_2| + |b_1 b_3| + |b_4 a_4|$.
-    We can then rearrange this to get:
+    Since the path is optimal we know that it satisfies the 3-optimality condition implying the following:
+    $|a_1 b_1| + |c_2 a_2| + |c_4 b_3| \leq |a_1 a_2| + |c_4 c_2| + |b_1 b_3|$.
+    This is to say the following path must be at least as long:
+    $$a' \leadsto a_1 \to a_2 \leadsto a_3 \to c_3 \leadsto c_4 \to c_2 \leadsto c_1 \to b_2 \leadsto b_1 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |a_1 b_1| + |c_2 a_2| + |c_4 b_3| &\leq |a_1 a_2| + |c_2 c_4| + |b_1 b_3| \\
         &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |c_2 a_2| + \frac{1}{s} |c_4 b_3| \\
         &= \frac{1}{s} (|a_1 b_1| + |c_2 a_2| + |c_4 b_3|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_1 b_1| + |c_2 a_2| + |c_4 b_3| = |a_1 a_2| + |c_4 c_2| + |b_1 b_3|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1c:} There must be at least two additional edges at the end causing a loop from $A$ to $B$.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, b_3)^*$, $(b_4, a_4)^*$ ordered as they appear in the path. 
+    Let these edges be $(a_1, b_1), (b_2, c_1), (c_2, a_2), (a_3, b_3)^*, (b_4, a_4)^*$ ordered as they appear in the path. 
     This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|a_1 b_1| + |a_3 b_3| \leq |a_1 a_3| + |b_1 b_3|$.
+    This is to say the following path must be at least a long:
+    $$a' \leadsto a_1 \to a_3 \leadsto a_2 \to c_2 \leadsto c_1 \to b_2 \leadsto b_1 \to b_3 \leadsto b_4 \to a_4 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |a_1 b_1| + |a_3 b_3| &\leq |a_1 a_3| + |b_1 b_3| \\
         &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_3 b_3| \\
         &= \frac{1}{s} (|a_1 b_1| + |a_3 b_3|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_1 b_1| + |a_3 b_3| = |a_1 a_3| + |b_1 b_3|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1d:} There must be at least two additional edges at the end causing a loop from $A$ to $C$.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$, $(a_3, c_3)^*$, $(c_4, a_4)^*$ ordered as they appear in the path.
+    Let these edges be $(a_1, b_1), (b_2, c_1), (c_2, a_2), (a_3, c_3)^*, (c_4, a_4)^*$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c_4 \to a_4 \leadsto a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c_4 \to a_4 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|c_2 a_2| + |c_4 a_4| \leq |c_2 c_4| + |a_2 a_4|$.
+    This is to say the following path must be at least a long:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to c_4 \leadsto c_3 \to a_3 \leadsto a_2 \to a_4 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |c_2 a_2| + |c_4 a_4| &\leq |c_2 c_4| + |a_2 a_4| \\
         &\leq \frac{1}{s} |c_2 a_2| + \frac{1}{s} |c_4 a_4| \\
         &= \frac{1}{s} (|c_2 a_2| + |c_4 a_4|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
-
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|c_2 a_2| + |c_4 a_4| = |c_2 c_4| + |a_2 a_4|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1e:} There must be at least two additional edges connecting $A,B$ before starting the primary loop.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
-    WLOG let these edges be $(a_3, b_3)^*$, $(b_4, a_4)^*$, $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$ ordered as they appear in the path.
+    Let these edges be $(a_3, b_3)^*, (b_4, a_4)^*, (a_1, b_1), (b_2, c_1), (c_2, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a''$$
+    $$a' \leadsto a_3 \to b_3 \leadsto b_4 \to a_4 \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|a_3 b_3| + |a_1 b_1| \leq |a_3 a_1| + |b_3 b_1|$.
+    This is to say the following path must be at least a long:
+    $$a' \leadsto a_3 \to a_1 \leadsto a_4 \to b_4 \leadsto b_3 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |a_3 b_3| + |a_1 b_1| &\leq |a_3 a_1| + |b_3 b_1| \\
         &\leq \frac{1}{s} |a_3 b_3| + \frac{1}{s} |a_1 b_1| \\
         &= \frac{1}{s} (|a_3 b_3| + |a_1 b_1|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_3 b_3| + |a_1 b_1| = |a_3 a_1| + |b_3 b_1|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1f:} There must be at least two additional edges connecting $A,C$ before starting the primary loop.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
-    WLOG let these edges be $(a_3, c_3)^*$, $(c_4, a_4)^*$, $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, a_2)$ ordered as they appear in the path.
+    Let these edges be $(a_3, c_3)^*, (c_4, a_4)^*, (a_1, b_1), (b_2, c_1), (c_2, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_3 \to c_3 \leadsto c_4 \to a_4 \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a''$$
+    $$a' \leadsto a_3 \to c_3 \leadsto c_4 \to a_4 \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|c_4 a_4| + |c_2 a_2| \leq |c_4 c_2| + |a_4 a_2|$.
+    This is to say the following path must be at least a long:
+    $$a' \leadsto a_3 \to c_3 \leadsto c_4 \to c_2 \leadsto c_1 \to b_2 \leadsto b_1 \to a_1 \leadsto a_4 \to a_2 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |c_4 a_4| + |c_2 a_2| &\leq |c_4 c_2| + |a_4 a_2| \\
         &\leq \frac{1}{s} |c_4 a_4| + \frac{1}{s} |c_2 a_2| \\
         &= \frac{1}{s} (|c_4 a_4| + |c_2 a_2|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|c_4 a_4| + |c_2 a_2| = |c_4 c_2| + |a_4 a_2|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1g:} There is a loop back from $B$ to $C$ before the primary loop is ended.
     Then the optimal hamiltonian path must contain at least five edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_4, b_3)^*$, $(b_4, c_3)^*$, $(c_2, a_2)$ ordered as they appear in the path.
+    Let these edges be $(a_1, b_1), (b_2, c_1), (c_4, b_3)^*, (b_4, c_3)^*, (c_2, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \to a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_4 \to b_3 \leadsto b_4 \to c_3 \leadsto c_2 \to a_2 \leadsto a''$$
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_4 \to b_3 \leadsto b_4 \to c_3 \leadsto c_2 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|b_2 c_1| + |b_4 c_3| = |b_2 b_4| + |c_1 c_3|$.
+    This is to say the following path must be at least a long:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to b_4 \leadsto b_3 \to c_4 \leadsto c_1 \to c_3 \leadsto c_2 \to a_2 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |b_2 c_1| + |b_4 c_3| &\leq |b_2 b_4| + |c_1 c_3| \\
         &\leq \frac{1}{s} |b_2 c_1| + \frac{1}{s} |b_4 c_3| \\
         &= \frac{1}{s} (|b_2 c_1| + |b_4 c_3|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|b_2 c_1| + |b_4 c_3| = |b_2 b_4| + |c_1 c_3|$ and therefore the new path, with one less loop, is also optimal.
 
-    \textbf{Case 2:} The optimal TSP tour on $P$ does not contain an edge connecting each pair of sets.
-    \textbf{Subcase 2a:} WLOG let there only edges connecting $A$ to $B$ and $B$ to $C$ ($C$ and $B$ can be alternated symmetrically).
-    Then the optimal hamiltonian path must contain at least four edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, b_3)$, $(b_4, a_2)$ ordered as they appear in the path.
+    \textbf{Case 2:} The path does not pairwise connect each of the three sets. 
+    
+    \textbf{Subcase 2a:} $A$ is only connected to a single other set.
+    WLOG let the only edges connecting sets be from $A$ to $B$ and $B$ to $C$ ($C$ and $B$ can be alternated symmetrically).
+    Then the path must contain at least four edges connecting the three sets.
+    Let these edges be $(a_1, b_1), (b_2, c_1), (c_2, b_3), (b_4, a_2)$ ordered as they appear in the path.
 
-    \textbf{Subsubcase 2a.i:} There is an extra loop connecting $A$ to $B$ before ending the path.
+    \textbf{Subsubcase 2a.i:} There is an extra loop connecting $A$ to $B$ before/after the main loop.
+    WLOG assume that the extra loop occurs before the main loop (if not then the path can be reversed and preserve the same structure).
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_5, a_3)^*$, $(a_4, b_6)^*$, $(b_2, c_1)$, $(c_2, b_3)$, $(b_4, a_2)$ ordered as they appear in the path.
+    Let these edges be $(a_3, b_5)^*, (b_6, a_4)^*, (a_1, b_1), (b_2, c_1), (c_2, b_3), (b_4, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
-    $$a' \leadsto a_1 \to b_1 \leadsto b_5 \to a_3 \leadsto a_4 \to b_6 \leadsto b_2 \to c_1 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a''$$
+    $$a' \leadsto a_3 \to b_5 \leadsto b_6 \to a_4 \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|a_3 b_5| + |a_1 b_1| \leq |a_3 a_1| + |b_5 b_1|$.
+    This is to say the following path must be at least a long:
+    $$a' \leadsto a_3 \to a_1 \leadsto a_4 \to b_6 \leadsto b_5 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a''$$
     \begin{align*}
-        |a_1 b_1| + |a_4 b_6| &\leq |a_1 a_4| + |b_1 b_6| \\
-        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_4 b_6| \\
-        &= \frac{1}{s} (|a_1 b_1| + |a_4 b_6|)
+        |a_3 b_5| + |a_1 b_1| &\leq |a_3 a_1| + |b_5 b_1| \\
+        &\leq \frac{1}{s} |a_3 b_5| + \frac{1}{s} |a_1 b_1| \\
+        &= \frac{1}{s} (|a_3 b_5| + ||a_1 b_1|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_3 b_5| + |a_1 b_1| = |a_3 a_1| + |b_5 b_1|$ and therefore the new path, with one less loop, is also optimal.
     
     \textbf{Subsubcase 2a.ii:} There is an extra loop connecting $B$ to $C$ before ending the path.
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_3, b_5)^*$, $(b_6, c_4)^*$, $(c_2, b_3)$, $(b_4, a_2)$ ordered as they appear in the path.
+    WLOG let these edges be $(a_1, b_1), (b_2, c_1), (c_3, b_5)^*, (b_6, c_4)^*, (c_2, b_3), (b_4, a_2)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
     $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_3 \to b_5 \leadsto b_6 \to c_4 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|b_2 c_1| + |b_6 c_4| \leq |b_2 b_6| + |c_1 c_4|$.
+    This is to say the following path must be at least a long:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to b_6 \leadsto b_5 \to c_3 \leadsto c_1 \to c_4 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |b_2 c_1| + |b_6 c_4| &\leq |b_2 b_6| + |c_1 c_4| \\
         &\leq \frac{1}{s} |b_2 c_1| + \frac{1}{s} |b_6 c_4| \\
         &= \frac{1}{s} (|b_2 c_1| + |b_6 c_4|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_3 b_5| + |a_1 b_1| = |a_3 a_1| + |b_5 b_1|$ and therefore the new path, with one less loop, is also optimal.
 
-    \textbf{Subsubcase 2a.iii:} There is an extra loop connecting $A,B$ after ending the path.
+    \textbf{Subcase 2b:} There are no connections between $B$ and $C$
+    WLOG let these edges be $(a_1, b_1), (b_2, a_2), (a_3, c_1), (c_2, a_4)$ ordered as they appear in the path (if $C$ occurs before $B$ then flip the names).
+
+    \textbf{Subsubcase 2b.i:} There is an extra loop connecting $A$ to $B$ before / after the main loop.
+    WLOG assume that the extra loop occurs before the main loop (the opposite case is symmetric).
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, c_1)$, $(c_2, b_3)$, $(b_4, a_2)$, $(a_3, b_5)^*$, $(b_6, a_4)^*$ ordered as they appear in the path.
-    This gives the following partial structure of the path:
-    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to b_3 \leadsto b_4 \to a_2 \leadsto a_3 \to b_5 \leadsto b_6 \to a_4 \leadsto a''$$
-
-    Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
-    \begin{align*}
-        |a_1 b_1| + |a_3 b_5| &\leq |a_1 a_3| + |b_1 b_5| \\
-        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_3 b_5| \\
-        &= \frac{1}{s} (|a_1 b_1| + |a_3 b_5|)
-    \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
-
-    \textbf{Subcase 2b:} Let there only be edges connecting $A$ to $B$ and $A$ to $C$.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, a_2)$, $(a_3, c_1)$, $(c_2, a_4)$ ordered as they appear in the path (if $C$ occurs before $B$ then flip the names).
-
-    \textbf{Subsubcase 2b.i:} There is an extra loop connecting $A$ to $B$ before ending the path.
-    Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_5, a_3)^*$, $(a_4, b_6)^*$, $(b_2, a_2)$, $(a_5, c_1)$, $(c_2, a_6)$ ordered as they appear in the path.
+    Let these edges be $(a_3, b_5)^*, (b_6, a_4)^*, (a_1, b_1), (b_2, a_2), (a_5, c_1), (c_2, a_6)$ ordered as they appear in the path.
     This gives the following partial structure of the path:
     $$a' \leadsto a_1 \to b_1 \leadsto b_5 \to a_3 \leadsto a_4 \to b_6 \leadsto b_2 \to a_2 \leadsto a_5 \to c_1 \leadsto c_2 \to a_6 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|a_1 b_1| + |a_4 b_6| \leq |a_1 a_4| + |b_1 b_6|$.
+    This is to say the following path must be at least as long:
+    $$a' \leadsto a_1 \to a_4 \leadsto a_4 \to b_5 \leadsto b_1 \to b_6 \leadsto b_2 \to a_2 \leadsto a_5 \to c_1 \leadsto c_2 \to a_6 \leadsto a''$$
+    We can then note the following from the inequality and \Cref{thm:fundamental_thm_wsp}:
     \begin{align*}
         |a_1 b_1| + |a_4 b_6| &\leq |a_1 a_4| + |b_1 b_6| \\
         &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_4 b_6| \\
         &= \frac{1}{s} (|a_1 b_1| + |a_4 b_6|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_1 b_1| + |a_4 b_6| = |a_1 a_4| + |b_1 b_6|$ and therefore the new path, with one less loop, is also optimal.
 
-    \textbf{Subsubcase 2b.ii:} There is an extra loop connecting $A,C$ after ending the path.
+    \textbf{Subsubcase 2b.ii:} There is an extra loop connecting $A$ to $C$ before / after the main loop.
+    WLOG assume that the extra loop occurs after the main loop (the opposite case is symmetric).
     Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, a_2)$, $(a_3, c_1)$, $(c_2, a_4)$, $(a_5, c_3)^*$, $(c_4, a_6)^*$ ordered as they appear in the path.
+    Let these edges be $(a_1, b_1), (b_2, a_2), (a_3, c_1), (c_2, a_4), (a_5, c_3)^*, (c_4, a_6)^*$ ordered as they appear in the path.
     This gives the following partial structure of the path:
     $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to c_1 \leadsto c_2 \to a_4 \leadsto a_5 \to c_3 \leadsto c_4 \to a_6 \leadsto a''$$
 
     Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
+    $|a_3 c_1| + |a_5 c_3| \leq |a_3 a_5| + |c_1 c_3|$.
+    This is to say the following path must be at least as long:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to a_5 \leadsto a_4 \to c_2 \leadsto c_1 \to c_3 \leadsto c_4 \to a_6 \leadsto a''$$
     \begin{align*}
         |a_3 c_1| + |a_5 c_3| &\leq |a_3 a_5| + |c_1 c_3| \\
         &\leq \frac{1}{s} |a_3 c_1| + \frac{1}{s} |a_5 c_3| \\
         &= \frac{1}{s} (|a_3 c_1| + |a_5 c_3|)
     \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
-
-    \textbf{Subsubcase 2b.iii:} There is an extra loop connecting $A,B$ before ending the path.
-    Then the optimal hamiltonian path must contain at least six edges connecting the three sets.
-    WLOG let these edges be $(a_1, b_1)$, $(b_2, a_2)$, $(a_3, c_1)$, $(c_2, a_4)$, $(a_5, b_5)^*$, $(b_6, a_6)^*$ ordered as they appear in the path.
-    This gives the following partial structure of the path:
-    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to c_1 \leadsto c_2 \to a_4 \leadsto a_5 \to b_5 \leadsto b_6 \to a_6 \leadsto a''$$
-
-    Since the path is optimal we know that it satisfies the 2-optimality condition implying the following:
-    \begin{align*}
-        |a_1 b_1| + |a_5 b_5| &\leq |a_1 a_5| + |b_1 b_5| \\
-        &\leq \frac{1}{s} |a_1 b_1| + \frac{1}{s} |a_5 b_5| \\
-        &= \frac{1}{s} (|a_1 b_1| + |a_5 b_5|)
-    \end{align*}
-    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$ contradicting our original statement that $s > 1$.
+    This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then this implies that $|a_3 c_1| + |a_5 c_3| = |a_3 a_5| + |c_1 c_3|$ and therefore the new path, with one less loop, is also optimal.
 
     Therefore in all cases we have reached a contradiction when assuming that there are more than four edges connecting the three sets.
     Thus the optimal hamiltonian path from $a'$ to $a''$ over $P$ must have only three or four edges connecting the three sets.
