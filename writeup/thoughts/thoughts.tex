@@ -84,7 +84,7 @@ The main theorem I am proving here is Corollary~\ref{cor:wsp_tsp} and Theorem~\r
 \end{defn}
 
 \section{Background Theorems}
-\begin{thm}
+\begin{thm}[The Fundamental Theorem of Well Separated Pairs]\label{thm:fundamental_thm_wsp}
 Let $A$ and $B$ be two sets of points that are $s$-well-separated, let $p,p' \in A$, and let $q,q' \in B$. 
 Then the following inequalities hold:
 \begin{align*}
@@ -290,8 +290,6 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 \subsection{Moving beyond binary WSPDs}
 \subsubsection{Triple Pairwise Separation}
-
-\emph{TODO: Update these to have $s=1.0$}
 
 \begin{thm}\label{thm:triple_wsp_path_aa}
     Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s \geq 1$. 
@@ -534,7 +532,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Furthermore, if $s > 1$ then all optimal paths must satisfy this property.
 \end{proof}
 
-\begin{corollary}
+\begin{corollary}\label{thm:triple_wsp_tsp}
     Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s > 1$. 
     Then $A$, $B$, and $C$ must be TSP-separated.
 \end{corollary}
