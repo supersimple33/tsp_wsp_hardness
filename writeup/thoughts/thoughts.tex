@@ -304,6 +304,18 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We can then apply \Cref{thm:wsp_path_ab} to construct a solution where this path visits all points in $B$ consecutively if it was not already the case.
 \end{proof}
 
+\begin{lem}
+    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
+    Then the multiple optimal hamiltonian paths problem where one path had fixed endpoints $a' \in A$ and $b' \in B$ and the other path had fixed endpoints $a'' \in A$ and $b'' \in B$ has a solution where each path only has a single edge connecting $A$ to $B$ and furthermore if $s > 1$ then all optimal solutions must satisfy this property.
+\end{lem}
+\begin{proof}
+    Consider some optimal solution to the problem.
+    We can define $A'$ to be the set of points in $A$ that are visited by the first path and $B'$ to be the set of points in $B$ that are visited by the first path.
+    We can also define $A''$ to be the set of points in $A$ that are visited by the second path and $B''$ to be the set of points in $B$ that are visited by the second path.
+    Then we can note that $A'$ and $B'$ are still $s$-well-separated and $A''$ and $B''$ are still $s$-well-separated by \Cref{lem:wsp_subset}.
+    We can then apply \Cref{thm:wsp_path_ab} to both of the paths which states that if $s > 1$ then the two paths could not have more than one edge connecting $A$ to $B$ and if $s = 1$ then there exists an optimal solution for each of the subproblems where they only cross $A$ and $B$ once.
+\end{proof}
+
 \subsubsection{Single WSP Entry/Exit Set Multi Path Analysis}
 
 \input{../MSThesis/theorems/wsp_twopath_aa_aa.tex}
