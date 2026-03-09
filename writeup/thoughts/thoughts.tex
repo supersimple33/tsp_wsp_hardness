@@ -205,61 +205,11 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \input{../MSThesis/theorems/wsp_twopath_fixed_aa_bb.tex}
 
-\begin{thm}\label{thm:wsp_mpath_fixed_all_a}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. 
-    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths where each paths endpoints are fixed and all endpoints are in $A$ has a solution where a single path visits all points in $B$ consecutively and all other paths only have points in $A$.
-    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{thm}
-\begin{proof} % gemini checked for major flaws
-    Suppose that for some optimal solution there are at least two paths that have edges connecting $A$ to $B$.
-    Then we can define two new sets of points $A', B'$ where $A'$ is the set of points in $A$ that are visited by these two paths and $B'$ is the set of points in $B$ that are visited by these two paths.
-    Then we can note that $A'$ and $B'$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
-    We can then define the endpoints of the first path as $a',a'' \in A$ and the endpoints of the second path as $a''',a'''' \in A$.
-    If $s > \frac{3}{2}$ then this would contradict \Cref{lem:wsp_twopath_fixed_aa_aa} since it states that if $s > \frac{3}{2}$ then all optimal solutions must have only a single path with edges connecting $A$ to $B$.
-    If $s = \frac{3}{2}$ then by \Cref{lem:wsp_twopath_fixed_aa_aa} there exists an optimal solution to the subproblem of the points in these two paths where only a single path has two edges connecting $A$ to $B$ and the other path has no edges connecting $A$ to $B$.
-    We can then repeatedly apply this logic to keep generating optimal solutions with fewer paths connecting $A$ to $B$ until we have an optimal solution where only a single path has edges connecting $A$ to $B$ and all other paths have no edges connecting $A$ to $B$.
+\input{../MSThesis/theorems/wsp_mpath_fixed_all_a.tex}
+\input{../MSThesis/theorems/wsp_mtour_all_a.tex} % cor
 
-    Finally we can apply \Cref{thm:wsp_path_aa} to the path that has edges connecting $A$ to $B$ to construct a solution where this path visits all points in $B$ consecutively and furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{proof}
-
-\begin{corollary}\label{cor:wsp_mtour_all_a}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
-    Then the multiple optimal travelling salesman problem of $k \geq 2$ tours which has all starting and ending nodes in $A$ has a optimal solution where all tours but one stay within $A$ and the remaining tour visits all points in $B$ consecutively.
-    Furthermore, if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{corollary}
-
-\begin{thm}\label{thm:wsp_mpath_fixed_mixed}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. 
-    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths where each paths endpoints are fixed and at least one path has an endpoint in $A$ and at least one path has an endpoint in $B$ has a solution where paths which have both an endpoint in $A$ and an endpoint in $B$ have a single edge connecting $A$ to $B$ and all other paths only have points in $A$ or only have points in $B$ (if they start/end in $A$ resp $B$).
-    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{thm}
-\begin{proof} % gemini checked for major flaws
-    Assume that for some optimal solution there exists a path whose endpoints are just in $A$ xor $B$ and that path has an edge connecting $A$ to $B$.
-    WLOG define the endpoints of the path to be $a',a'' \in A$ (otherwise just flip the names for $A$ and $B$).
-    Choose another path which has at least on endpoint in $B$.
-    We can then define $A'$ to be the set of points in $A$ that are visited by these two paths and $B'$ to be the set of points in $B$ that are visited by these two paths.
-    Then we can note that $A'$ and $B'$ are still $s$-well-separated by \Cref{lem:wsp_subset}.
-
-    \textbf{Case 1:} This path has both endpoints in $B$.
-    Then we can apply \Cref{lem:wsp_twopath_fixed_aa_bb} to construct a solution where neither path has an edge connecting $A$ to $B$ and furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-
-    \textbf{Case 2:} This path has one endpoint in $A$ and one endpoint in $B$.
-    Then we can apply \Cref{lem:wsp_twopath_fixed_aa_ab} to construct a solution where only the second path has edges connecting $A$ to $B$ and furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-
-    By repeatedly applying cases 1 and 2 we can construct a solution where paths that have both endpoints in $A$ xor $B$ never cross from $A$ to $B$. 
-    Next take some path which has both one endpoint $a' \in A$ and one endpoint $b' \in B$ (if it exists).
-    Define $A'$ to be the set of points in $A$ that are visited by this path and $B'$ to be the set of points in $B$ that are visited by this path.
-    Then we can note that $A'$ and $B'$ are still $s$-well-separated by \Cref{lem:wsp_subset}.
-    It then follows from \Cref{thm:wsp_path_ab} that the optimal solution must have that this path only has a single edge connecting $A$ to $B$.
-
-    Therefore we have that if $s \geq \frac{3}{2}$ then there exists an optimal solution where paths which have both an endpoint in $A$ and an endpoint in $B$ have a single edge connecting $A$ to $B$ and all other paths only have points in $A$ or only have points in $B$ (if they start/end in $A$ resp $B$) and if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{proof}
-
-\begin{corollary}\label{cor:wsp_mtour_mixed}
-    Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
-    Then the multiple optimal travelling salesman problem of $k \geq 2$ paths which has a mixture of starting nodes in $A$ and $B$ has a solution where there are no edges connecting $A$ to $B$ in any of the tours.
-    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
-\end{corollary}
+\input{../MSThesis/theorems/wsp_mpath_fixed_mixed.tex}
+\input{../MSThesis/theorems/wsp_mtour_mixed.tex} % cor
 
 \subsubsection{Single WSP Entry/Exit Set Multi Path Analysis}
 
