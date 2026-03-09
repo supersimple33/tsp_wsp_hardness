@@ -197,12 +197,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \subsubsection{Single WSP Endpoint Pair Multi Path Analysis}
 
-\begin{lem}\label{lem:wsp_twopath_fixed_aa_aa}
+\begin{lem}\label[lem]{lem:wsp_twopath_fixed_aa_aa}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
     Then the multiple optimal hamiltonian paths problem where one path had fixed endpoints $a', a'' \in A$ and the other path had fixed endpoints $a''', a'''' \in A$ has a solution where one of the path visits all points in $B$ consecutively and the other path has no edges connecting $A$ to $B$.
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{lem}
-\begin{proof}
+\begin{proof} % gemini checked for major flaws
     Consider some optimal solution to the problem.
     Suppose that both paths have edges connecting $A$ to $B$.
     Then there must be two edges of the form $(a^*_1, b^*_1)$ and $(b^*_2, a^*_2)$ in the first set and two edges of the form $(a^\dagger_1, b^\dagger_1)$ and $(b^\dagger_2, a^\dagger_2)$ in the second set where $a^*_1, a^*_2, a^\dagger_1, a^\dagger_2 \in A$ and $b^*_1, b^*_2, b^\dagger_1, b^\dagger_2 \in B$.
@@ -251,12 +251,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We can then apply \Cref{thm:wsp_path_aa} to construct a solution where this path visits all points in $B$ consecutively if it was not already the case.
 \end{proof}
 
-\begin{lem}\label{lem:wsp_twopath_fixed_aa_ab}
+\begin{lem}\label[lem]{lem:wsp_twopath_fixed_aa_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
     Then the multiple optimal hamiltonian paths problem where one path had fixed endpoints $a', a'' \in A$ and the other path had fixed endpoints $a''' \in A$ and $b' \in B$ has a solution where the first path visits only points in $A$ and the second path visits all points in $B$ consecutively.
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{lem}
-\begin{proof}
+\begin{proof} % gemini checked for major flaws
     Begin by considering some optimal solution to the problem where the first path visits some points in $B$.
     Then we can note the following edges must exist in the first path $(a^*_1, b^*_1)$ and $(b^*_2, a^*_2)$ where $a^*_1, a^*_2 \in A$ and $b^*_1, b^*_2 \in B$ and in the second path there must be an edge of the form $(a^\dagger, b^\dagger)$ where $a^\dagger \in A$ and $b^\dagger \in B$.
     Thus these paths have the following partial structure:
@@ -304,11 +304,11 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We can then apply \Cref{thm:wsp_path_ab} to construct a solution where this path visits all points in $B$ consecutively if it was not already the case.
 \end{proof}
 
-\begin{lem}\label{lem:wsp_twopath_fixed_ab_ab}
+\begin{lem}\label[lem]{lem:wsp_twopath_fixed_ab_ab}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$.
     Then the multiple optimal hamiltonian paths problem where one path had fixed endpoints $a' \in A$ and $b' \in B$ and the other path had fixed endpoints $a'' \in A$ and $b'' \in B$ has a solution where each path only has a single edge connecting $A$ to $B$ and furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{lem}
-\begin{proof}
+\begin{proof} % gemini checked for major flaws
     Consider some optimal solution to the problem.
     We can define $A'$ to be the set of points in $A$ that are visited by the first path and $B'$ to be the set of points in $B$ that are visited by the first path.
     We can also define $A''$ to be the set of points in $A$ that are visited by the second path and $B''$ to be the set of points in $B$ that are visited by the second path.
@@ -316,11 +316,11 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We can then apply \Cref{thm:wsp_path_ab} to both of the paths which states that if $s > 1$ then the two paths could not have more than one edge connecting $A$ to $B$ and if $s = 1$ then there exists an optimal solution for each of the subproblems where they only cross $A$ and $B$ once.
 \end{proof}
 
-\begin{lem}\label{lem:wsp_twopath_fixed_aa_bb}
+\begin{lem}\label[lem]{lem:wsp_twopath_fixed_aa_bb}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$.
     Then the multiple optimal hamiltonian paths problem where one path had fixed endpoints $a',a'' \in A$ and the other path had fixed endpoints $b',b'' \in B$ has a solution where neither path has an edge connecting $A$ to $B$ and furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{lem}
-\begin{proof}
+\begin{proof} % gemini checked for major flaws
     Assume that for some optimal solution it has at least one edge connecting $A$ to $B$.
     We will define $P_A$ to be the first path that connects $a'$ to $a''$ and $P_B$ to be the second path that connects $b'$ to $b''$.
     WLOG assume that $P_A$ has an edge connecting $A$ to $B$ (if not then flip the names of $A$ and $B$)
@@ -395,12 +395,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Furthermore it follows from case 1 that if $s \geq 1$ then there exists an optimal solution where there are at most two edges connecting $A$ to $B$ and if $s > 1$ then all optimal solutions must satisfy this property.
 \end{proof}
 
-\begin{thm}
+\begin{thm}\label{thm:wsp_mpath_fixed_all_a}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. 
     Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths where each paths endpoints are fixed and all endpoints are in $A$ has a solution where a single path visits all points in $B$ consecutively and all other paths only have points in $A$.
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
-\begin{proof}
+\begin{proof} % gemini checked for major flaws
     Suppose that for some optimal solution there are at least two paths that have edges connecting $A$ to $B$.
     Then we can define two new sets of points $A', B'$ where $A'$ is the set of points in $A$ that are visited by these two paths and $B'$ is the set of points in $B$ that are visited by these two paths.
     Then we can note that $A'$ and $B'$ are still $s$-well-separated since they are subsets of $A$ and $B$ respectively.
@@ -418,12 +418,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Furthermore, if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{corollary}
 
-\begin{thm}
+\begin{thm}\label{thm:wsp_mpath_fixed_mixed}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. 
     Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths where each paths endpoints are fixed and at least one path has an endpoint in $A$ and at least one path has an endpoint in $B$ has a solution where paths which have both an endpoint in $A$ and an endpoint in $B$ have a single edge connecting $A$ to $B$ and all other paths only have points in $A$ or only have points in $B$ (if they start/end in $A$ resp $B$).
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
-\begin{proof}
+\begin{proof} % gemini checked for major flaws
     Assume that for some optimal solution there exists a path whose endpoints are just in $A$ xor $B$ and that path has an edge connecting $A$ to $B$.
     WLOG define the endpoints of the path to be $a',a'' \in A$ (otherwise just flip the names for $A$ and $B$).
     Choose another path which has at least on endpoint in $B$.
