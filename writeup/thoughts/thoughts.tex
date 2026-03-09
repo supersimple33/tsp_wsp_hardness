@@ -420,12 +420,12 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \begin{thm}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$. 
-    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths where each paths endpoints are fixed and at least one path has an endpoint in $A$ and at least one path has an endpoing in $B$ has a solution where paths which have both an endpoint in $A$ and an endpoint in $B$ have a single edge connecting $A$ to $B$ and all other paths only have points in $A$ or only have points in $B$ (if they start/end in $A$ resp $B$).
+    Then the multiple optimal hamiltonian paths problem of $k \geq 2$ paths where each paths endpoints are fixed and at least one path has an endpoint in $A$ and at least one path has an endpoint in $B$ has a solution where paths which have both an endpoint in $A$ and an endpoint in $B$ have a single edge connecting $A$ to $B$ and all other paths only have points in $A$ or only have points in $B$ (if they start/end in $A$ resp $B$).
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     Assume that for some optimal solution there exists a path whose endpoints are just in $A$ xor $B$ and that path has an edge connecting $A$ to $B$.
-    WLOG assume define that endpoints of the path to be $a',a'' \in A$ (otherwise just flip the names for $A$ and $B$).
+    WLOG define the endpoints of the path to be $a',a'' \in A$ (otherwise just flip the names for $A$ and $B$).
     Choose another path which has at least on endpoint in $B$.
     We can then define $A'$ to be the set of points in $A$ that are visited by these two paths and $B'$ to be the set of points in $B$ that are visited by these two paths.
     Then we can note that $A'$ and $B'$ are still $s$-well-separated by \Cref{lem:wsp_subset}.
