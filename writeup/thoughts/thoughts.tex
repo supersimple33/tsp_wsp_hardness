@@ -250,7 +250,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We can then apply \Cref{thm:wsp_path_aa} to the path that has edges connecting $A$ to $B$ to construct a solution where this path visits all points in $B$ consecutively and furthermore if $s > 1$ then all optimal solutions must satisfy this property.
 \end{proof}
 
-\begin{thm} 
+\begin{thm}\label{thm:wsp_mpath_odd_mix}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq 1$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where there are an odd number of endpoints in $A$.
     Then there exists an optimal solution where a single path has exactly one edge connecting $A$ to $B$ and all other paths have no edges connecting $A$ to $B$.
     Furthermore if $s > 1$ then all optimal solutions must satisfy this property.
@@ -285,7 +285,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We can then apply this logic repeatedly to construct a solution where only a single path has an edge connecting $A$ to $B$ and all other paths have no edges connecting $A$ to $B$.
 \end{proof}
 
-\begin{thm}
+\begin{thm}\label{thm:wsp_mpath_even_mix}
     Suppose we have two sets of points $A$ and $B$ that are $s$-well-separated where $s \geq \frac{3}{2}$ and we have a multiple optimal hamiltonian paths problem with $k \geq 2$ paths where there are a non-zero even number of endpoints in $A$ and a non-zero even number of endpoints in $B$.
     Then there exists an optimal solution where there are no edges connecting $A$ to $B$ in any of the paths.
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
