@@ -323,7 +323,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|a_1 b_1| + |c_2 a_2| + |b_4 c_3|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_1 b_1| + |c_2 a_2| + |b_4 c_3| = |a_1 a_2| + |b_4 b_1| + |c_2 c_3|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1b:} There is another loop connecting the three sets in the opposite orientation.
@@ -342,7 +341,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|a_1 b_1| + |c_2 a_2| + |c_4 b_3|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_1 b_1| + |c_2 a_2| + |c_4 b_3| = |a_1 a_2| + |c_4 c_2| + |b_1 b_3|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1c:} There must be at least two additional edges at the end causing a loop from $A$ to $B$.
@@ -362,7 +360,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|a_1 b_1| + |a_3 b_3|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_1 b_1| + |a_3 b_3| = |a_1 a_3| + |b_1 b_3|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1d:} There must be at least two additional edges at the end causing a loop from $A$ to $C$.
@@ -382,7 +379,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|c_2 a_2| + |c_4 a_4|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|c_2 a_2| + |c_4 a_4| = |c_2 c_4| + |a_2 a_4|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1e:} There must be at least two additional edges connecting $A,B$ before starting the primary loop.
@@ -402,7 +398,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|a_3 b_3| + |a_1 b_1|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_3 b_3| + |a_1 b_1| = |a_3 a_1| + |b_3 b_1|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1f:} There must be at least two additional edges connecting $A,C$ before starting the primary loop.
@@ -422,7 +417,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|c_4 a_4| + |c_2 a_2|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|c_4 a_4| + |c_2 a_2| = |c_4 c_2| + |a_4 a_2|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 1g:} There is a loop back from $B$ to $C$ before the primary loop is ended.
@@ -442,7 +436,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|b_2 c_1| + |b_4 c_3|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|b_2 c_1| + |b_4 c_3| = |b_2 b_4| + |c_1 c_3|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Case 2:} The path does not pairwise connect each of the three sets. 
@@ -469,7 +462,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|a_3 b_5| + ||a_1 b_1|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_3 b_5| + |a_1 b_1| = |a_3 a_1| + |b_5 b_1|$ and therefore the new path, with one less loop, is also optimal.
     
     \textbf{Subsubcase 2a.ii:} There is an extra loop connecting $B$ to $C$ before ending the path.
@@ -489,7 +481,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|b_2 c_1| + |b_6 c_4|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_3 b_5| + |a_1 b_1| = |a_3 a_1| + |b_5 b_1|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subcase 2b:} There are no connections between $B$ and $C$
@@ -513,7 +504,6 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|a_1 b_1| + |a_4 b_6|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_1 b_1| + |a_4 b_6| = |a_1 a_4| + |b_1 b_6|$ and therefore the new path, with one less loop, is also optimal.
 
     \textbf{Subsubcase 2b.ii:} There is an extra loop connecting $A$ to $C$ before / after the main loop.
@@ -533,11 +523,15 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|a_3 c_1| + |a_5 c_3|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    If $s > 1$ then this is a contradiction and thus all optimal paths must have at most four edges connecting the three sets as desired.
     If $s = 1$ then this implies that $|a_3 c_1| + |a_5 c_3| = |a_3 a_5| + |c_1 c_3|$ and therefore the new path, with one less loop, is also optimal.
 
-    Therefore in all cases we have reached a contradiction when assuming that there are more than four edges connecting the three sets.
-    Thus the optimal hamiltonian path from $a'$ to $a''$ over $P$ must have only three or four edges connecting the three sets.
+    Across all cases we have that $s \leq 1$. 
+    If $s > 1$ then we have a contradiction in all cases and thus all optimal paths must have at most four edges connecting the three sets as desired.
+    If $s = 1$ then we have seen that a path with one less loop can always be created across all cases.
+    We can then repeatedly apply the cases until a path with at most four edges connecting the three sets is reached.
+
+    Therefore there must exist an optimal path over $P$ between $a'$ and $a''$ where there are either three or four edges connecting the three sets.
+    Furthermore, if $s > 1$ then all optimal paths must satisfy this property.
 \end{proof}
 
 \begin{corollary}
