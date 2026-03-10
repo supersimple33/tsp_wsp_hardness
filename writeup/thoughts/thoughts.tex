@@ -364,95 +364,17 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 \section{Algorithms}
 
-\begin{algorithm}[H]
-\caption{\textsc{BestBalancedBiPartition}$(D,s)$}
-\label{alg:balanced-bipartition}
-\begin{algorithmic}[1]
-\Require A metric distance matrix $D \in \mathbb{R}^{n \times n}$ (symmetric, triangle inequality), separation factor $s > 1$
-\Ensure A bi-partition $(A,B)$ that is $s$-well-separated and maximally balanced, or \textsc{NULL} if no such partition exists
+\input{../MSThesis/algs/balanced_bipartition.tex}
+%Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time to compute, and for each edge we compute the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time.
+%Thus the overall runtime is $O(n^3)$.
 
-\State $E \gets \textsc{BuildMST}(D)$ \Comment{$n-1$ edges}
-\State $\text{bestScore} \gets +\infty$
-\State $\text{bestPartition} \gets \textsc{NULL}$
+\input{../MSThesis/theorems/mst_contains_min_edge.tex}
 
-\ForAll{edges $e = (u,v)$ in $E$}
-    \State $(A,B) \gets \textsc{ConnectedComponents}(E \setminus \{e\})$
-    \State $\text{balance} \gets \max(|A|, |B|)$ \Comment{Balance score: size of larger cluster}
-    \If{$\text{balance} \geq \text{bestScore}$}
-        \State \textbf{continue} \Comment{Skip if not better than current best}
-    \EndIf
+\input{../MSThesis/theorems/multiple_cuts_bound_separation.tex}
 
-    \State $\delta \gets w(e)$ \Comment{Single-linkage separation distance}
+\input{../MSThesis/theorems/balanced_bipartition_guarantee.tex}
 
-    \State $\operatorname{diam}(A) \gets \textsc{ComputeDiameter}(A,D)$
-    \State $\operatorname{diam}(B) \gets \textsc{ComputeDiameter}(B,D)$
-    \State $M \gets \max\{\operatorname{diam}(A), \operatorname{diam}(B)\}$
-
-    \If{$\delta \ge s \cdot M$} \Comment{$s$-well-separated condition}
-        \State $\text{bestScore} \gets \text{balance}$
-        \State $\text{bestPartition} \gets (A,B)$
-        \If{$\text{bestScore} = \lceil n/2 \rceil$} \Comment{Perfectly balanced partition found}
-            \State \textbf{break}
-        \EndIf
-    \EndIf
-\EndFor
-
-\State \Return $\text{bestPartition}$
-\end{algorithmic}
-\end{algorithm}
-
-Analyzing the program there are $n-1$ edges in the MST which takes $O(n^2)$ time to compute, and for each edge we compute the connected components in $O(n)$ time, compute the diameter of each component in $O(n^2)$ time, and check the separation condition in $O(1)$ time.
-Thus the overall runtime is $O(n^3)$.
-
-\begin{lem}\label[lem]{lem:mst-contains-min-edge}
-    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space.
-    Then any MST of $P$ must contain at least on edge connecting the two clusters $A$ and $B$ that is minimal among all edges connecting $A$ and $B$.
-\end{lem}
-\begin{proof}
-    Let $e = (u,v)$ be an edge representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$.
-    Suppose that $e$ is not in some MST of $P$. 
-    Then by adding $e$ to the MST we create a cycle.
-    Since $u \in A$ and $v \in B$ there must exist another edge $e' = (u', v')$ in the cycle where $u' \in A$ and $v' \in B$.
-    Since $e$ represents the minimum distance between $A$ and $B$ we have that $\omega(e) \leq \omega(e')$.
-    However by the minimax property of the MST we know that $\omega(e') \leq \omega(e)$.
-    Thus $\omega(e) = \omega(e')$ and therefore the MST contains an edge representing the minimum distance between $A$ and $B$.
-\end{proof}
-
-\begin{lem}\label[lem]{lem:multiple-cuts-bound-separation}
-    Let $(A,B)$ be a bi-partition of a set of points $P$ within a metric space. Suppose that more than one cut of any MST is required to separate $A$ and $B$. Then $(A,B)$ cannot be $s$-well-separated for any $s > 1$.
-\end{lem}
-\begin{proof}
-    Let $e = (u, v)$ be the edge in the MST representing the minimum distance between $A$ and $B$ where $u \in A$ and $v \in B$ which must exist by \Cref{lem:mst-contains-min-edge}.
-    Since more than one cut is required to separate $A$ and $B$, there must be another edge $e' = (v', u')$ in the MST where $u' \in A$ and $v' \in B$.
-    Let $M = \max\{\diam(A), \diam(B)\}$.
-    Define $e^* = (u, u')$ then we know that $\omega(e^*) \leq M$ by the definition of diameter.
-    However by the minimax property of the MST we have that $\omega(e) \leq \omega(e^*)$.
-    Thus $\omega(e) \leq M$ and therefore $(A,B)$ cannot be $s$-well-separated for any $s > 1$.
-\end{proof}
-
-\begin{thm}
-    If there exists a bi-partition of the points that is $s$-well-separated (where $s>1$), then \Cref{alg:balanced-bipartition} will find a bi-partition that is $s$-well-separated and maximally balanced.
-\end{thm}
-\begin{proof}
-    It follows from \Cref{lem:multiple-cuts-bound-separation} that since $s>1$ then any bi-partition that is $s$-well-separated must be separable by a single cut of any MST.
-    Since \Cref{alg:balanced-bipartition} iterates through all edges of the MST and checks the bi-partition induced by cutting that edge, it will find all bi-partitions that are $s$-well-separated.
-    Among these bi-partitions, the algorithm keeps track of the one with the best balance score (size of larger cluster) and returns it at the end.
-    Therefore if there exists a bi-partition that is $s$-well-separated, the algorithm will find and return a bi-partition that is $s$-well-separated and maximally balanced.
-\end{proof}
-
-\begin{thm}
-    Any algorithm that finds the best balanced bi-partition that is $s$-well-separated for $s\leq1$ is NP-hard.
-\end{thm}
-\begin{proof}
-    This can be shown by a reduction from the Partition problem.
-    Given a multiset of $n$ positive integers $S = \{x_1, x_2, \dots, x_n\}$, the Partition problem asks whether $S$ can be
-    partitioned into two subsets $S_1$ and $S_2$ such that the sum of the elements in each subset is equal.
-    We can construct a special set of points $P$ in the following way: for each integer $x_i$ in $S$, create $x_i$ points that are clumped on a unique vertex of the $n$ simplex. 
-    Assume that the solution to the partition problem has each partition made up of at least two integers (if not we can trivially check for this case).
-    Since every clump lies on a unique vertex of the simplex, the diameter of any partition is 1 and the distance between any two partitions is 1 thus making the separation factor exactly 1.
-    Therefore any bi-partition of $P$ is 1-well-separated.
-    It can then be noted that after solving for the best balanced bi-partition of $P$ that is $s$-well-separated for $s \leq 1$, if the resulting bi-partition has both clusters with equal size, then the answer to the Partition problem is yes and if not then the answer must be no.
-\end{proof}
+\input{../MSThesis/theorems/hardness_balanced_bipartition_small_s.tex}
 
 \subsubsection{Second Version}
 
