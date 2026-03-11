@@ -240,12 +240,14 @@ def enforce_diameter_separation(
 # Concorde solve + crossing test
 # -----------------------
 
-
-def build_concorde_solver(points: np.ndarray, metric: str) -> TSPSolver:
-    n = points.shape[0]
-    dist_matrix = pairwise_dists(points, metric)
+# TODO: use the utils version of this
+def build_concorde_solver(dist_matrix: np.ndarray) -> TSPSolver:
+    n = dist_matrix.shape[0]
     ltri = np.round(dist_matrix[np.tril_indices(n, k=-1)]).astype(np.int32)
-    return TSPSolver.from_lower_tri(shape=n, edges=ltri)
+    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
+    solver = TSPSolver.from_lower_tri(shape=n, edges=ltri)
+    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
+    return solver
 
 
 def solve_concorde_once(solver: TSPSolver, random_seed: int) -> Tuple[np.ndarray, int]:
@@ -265,6 +267,7 @@ def tour_cross_edges(tour: np.ndarray, labels: np.ndarray) -> int:
         u = tour[i]
         v = tour[(i + 1) % n]
         c += int(labels[u] != labels[v])
+    c += int(labels[tour[-1]] != labels[tour[0]])
     return c
 
 
@@ -323,7 +326,7 @@ def run_experiment(
         points = np.vstack([A, B2]).astype(np.float64)
         labels = np.array([0] * NA + [1] * NB, dtype=np.int8)
 
-        solver = build_concorde_solver(points, metric)
+        solver = build_concorde_solver(pairwise_dists(points, metric))
         tour, optv = solve_concorde_once(solver, random_seed=concorde_seed)
 
         crosses = tour_cross_edges(tour, labels)
