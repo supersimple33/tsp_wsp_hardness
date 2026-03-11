@@ -19,7 +19,7 @@ from python_tsp.heuristics import (
 
 from wsp import ds
 from wsp import util
-from wsp.util import euclid_dist, group_by
+from wsp.util import euclid_dist, group_by, build_concorde_solver, solve_concorde_once
 
 BUFFER = 0.01  # TODO: this should prob just be a percentage of some sort
 
@@ -475,7 +475,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
     # MARK: Paths
 
     @cached_property
-    def untouched_path(self) -> tuple[list[ds.Point], float, tuple]:
+    def untouched_path(self) -> tuple[list[ds.Point], np.floating, None]:
         # REVIEW: should we validate the path just to be sure
         return (
             self.points
@@ -491,10 +491,10 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
             None,
         )
 
-    # MARK: Optimal Paths
+    # MARK: - Optimal Paths
 
     @cached_property  # @property # if timeit
-    def brute_force_path(self) -> tuple[list[ds.Point], float, tuple]:
+    def brute_force_path(self) -> tuple[list[ds.Point], np.floating, tuple]:
         """Returns the brute force path, set return_to_start to False for shortest path between
         all points not returning, used for nwsp"""
         min_solution = []
@@ -516,7 +516,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         return min_solution, min_dist, (num_perms,)
 
     @cached_property  # @property # if timeit
-    def dp_path(self) -> tuple[list[ds.Point], float, tuple]:
+    def dp_path(self) -> tuple[list[ds.Point], np.floating, tuple]:
         """Returns a solution using dynamic programming based on held-karp"""
         n = len(self.points)
         arr = np.full((2**n, n), float("inf"))
@@ -560,7 +560,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         return path, self.calc_dist(path), (perms,)
 
     @cached_property
-    def dp_alt_path(self) -> tuple[list[ds.Point], float, tuple]:
+    def dp_alt_path(self) -> tuple[list[ds.Point], np.floating, None]:
         """Python is weird and often this impl is faster than the one above by about 1/3 :|"""
         id_path, c_dist = solve_tsp_dynamic_programming(self.dist_matrix)
         path = [self.points[i] for i in id_path] + [self.points[0]]
@@ -573,7 +573,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         return path, dist, None
 
     @cached_property
-    def bab_path(self) -> tuple[list[ds.Point], float, tuple]:
+    def bab_path(self) -> tuple[list[ds.Point], np.floating, None]:
         """Calculates a tour using branch and bound"""
         id_path, c_dist = solve_tsp_branch_and_bound(self.dist_matrix)
 
@@ -586,7 +586,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         return path, dist, None
 
     @cached_property
-    def ishan_bfp_path(self) -> tuple[list[ds.Point], float, tuple]:
+    def ishan_bfp_path(self) -> tuple[list[ds.Point], np.floating, tuple]:
         """Ishan's implementation of using WSPs to prune brute force paths"""
         ws = dict()  # point -> set of well separated points (far away by WSP)
         ws_orig = dict()  # point a -> dict( WSP point b -> WSP set containing point a )
@@ -657,6 +657,18 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
                 min_dist = dist
 
         return min_solution, min_dist, (len(perms),)
+
+    @cached_property
+    def concorde_path(self) -> tuple[list[ds.Point], np.floating, None]:
+        """Returns a solution using the concorde TSP solver, NOTE: this is an external dependency and may not work on all machines"""
+        solver = build_concorde_solver(self.dist_matrix)
+        conc_tour, _ = solve_concorde_once(solver, random_seed=42)
+        path = [self.points[i] for i in conc_tour] + [self.points[0]]
+        dist = self.calc_dist(path)
+        return path, dist, None
+
+
+    # MARK: - Heuristic Paths
 
     @cached_property
     def nnn_path(self) -> tuple[list[ds.Point], float, tuple]:

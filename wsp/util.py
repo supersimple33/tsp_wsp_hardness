@@ -3,10 +3,20 @@ import random
 from typing import Optional
 from itertools import permutations
 from collections import defaultdict
+import os
 
 from deprecation import deprecated
 
+import numpy as np
+from concorde.tsp import TSPSolver
+
 from wsp import ds
+
+STDOUT = 1
+STDERR = 2
+saved_fd = os.dup(STDOUT)
+error_fd = os.dup(STDERR)
+null_fd = os.open(os.devnull, os.O_WRONLY)
 
 # MARK: Distances
 
@@ -249,3 +259,20 @@ def group_by(l, key=lambda x: x, value=lambda x: x):
     for item in l:
         d[key(item)].append(value(item))
     return d
+
+# MARK: - Concorde
+
+def build_concorde_solver(dist_matrix: np.ndarray) -> TSPSolver:
+    n = dist_matrix.shape[0]
+    ltri = np.round(dist_matrix[np.tril_indices(n, k=-1)]).astype(np.int32)
+    return TSPSolver.from_lower_tri(shape=n, edges=ltri)
+
+
+def solve_concorde_once(solver: TSPSolver, random_seed: int) -> tuple[np.ndarray, int]:
+    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+    sol = solver.solve(verbose=False, random_seed=random_seed)
+    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+
+    assert sol.found_tour, "Concorde did not find a tour"
+    assert sol.success, "Concorde did not certify optimality"
+    return np.array(sol.tour, dtype=np.int32), int(sol.optimal_value)
