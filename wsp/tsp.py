@@ -1016,3 +1016,12 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         # dist = sum(dists)
 
         return len(jumps)
+
+    def biconnections_across_path(self, path: list[ds.Point], A: set[ds.Point], B: set[ds.Point]) -> int:
+        """Counts how many connections in path are between A and B"""
+        assert len(path) > 0, "Path must be non-empty"
+        count = 0
+        for i in range(len(path) - 1):
+            if (path[i] in A and path[i + 1] in B) or (path[i] in B and path[i + 1] in A):
+                count += 1
+        return count
