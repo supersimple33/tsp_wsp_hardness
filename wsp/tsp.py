@@ -254,7 +254,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
     # MARK: WSP
 
     @cached_property
-    def wspd(self) -> set[tuple[frozenset[QuadTreeType, QuadTreeType], ds.SpecialDist]]:
+    def wspd(self) -> set[tuple[frozenset[QuadTreeType], ds.SpecialDist]]:
         """Returns the well-seperated pair decomposition of the underlying quadtree, based on"""
         ws_pairs = set()
         is_pk = issubclass(type(self.quadtree), ds.AbstractPKQuadTree)
@@ -1025,3 +1025,22 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
             if (path[i] in A and path[i + 1] in B) or (path[i] in B and path[i + 1] in A):
                 count += 1
         return count
+    
+    def wsp_heuristic_good(self, path: list[ds.Point], A: set[ds.Point], B: set[ds.Point]) -> bool:
+        """A heuristic to check if a path is good based on the WSPs, checks if there are at least 2 connections between A and B"""
+        assert len(A) > 0 and len(B) > 0, "Sets must be non-empty"
+        exitA, exitB = 0, 0
+        combo = A | B
+        for i in range(len(path) - 1):
+            if (path[i] in A and path[i + 1] not in combo) or (path[i] not in combo and path[i + 1] in A):
+                exitA += 1
+            elif (path[i] in B and path[i + 1] not in combo) or (path[i] not in combo and path[i + 1] in B):
+                exitB += 1
+
+        biconn_count = self.biconnections_across_path(path, A, B)
+        if exitA == 0 or exitB == 0:
+            return biconn_count == 2
+        elif exitA % 2 == 0:
+            return biconn_count == 0
+        else:
+            return biconn_count == 1
