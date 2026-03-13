@@ -29,6 +29,7 @@ dependencies:
   - scikit-learn
   - python-tsp
   - osmnx
+  - numba
   - pip:
       - -r requirements.txt
 prefix: ./.conda
