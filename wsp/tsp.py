@@ -1017,7 +1017,8 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
 
         return len(jumps)
 
-    def biconnections_across_path(self, path: list[ds.Point], A: set[ds.Point], B: set[ds.Point]) -> int:
+    @staticmethod
+    def biconnections_across_path(path: list[ds.Point], A: set[ds.Point], B: set[ds.Point]) -> int:
         """Counts how many connections in path are between A and B"""
         assert len(path) > 0, "Path must be non-empty"
         count = 0
@@ -1026,7 +1027,8 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
                 count += 1
         return count
     
-    def wsp_heuristic_good(self, path: list[ds.Point], A: set[ds.Point], B: set[ds.Point]) -> bool:
+    @staticmethod
+    def wsp_heuristic_good(path: list[ds.Point], A: set[ds.Point], B: set[ds.Point]) -> bool:
         """A heuristic to check if a path is good based on the WSPs, checks if there are at least 2 connections between A and B"""
         assert len(A) > 0 and len(B) > 0, "Sets must be non-empty"
         exitA, exitB = 0, 0
@@ -1037,7 +1039,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
             elif (path[i] in B and path[i + 1] not in combo) or (path[i] not in combo and path[i + 1] in B):
                 exitB += 1
 
-        biconn_count = self.biconnections_across_path(path, A, B)
+        biconn_count = TravellingSalesmanProblem.biconnections_across_path(path, A, B)
         if exitA == 0 or exitB == 0:
             return biconn_count == 2
         elif exitA % 2 == 0:
