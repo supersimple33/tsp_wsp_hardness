@@ -1,27 +1,22 @@
-from collections import deque
-from itertools import combinations
+from collections.abc import Iterator
 
 import numpy as np
+from numba import njit
 
 type DistMatrix[N: int] = np.ndarray[tuple[N, N], np.dtype[np.floating]]
 type PointIndices = np.ndarray[tuple[int], np.dtype[np.integer]] # np.unsignedinteger
-type WSPD = list[tuple[PointIndices, PointIndices]]
 
-def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> WSPD:
-    """Generates a WSPD for the given distance matrix and separation factor epsilon.
-    Based on the algorithm described in "Well-Separated Pairs Decomposition Revisited" by Har-Peled et al.
-    """
+@njit
+def _stream_raw_pairs[N: int](dist_matrix: DistMatrix[N], eps: float) -> Iterator[tuple[PointIndices, PointIndices]]:
+    """Optimized numba code for stating the WSPD generation"""
     assert 1 > eps > 0, "undefined behavior outside this range"
     n = dist_matrix.shape[0]
 
     rescaled_dist_mat = dist_matrix / (4/eps)
-    np.log2(rescaled_dist_mat, out=rescaled_dist_mat) # this could be spedup by frexp
-    np.floor(rescaled_dist_mat, out=rescaled_dist_mat)
+    rescaled_dist_mat = np.log2(rescaled_dist_mat) # out = would speed up except this is faster
+    rescaled_dist_mat = np.floor(rescaled_dist_mat)
     np.fill_diagonal(rescaled_dist_mat, np.nan)
     dist_indices = np.unique(rescaled_dist_mat) # sorting is necessary here
-
-    wspd: WSPD = []
-    seen_pairs: set[tuple[bytes, bytes]] = set() # used for deduplication
 
     for i in dist_indices:
         if np.isnan(i): # skip diagonals
@@ -52,19 +47,29 @@ def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> WSPD:
         lower_bound = (2/eps) * (2**i)
         upper_bound = (16/eps) * (2**i)
 
-        for j,k in combinations(packing, 2):
-            if lower_bound <= dist_matrix[j, k] < upper_bound:
-                A: PointIndices = np.nonzero(nearest_site == j)[0]
-                B: PointIndices = np.nonzero(nearest_site == k)[0]
+        for j in range(len(packing)):
+            for k in range(j+1, len(packing)):
+                x, y = packing[j], packing[k]
+                if lower_bound <= dist_matrix[x, y] < upper_bound:
+                    A: PointIndices = np.nonzero(nearest_site == x)[0]
+                    B: PointIndices = np.nonzero(nearest_site == y)[0]
 
-                bytes_A = A.tobytes()
-                bytes_B = B.tobytes()
-                pair_id = (bytes_A, bytes_B) if bytes_A < bytes_B else (bytes_B, bytes_A)
-                if pair_id not in seen_pairs:
-                    seen_pairs.add(pair_id)
-                    wspd.append((A, B))
+                    yield A, B
 
+def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> list[tuple[PointIndices, PointIndices]]:
+    """Generates a WSPD for the given distance matrix and separation factor epsilon.
+    Based on the algorithm described in "Well-Separated Pairs Decomposition Revisited" by Har-Peled et al.
+    """
+    seen_pairs: set[tuple[bytes, bytes]] = set()
+    wspd: list[tuple[PointIndices, PointIndices]] = []
+    for A, B in _stream_raw_pairs(dist_matrix, eps):
+        bytes_A, bytes_B = A.tobytes(), B.tobytes()
+        pair_id = (bytes_A, bytes_B) if bytes_A < bytes_B else (bytes_B, bytes_A)
+        if pair_id not in seen_pairs:
+            seen_pairs.add(pair_id)
+            wspd.append((A, B))
     return wspd
+            
 
 x = np.array([
     [0.0, 0.5, 5.0, 5.0],
