@@ -1,5 +1,7 @@
-import numpy as np
 from collections import deque
+from itertools import combinations
+
+import numpy as np
 
 type DistMatrix[N: int] = np.ndarray[tuple[N, N], np.dtype[np.floating]]
 type PointIndices = np.ndarray[tuple[int], np.dtype[np.integer]] # np.unsignedinteger
@@ -9,7 +11,7 @@ def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> WSPD:
     """Generates a WSPD for the given distance matrix and separation factor epsilon.
     Based on the algorithm described in "Well-Separated Pairs Decomposition Revisited" by Har-Peled et al.
     """
-    assert 1 >= eps > 0, "undefined behavior outside this range"
+    assert 1 > eps > 0, "undefined behavior outside this range"
     n = dist_matrix.shape[0]
 
     rescaled_dist_mat = dist_matrix / (4/eps)
@@ -24,13 +26,23 @@ def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> WSPD:
             continue
 
         # compute the packing
-        available = np.ones(n, dtype=bool)
         packing = []
         r = 2**(i-1)
+
+        # track the distance to nearest center and index of that center for later
+        min_dists = np.full(n, np.inf)
+        nearest_site = np.empty(n, dtype=np.uintp)
+
         for j in range(n):
-            if available[j]:
+            if min_dists[j] > r:
                 packing.append(j)
-                available &= (dist_matrix[j] > r)
+                
+                dists = dist_matrix[j]
+
+                closer_mask = dists < min_dists
+
+                min_dists[closer_mask] = dists[closer_mask]
+                nearest_site[closer_mask] = j
 
         if len(packing) < 2: # quick exit since 
             continue
@@ -39,22 +51,19 @@ def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> WSPD:
         lower_bound = (2/eps) * (2**i)
         upper_bound = (16/eps) * (2**i)
 
-        nearest_site = np.argmin(dist_matrix[:, packing], axis=1)
-
-        for j in range(len(packing)):
-            for k in range(j+1, len(packing)):
-                if lower_bound <= dist_matrix[packing[j], packing[k]] < upper_bound:
-                    A = np.nonzero(nearest_site == j)[0]
-                    B = np.nonzero(nearest_site == k)[0]
-                    wspd_i.append((A, B))
+        for j,k in combinations(packing, 2):
+            if lower_bound <= dist_matrix[j, k] < upper_bound:
+                A = np.nonzero(nearest_site == j)[0]
+                B = np.nonzero(nearest_site == k)[0]
+                wspd_i.append((A, B))
 
         wspd += wspd_i
 
     return wspd
 
 x = np.array([
-    [0.0, 0.0, 5.0, 5.0],
-    [0.0, 0.0, 5.0, 5.0],
+    [0.0, 0.5, 5.0, 5.0],
+    [0.5, 0.0, 5.0, 5.0],
     [5.0, 5.0, 0.0, 0.25],
     [5.0, 5.0, 0.25, 0.0]
 ])
@@ -67,5 +76,5 @@ x = np.array([
     #[4.0, 0.0, 1.5], 
     #[5.0, 1.5, 0.0]
 
-wspd = gen_wspd(x, 0.5)
+wspd = gen_wspd(x, 0.9999)
 print(wspd)
