@@ -21,6 +21,8 @@ def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> WSPD:
     dist_indices = np.unique(rescaled_dist_mat) # sorting is necessary here
 
     wspd: WSPD = []
+    seen_pairs: set[tuple[bytes, bytes]] = set() # used for deduplication
+
     for i in dist_indices:
         if np.isnan(i): # skip diagonals
             continue
@@ -47,17 +49,20 @@ def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> WSPD:
         if len(packing) < 2: # quick exit since 
             continue
 
-        wspd_i: WSPD = []
         lower_bound = (2/eps) * (2**i)
         upper_bound = (16/eps) * (2**i)
 
         for j,k in combinations(packing, 2):
             if lower_bound <= dist_matrix[j, k] < upper_bound:
-                A = np.nonzero(nearest_site == j)[0]
-                B = np.nonzero(nearest_site == k)[0]
-                wspd_i.append((A, B))
+                A: PointIndices = np.nonzero(nearest_site == j)[0]
+                B: PointIndices = np.nonzero(nearest_site == k)[0]
 
-        wspd += wspd_i
+                bytes_A = A.tobytes()
+                bytes_B = B.tobytes()
+                pair_id = (bytes_A, bytes_B) if bytes_A < bytes_B else (bytes_B, bytes_A)
+                if pair_id not in seen_pairs:
+                    seen_pairs.add(pair_id)
+                    wspd.append((A, B))
 
     return wspd
 
