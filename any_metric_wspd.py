@@ -126,5 +126,5 @@ x = np.array([
     #[4.0, 0.0, 1.5], 
     #[5.0, 1.5, 0.0]
 
-wspd = gen_wspd(x, 0.9999)
-print(wspd)
+#wspd = gen_wspd(x, 0.9999)
+#print(wspd)
