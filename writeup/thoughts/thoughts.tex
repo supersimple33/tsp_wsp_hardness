@@ -242,7 +242,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \input{../MSThesis/theorems/wsp_mpath_even_mix.tex}
 
-\subsubsection{Paired Endpoints Must Connect to Others}
+\subsubsection{Single WSP Endpoint pairs form a cycle Multi Path Analysis}
 
 \begin{thm}
     Suppose sets $A$ and $B$ are $s$-well-separated for $s \geq \frac{3}{2}$.
@@ -250,13 +250,31 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     If all endpoints are in $A$ then there exists an optimal solution where a single path visits all points in $B$ consecutively and all other paths only have points in $A$.
     Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
-\begin{proof} % REVIEW: can this be tightened to s >= 1
+\begin{proof} % REVIEW: can this be tightened to s >= 1 (i dont think so the general method requires breaking the cycle apart)
     Consider some optimal solution to the problem.
     Suppose that it does not have a single path that visits all of $B$ consecutively.
     Then we can fix the endpoints of the paths and apply \Cref{thm:wsp_mpath_fixed_all_a}.
     If $s > \frac{3}{2}$ then such a case is a contradiction.
     If $S = \frac{3}{2}$ then there must exist an optimal solution where a single path visits all points in $B$ consecutively and all other paths only have points in $A$ where the endpoints of the paths are the same as the initial solution.
 \end{proof}
+
+\begin{thm}
+    Suppose sets $A$ and $B$ are $s$-well-separated for $s \geq \frac{3}{2}$.
+    Consider a multiple optimal Hamiltonian paths problem of $k \geq 2$ paths over $2k$ endpoints, organized into $k$ pairs of endpoints; where the routing must be chosen such that alternating between the paths and the paired endpoints forms exactly one continuous cycle.
+    Suppose that there is at least one endpoint in $A$ and at least one endpoint in $B$.
+    Furthermore suppose that there is an even number of pairs where one endpoint is in $A$ and the other is in $B$.
+    Then there exists an optimal solution where no path has an edge connecting $A$ to $B$.
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+\end{thm}
+
+\begin{thm}
+    Suppose sets $A$ and $B$ are $s$-well-separated for $s \geq \frac{3}{2}$.
+    Consider a multiple optimal Hamiltonian paths problem of $k \geq 2$ paths over $2k$ endpoints, organized into $k$ pairs of endpoints; where the routing must be chosen such that alternating between the paths and the paired endpoints forms exactly one continuous cycle.
+    Suppose that there is at least one endpoint in $A$ and at least one endpoint in $B$.
+    Furthermore suppose that there is an odd number of pairs where one endpoint is in $A$ and the other is in $B$.
+    Then there exists an optimal solution where no path has an edge connecting $A$ to $B$.
+    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+\end{thm}
 
 \subsubsection{Binary Nested WSP Single Path Analysis}
 
