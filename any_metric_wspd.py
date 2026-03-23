@@ -7,9 +7,10 @@ type DistMatrix[N: int] = np.ndarray[tuple[N, N], np.dtype[np.floating]]
 type PointIndices = np.ndarray[tuple[int], np.dtype[np.integer]] # np.unsignedinteger
 
 @njit
-def _stream_raw_pairs[N: int](dist_matrix: DistMatrix[N], eps: float) -> Iterator[list[tuple[PointIndices, PointIndices]]]:
+def _stream_raw_pairs[N: int](dist_matrix: DistMatrix[N], eps: float, dtype: type[np.integer]) -> list[tuple[PointIndices, PointIndices]]: # Iterator
     """Optimized numba code for stating the WSPD generation"""
     n = dist_matrix.shape[0]
+    wspd: list[tuple[PointIndices, PointIndices]] = []
 
     dist_indices = set()
     for r in range(n):
@@ -22,13 +23,13 @@ def _stream_raw_pairs[N: int](dist_matrix: DistMatrix[N], eps: float) -> Iterato
 
     # pre-allocate trackers
     min_dists = np.empty(n, dtype=dist_matrix.dtype) # REVIEW: dtype choice
-    nearest_site = np.empty(n, dtype=np.uintp) # REVIEW: dtype choice
+    nearest_site = np.empty(n, dtype=dtype) # REVIEW: dtype choice
 
     # pre-allocate cluster counting
-    cluster_counts = np.empty(n, dtype=np.uintp)
-    cluster_offsets = np.empty(n + 1, dtype=np.uintp)
-    cluster_points = np.empty(n, dtype=np.uintp)
-    current_offsets = np.empty(n, dtype=np.uintp)
+    cluster_counts = np.empty(n, dtype=dtype)
+    cluster_offsets = np.empty(n + 1, dtype=dtype)
+    cluster_points = np.empty(n, dtype=dtype)
+    current_offsets = np.empty(n, dtype=dtype)
 
     for i in dist_indices:
         # reset trackers
@@ -69,7 +70,6 @@ def _stream_raw_pairs[N: int](dist_matrix: DistMatrix[N], eps: float) -> Iterato
 
         lower_bound = (2/eps) * (2**i)
         upper_bound = (16/eps) * (2**i)
-        wspd_i: list[tuple[PointIndices, PointIndices]] = []
 
         for j in range(len(packing)):
             for k in range(j+1, len(packing)):
@@ -81,12 +81,12 @@ def _stream_raw_pairs[N: int](dist_matrix: DistMatrix[N], eps: float) -> Iterato
                     start_y, end_y = cluster_offsets[y], cluster_offsets[y+1]
                     B = cluster_points[start_y:end_y].copy() # NOTE: copy needed since cluster
 
-                    wspd_i.append((A, B))
+                    wspd.append((A, B))
 
-        if len(wspd_i) > 0:
-            yield wspd_i
+    return wspd
+                    
 
-def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> list[tuple[PointIndices, PointIndices]]:
+def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float, dtype: type[np.integer] = np.uintp) -> list[tuple[PointIndices, PointIndices]]:
     """Generates a WSPD for the given distance matrix and separation factor epsilon.
     Based on the algorithm described in "Well-Separated Pairs Decomposition Revisited"
     by Har-Peled et al.
@@ -96,23 +96,17 @@ def gen_wspd[N: int](dist_matrix: DistMatrix[N], eps: float) -> list[tuple[Point
     """
     assert 1 > eps > 0, "undefined behavior outside this range"
     
-    global_seen: set[tuple[bytes, bytes]] = set()
-    wspd: list[tuple[PointIndices, PointIndices]] = []
-    for wspd_i in _stream_raw_pairs(dist_matrix, eps):
-        level_ids = [] # REVIEW: is using level ids actually faster?
-        for A, B in wspd_i:
-            A_bytes = A.tobytes()
-            B_bytes = B.tobytes()
-            level_ids.append((A_bytes, B_bytes) if A_bytes < B_bytes else (B_bytes, A_bytes))
-        
-        level_set = set(level_ids)
-        new_ids = level_set - global_seen
+    #global_seen: set[tuple[bytes, bytes]] = set()
+    #wspd: list[tuple[PointIndices, PointIndices]] = []
+    #for A,B in _stream_raw_pairs(dist_matrix, eps):
+    #    bytes_A = A.tobytes()
+    #    bytes_B = B.tobytes()
+    #    pair_id = (bytes_A, bytes_B) if bytes_A < bytes_B else (bytes_B, bytes_A)
+    #    if pair_id not in global_seen:
+    #        global_seen.add(pair_id)
+    #        wspd.append((A, B))
 
-        global_seen.update(new_ids)
-
-        for i, id in enumerate(level_ids):
-            if id in new_ids:
-                wspd.append(wspd_i[i])
+    wspd = _stream_raw_pairs(dist_matrix, eps, dtype=dtype)
 
     return wspd
             
