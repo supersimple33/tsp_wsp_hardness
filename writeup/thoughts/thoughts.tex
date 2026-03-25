@@ -251,39 +251,42 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \begin{thm}
     Suppose sets $A$ and $B$ are $s$-well-separated for $s \geq \frac{3}{2}$.
-    Consider a multiple optimal Hamiltonian paths problem of $k \geq 2$ paths over $2k$ endpoints, organized into $k$ pairs of endpoints; where the routing must be chosen such that alternating between the paths and the paired endpoints forms exactly one continuous cycle.
-    Suppose that for each predefined pair of endpoints, the endpoint are always in the same set (either $A$ or $B$).
+    Consider a multiple optimal Hamiltonian paths problem of $k \geq 2$ paths over $2k$ endpoints, organized into $k$ pairs of endpoints.
+    The objective is to minimize the total length of the $k$ paths, subject to the constraint that alternating between the paths and the predefined pairs forms exactly one continuous cycle.
+    Suppose that for each predefined pair of endpoints, the two endpoints are always in the same set (either $A$ or $B$).
     Then there exists an optimal solution where across the entire solution only two edges cross between $A$ and $B$.
     Furthermore, if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
-\begin{proof} % REVIEW: can this be tightened to s >= 1 (i dont think so the general method requires breaking the cycle apart)
-    To prove this theorem we will first show that the optimal tour will place all the $A$ endpoints together in the cycle order and all the $B$ endpoints together in the cycle order
-    Then we will leverage the previous theorems to show that a optimal solution exists which only has two edges crossing between $A$ and $B$.
+\begin{proof}
+    To prove this theorem we will first show that the optimal solution will place all the $A$ endpoints consecutively in the cycle order and all the $B$ endpoints consecutively in the cycle order.
+    Then we will leverage the previous theorems to show that under this required ordering an optimal solution exists which only has two edges crossing between $A$ and $B$.
 
     To begin, consider some optimal solution to the problem.
 
-    \textbf{Case 1:} All predefined endpoints are in the same set.
-    Then we can fix all currently connected endpoints an apply \Cref{thm:wsp_mpath_fixed_all_a}.
-    If $s > \frac{3}{2}$ then if the current solution has more than two edges crossing between $A$ and $B$ then this would be a contradiction since \Cref{thm:wsp_mpath_fixed_all_a} states that all optimal solutions must have only two edges crossing between $A$ and $B$.
-    If $s = \frac{3}{2}$ then if the current solution has more than two edges crossing between $A$ and $B$ then it follows from \Cref{thm:wsp_mpath_fixed_all_a} that there exists an optimal solution with only two edges crossing between $A$ and $B$.
+    \textbf{Case 1:} All endpoints are in the same set.
+    Since the solution is optimal it is also an optimal solution to the multiple optimal Hamiltonian paths problem where the endpoints of each path are fixed as they are in the current solution.
+    If $s > \frac{3}{2}$ then the current solution must have exactly two edges crossing between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_all_a}.
+    If $s = \frac{3}{2}$ it follows that for the given configuration of endpoints there exists an optimal solution where only two edges cross between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_all_a}.
 
-    \textbf{Case 2:} There are predefined endpoints in both sets.
+    \textbf{Case 2:} There are some endpoints in $A$ and some endpoints in $B$.
     Define the order of the endpoints in the cycle as $e_1, \dots, e_{2k}$ and let $P_1, \dots, P_k$ be the paths such that $P_i$ connects $e_{2i-1}$ to $e_{2i}$.
-    Suppose that two neighboring (in the cycle) non-predefined endpoints $e_j$ and $e_{j+1}$ (where $e_{2k+1} = e_1$) are such that one is in $A$ and the other is in $B$.
-    Then we can note that across all neighbors $e_i,e_{i+1}$ there must be an even number of such non-predefined neighbors since in all the predefined pairs the endpoints are in the same set (and a cycle must return to the same set in the end).
-    Since there is at least one predefined pair of endpoints in both sets there must be at least two such non-predefined neighboring pairs of endpoints.
+    Suppose that two endpoints $e_j, e_{j+1}$ (where $e_{2k+1} = e_1$) connected via some path $P_i$ in the solution are such that one is in $A$ and the other is in $B$.
+    All alternations between sets must happen via paths since the predefined pairs of endpoints are all in the same set.
+    Furthermore, after completing the cycle we must return to the same set we started in, thus there must be an even number of such pairs.
+    Since there is at least one predefined pair of endpoints in both sets there must be at least two paths where one endpoint is in $A$ and the other is in $B$.
 
-    Assume by contradiction that there are more than two such non-predefined neighboring pairs of endpoints.
-    Then since there is an even number of such pairs we will have at least 4 such pairs.
-    We will label each pair of neigbors as follows $e'_1,e''_1; e'_2,e''_2; e'_3,e''_3; e'_4,e''_4$ where $e'_i$ and $e''_i$ are in different sets.
-    WLOG assume that $e'_1, e''_2, e'_3, e''_4 \in A$ and $e''_1, e'_2, e''_3, e'_4 \in B$ (logic is symmetric).
-    To better illustrate the proof we rename these endpoints as follows $a_1 = e'_1, b_1 = e''_1, a_2 = e''_2, b_2 = e'_2, a_3 = e'_3, b_3 = e''_3, a_4 = e''_4, b_4 = e'_4$.
-    Finally note that on the path that goes from $a_1$ to $b_1$ there must be a edge directly connecting $A$ to $B$ and we will label this edge as $\{a^*, b^*\}$ and from $a_3$ to $b_3$ we will label its edge directly connecting $A$ to $B$ as $\{a^\dagger, b^\dagger\}$.
+    Assume by contradiction that there are strictly more than two paths in the solution where one endpoint is in $A$ and the other is in $B$.
+    Because the total number of such paths must be even, there must be at least 4 such paths.
+    Let us consider any sequence of four such paths in the order they appear in the cycle.
+    Because the predefined pairs never cross between sets, any sequence of crossing paths in cycle order must strictly alternate directions.
+    Therefore, WLOG we can label the endpoints of these four paths as follows, the first path connects $a_1$ to $b_1$, the second path connects $b_2$ to $a_2$, the third path connects $a_3$ to $b_3$, and the fourth path connects $b_4$ to $a_4$ where $a_i \in A$ and $b_i \in B$ for all $i$.
+
+    Note that on the path that goes from $a_1$ to $b_1$ there must be an edge directly connecting from $A$ to $B$ and we will label this edge as $\{a^*, b^*\}$ and from $a_3$ to $b_3$ the same is true and we label this edge as $\{a^\dagger, b^\dagger\}$.
     Then we can note the cycle goes:
-    $$\dots \leadsto \boxed{a_1 \leadsto a^* \to b^* \leadsto b_1} \leadsto \boxed{b_2 \leadsto a_2} \leadsto \boxed{a_3 \leadsto  a^\dagger \to b^\dagger \leadsto b_3} \leadsto \boxed{b_4 \leadsto a_4} \leadsto \dots.$$
+    $$\dots \sim \boxed{a_1 \leadsto a^* \to b^* \leadsto b_1} \sim \boxed{b_2 \leadsto a_2} \sim \boxed{a_3 \leadsto  a^\dagger \to b^\dagger \leadsto b_3} \sim \boxed{b_4 \leadsto a_4} \sim \dots.$$
     It follows that we can break apart the solution at the two edges $\{a^*, b^*\}$ and $\{a^\dagger, b^\dagger\}$ and reverse the order of the cycle and paths along the cutout section between these two edges to get a new solution where the cycle goes:
-    $$\dots \leadsto \boxed{a_1 \leadsto a^* \to a^\dagger \leadsto a_3} \leadsto \boxed{a_2 \leadsto b_2} \leadsto \boxed{b_1 \leadsto b^* \to b^\dagger \leadsto b_3} \leadsto \boxed{b_4 \leadsto a_4} \leadsto \dots.$$
-    It can be noted that in creating this new solution no predefined pairs of endpoints are uncoupled, therefore the new solution is a valid one.
+    $$\dots \sim \boxed{a_1 \leadsto a^* \to a^\dagger \leadsto a_3} \sim \boxed{a_2 \leadsto b_2} \sim \boxed{b_1 \leadsto b^* \to b^\dagger \leadsto b_3} \sim \boxed{b_4 \leadsto a_4} \sim \dots.$$
+    Because the predefined pairs are simply undirected pairings of endpoints within the exact same set, traversing them in reverse during this cycle modification is entirely valid and maintains all predefined pairings and does not create multiple cycles.
 
     Since the previous solution was assumed optimal we know that $|a^* b^*| + |a^\dagger b^\dagger| \leq |a^* a^\dagger| + |b^* b^\dagger|$.
     Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$).
@@ -294,12 +297,11 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
         &\leq \frac{1}{s} (|a^* b^*| + |a^\dagger b^\dagger|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which is a contradiction since $s \geq \frac{3}{2}$.
-    Therefore there must be exactly two such non-predefined neighboring pairs of endpoints where one is in $A$ and the other is in $B$.
+    Therefore there must be exactly two paths where one endpoint is in $A$ and the other is in $B$ as desired.
 
-    We can then fix the endpoints of each path in the current solution and apply \Cref{thm:wsp_mpath_fixed_mixed}.
-    Note that only two paths will have their endpoints fixed to be in different sets based on the previous analysis.
-    If $s > \frac{3}{2}$ then the current solution must have only two edges crossing between $A$ and $B$ since if it had more than two edges crossing between $A$ and $B$ then this would be a contradiction to \Cref{thm:wsp_mpath_fixed_mixed} which states that all optimal solutions must have only two edges crossing between $A$ and $B$.
-    If $s = \frac{3}{2}$ then by \Cref{thm:wsp_mpath_fixed_mixed} there must exist an optimal solution which uses the same fixing of endpoints but only has two edges crossing between $A$ and $B$.
+    Since the solution is optimal it is also an optimal solution to the multiple optimal Hamiltonian paths problem where the endpoints of each path are fixed as they are in the current solution.
+    If $s > \frac{3}{2}$ then the current solution must have exactly two edges crossing between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_mixed}.
+    If $s = \frac{3}{2}$ it follows that for the given configuration of endpoints there exists an optimal solution where only two edges cross between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_mixed}.
 
     Therefore in both cases we have shown that there exists an optimal solution where across the entire solution only two edges cross between $A$ and $B$ as desired and furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property as desired.
 \end{proof}
