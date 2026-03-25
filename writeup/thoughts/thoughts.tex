@@ -136,11 +136,11 @@ Then the following inequalities hold:
 \subsection{Hamiltonian Endpoint Distance Bound}
 
 \begin{thm}
-Within a ball of diameter $d$ within a metric space the difference in shortest hamiltonian paths between any two points is at most $2d$.
+Within a ball of diameter $d$ within a metric space the difference in shortest Hamiltonian paths between any two points is at most $2d$.
 \end{thm}
 \begin{proof}
     Fix one pair of endpoints $(a,b)$ and let $P_{a,b}$ be the optimal Hamiltonian path from $a$ to $b$ with length denoted $L(a,b)$.
-    Next consider another pair of endpoints $(c,d)$ we can then build a hamiltonian path from $c$ to $d$ using $P_{a,b}$.
+    Next consider another pair of endpoints $(c,d)$ we can then build a Hamiltonian path from $c$ to $d$ using $P_{a,b}$.
     \begin{enumerate}
         \item Start at $c$
         \item Travel from $c$ to $a$ for a cost of $\dist(c,a) \leq d$
@@ -151,23 +151,28 @@ Within a ball of diameter $d$ within a metric space the difference in shortest h
     %Then let $x$ be the point which precedes $c$ on the path and let $x'$ be the point that immediately follows. 
     %In the same way define $y$ and $y'$ for point $d$.
     %Since the triangle inequality must be obeyed we know 
-    Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. Thus the total cost of this path is at most $L(a,b) + 2d$. Furthermore we know that this cost must ceil whatever the optimal hamiltonian path from $c$ to $d$ is. Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
+    Since the space obeys the triangle inequality we know that during step 3 we can only decrease the cost by shortcutting. 
+    Thus the total cost of this path is at most $L(a,b) + 2d$. 
+    Furthermore we know that this cost must ceil whatever the optimal Hamiltonian path from $c$ to $d$ is. 
+    Thus we have shown that $L(c,d) \leq L(a,b) + 2d$. 
+    By symmetry of the argument we can also show that $L(a,b) \leq L(c,d) + 2d$. 
+    Combining these two inequalities we have that $\forall a,b,c,d;|L(a,b) - L(c,d)| \leq 2d$ as desired. 
 \end{proof}
 I haven't been able to prove it either way yet, but I believe the bound can be tightened for this theorem. 
 
 
 \begin{thm}
-    Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. 
-    Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - d(k+b)$ where $b$ is the number of non-contiguous blocks of points removed (under $H$).
+    Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. Let $L$ be the length of some optimal Hamiltonian path $H$ between $x$ and $y$ over $P$. 
+    Then the length of the optimal Hamiltonian path after removing $k$ intermediate points is at least $L - d(k+b)$ where $b$ is the number of non-contiguous blocks of points removed (under $H$).
 \end{thm}
 \begin{proof}
     Let $Q \subseteq P \setminus \{x,y\}$ be the set of $k$ intermediate points that we remove from $P$.
     We then partition $Q$ into $b$ blocks of consecutive vertices such that $B_j = \{v_{j,1}, \dots, v_{j,m_j}\}$ is the $j$-th block of points in $Q$ and furthermore there are no edges in $H$ between any two blocks of points in $Q$. 
     Thus we will have $\sum_j m_j = k$.
 
-    We define $H'$ to be an optimal hamiltonian path between $x$ and $y$ over $P \setminus Q$ and to have length $L'$.
+    We define $H'$ to be an optimal Hamiltonian path between $x$ and $y$ over $P \setminus Q$ and to have length $L'$.
 
-    We can then build a new hamiltonian path $\widehat H$ by inserting the blocks of points in $Q$ back into $H'$ in their same order as they appear in $H$.
+    We can then build a new Hamiltonian path $\widehat H$ by inserting the blocks of points in $Q$ back into $H'$ in their same order as they appear in $H$.
     For a block $B_j$ we select any edge $(u_1, u_2)$ in the current version of $\widehat H$ and replace it with 
     $(u_1, v_{j,1}), (v_{j,1}, v_{j,2}), \dots, (v_{j,m_j}, u_2)$.
     The increase in length will be
@@ -181,8 +186,8 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
 
 \begin{corollary}
     Given a set of points $P$ within a ball of diameter $d$ within a metric space and starting point $x,y \in P$. 
-    Let $L$ be the length of some optimal hamiltonian path $H$ between $x$ and $y$ over $P$. 
-    Then the length of the optimal hamiltonian path after removing $k$ intermediate points is at least $L - 2dk$.
+    Let $L$ be the length of some optimal Hamiltonian path $H$ between $x$ and $y$ over $P$. 
+    Then the length of the optimal Hamiltonian path after removing $k$ intermediate points is at least $L - 2dk$.
 \end{corollary}
 
 \subsection{Well-Separated Sets are Path/Tour Separated}
@@ -338,11 +343,11 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     We proceed with a case analysis.
 
     \textbf{Case 1:} The second edge exiting $C_t$ is of the form $(b_*, d_\dagger)$ where $b_* \in B'$ and $d_\dagger \in D_t$.
-    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A_t$ with endpoints $a_*$ and $b_*$.
+    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a Hamiltonian path on $A_t$ with endpoints $a_*$ and $b_*$.
     By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A'$ to $B'$ and that all optimal paths must satisfy this if $s > 1$.
 
     \textbf{Case 2:} The second edge exiting $C_t$ is of the form $(a_\dagger, d_\dagger)$ where $a_\dagger \in A'$ and $d_\dagger \in D_t$.
-    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A'$ with endpoints $a_*$ and $a_\dagger$.
+    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a Hamiltonian path on $A'$ with endpoints $a_*$ and $a_\dagger$.
     By \Cref{thm:wsp_path_aa} we know that there exists an optimal path which has exactly two edges connecting $A'$ to $B'$ and that all optimal paths must satisfy this if $s > 1$.
 
     % MARK: - The general case
@@ -368,13 +373,13 @@ There may be a way to deterministically say which of the two cases will occur ba
 \subsubsection{Generalization to \texorpdfstring{$k$}{k} pairwise separation}
 \begin{thm}
     Let $P = \bigcup_{i=1}^n A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
-    Then there exists a optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no set is ever directly connected to another set more than twice in the same direction.
+    Then there exists a optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no set is ever directly connected to another set more than twice in the same direction.
     % Having no more than three edges connecting is a special case since >= 3 edges implies two in the same direction
-    If $s > 1$ then all optimal hamiltonian paths must satisfy this property.
+    If $s > 1$ then all optimal Hamiltonian paths must satisfy this property.
     % TODO: what if we got A to B to A then to C to B to C to A? we would have four paths connecting A to B
 \end{thm}
 \begin{proof}
-    Consider some optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
     Assume there is two pairs of sets $B = A_k$ and $C = A_l$ which are directly connected by two edges in the same direction (where $k \neq l$).
     WLOG let these edges be $(b_1, c_1)$ and $(b_2, c_2)$ where $b_1, b_2 \in B$ and $c_1, c_2 \in C$ ordered as they appear in the path (if $C$ occurs before $B$ then flip the names).
 
@@ -391,21 +396,21 @@ There may be a way to deterministically say which of the two cases will occur ba
         &= \frac{1}{s} (|b_1 c_1| + |b_2 c_2|)
     \end{align*}
     This implies that $1 \leq \frac{1}{s}$ which in turn implies that $s \leq 1$.
-    Thus if $s > 1$ then we have a contradiction and therefore no optimal hamiltonian path can have more than two edges directly connecting any pair of sets in the same direction.
-    If $s = 1$ then we can conclude that $|b_1 c_1| + |b_2 c_2| = |b_1 b_2| + |c_1 c_2|$ and therefore the second path is also an optimal hamiltonian path over $P$.
+    Thus if $s > 1$ then we have a contradiction and therefore no optimal Hamiltonian path can have more than two edges directly connecting any pair of sets in the same direction.
+    If $s = 1$ then we can conclude that $|b_1 c_1| + |b_2 c_2| = |b_1 b_2| + |c_1 c_2|$ and therefore the second path is also an optimal Hamiltonian path over $P$.
     We can repeat this process over all pairs until every set is connected by no more than one edge to another set in a given direction.
 
-    Therefore there exists an optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no set is ever directly connected to another set more than twice in the same direction.
+    Therefore there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no set is ever directly connected to another set more than twice in the same direction.
 \end{proof}
 
 % TODO: THIS PROOF IN NOT FINISHED
 \begin{thm}
     Let $P = \bigcup_i A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
-    Then there exists a optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no two non-overlapping subpaths of the hamiltonian path both start in the same set $A_k$ and end in the same set $A_l$ for any $k,l$ (where $k \neq l$).
-    If $s > 1$ then all optimal hamiltonian paths must satisfy this property.
+    Then there exists a optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no two non-overlapping subpaths of the Hamiltonian path both start in the same set $A_k$ and end in the same set $A_l$ for any $k,l$ (where $k \neq l$).
+    If $s > 1$ then all optimal Hamiltonian paths must satisfy this property.
 \end{thm}
 \begin{proof}
-    Consider some optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
     Assume there is two pairs of sets $B = A_k$ and $C = A_l$ which are directly connected by two edges in the same direction (where $k \neq l$).
     WLOG let these edges be $(b_1, c_1)$ and $(b_2, c_2)$ where $b_1, b_2 \in B$ and $c_1, c_2 \in C$ ordered as they appear in the path (if $C$ occurs before $B$ then flip the names).
 
@@ -417,8 +422,8 @@ There may be a way to deterministically say which of the two cases will occur ba
 
     \textbf{Inductive step:} Assume the statement is true for all $n' < n$.
 
-    Consider some optimal hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
-    Assume there is two pairs of sets $B = A_k$ and $C = A_l$ such that there are two non-overlapping subpaths of the hamiltonian path which both start in $B$ and end in $C$.
+    Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Assume there is two pairs of sets $B = A_k$ and $C = A_l$ such that there are two non-overlapping subpaths of the Hamiltonian path which both start in $B$ and end in $C$.
     Let one path start at $b_1$ and end at $c_1$ and the other path start at $b_2$ and end at $c_2$.
 
     Let $t$ represent the number of sets from $A_1, A_2, \ldots, A_n$ that are visited by the path from $b_1$ to $c_2$ (including $B$ and $C$).
@@ -528,12 +533,12 @@ $$x^{\log(x)}$$
 % these theorems are false
 
 %Let $A$ and $B$ be two finite sets of points that are TSP-separated. 
-%Let $\Cover_k(S)$ denote the optimal cost of $k$ disjoint hamiltonian paths covering all points in set $S$.
+%Let $\Cover_k(S)$ denote the optimal cost of $k$ disjoint Hamiltonian paths covering all points in set $S$.
 %Let $\BigLength_{2k}(A,B)$ be the sum of the $2k$ shortest edges between $A$ and $B$ without point replacement.
 %Then, $\Cover_1(A) + \Cover_1(B) + \BigLength_{2}(A,B) \leq \Cover_k(A) + \Cover_k(B) + \BigLength_{2k}(A,B)$.
 
 %Let $A$ and $B$ be two finite sets of points that are TSP-separated. Then $\dist(A,B) \geq \max(\lambda(A), \lambda(B))$.
-%[Where $\lambda(A) = \max(|a_1 a_2|, |a_2 a_3|, \dots, |a_{n-1} a_n|)$ so that it represents the longest edge in the hamiltonian path through $A$ which is derived as a sutwopath of the optimal TSP tour on $A \cup B$. The same definition applies to $\lambda(B)$.]
+%[Where $\lambda(A) = \max(|a_1 a_2|, |a_2 a_3|, \dots, |a_{n-1} a_n|)$ so that it represents the longest edge in the Hamiltonian path through $A$ which is derived as a sutwopath of the optimal TSP tour on $A \cup B$. The same definition applies to $\lambda(B)$.]
 
 
 % This proof didnt work since the edges can grow exponentially
@@ -549,11 +554,11 @@ $$x^{\log(x)}$$
 %    We proceed with a case analysis.
 
 %    \textbf{Case 1:} The second edge exiting $C_t$ is of the form $(b_*, d_\dagger)$ where $b_* \in B'$ and $d_\dagger \in D_t$.
-%    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A_t$ with endpoints $a_*$ and $b_*$.
+%    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a Hamiltonian path on $A_t$ with endpoints $a_*$ and $b_*$.
 %    By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A'$ to $B'$ and that all optimal paths must satisfy this if $s > 1$.
 
 %    \textbf{Case 2:} The second edge exiting $C_t$ is of the form $(a_\dagger, d_\dagger)$ where $a_\dagger \in A'$ and $d_\dagger \in D_t$.
-%    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a hamiltonian path on $A'$ with endpoints $a_*$ and $a_\dagger$.
+%    Since there are no other edges exiting $C_t$ we know that the optimal TSP tour must contain a Hamiltonian path on $A'$ with endpoints $a_*$ and $a_\dagger$.
 %    By \Cref{thm:wsp_path_aa} we know that there exists an optimal path which has exactly two edges connecting $A'$ to $B'$ and that all optimal paths must satisfy this if $s > 1$.
 
 %    % MARK: - The nth level cas
@@ -570,11 +575,11 @@ $$x^{\log(x)}$$
 %    %WLOG let one of these edges be of the form $(a_*, e_*)$ where $a_* \in A_i$ and $e_* \notin C_p \cup D_p$.
 
 %    %\textbf{Case 1a:} The second edge exiting $C_p$ is of the form $(b_*, e_\dagger)$ where $b_* \in B_i$ and $e_\dagger \notin C_p \cup D_p$.
-%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
+%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
 %    %By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
 
 %    %\textbf{Case 1b:} The second edge exiting $C_p$ is of the form $(a_\dagger, e_\dagger)$ where $a_\dagger \in A_i$ and $e_\dagger \notin C_p \cup D_p$.
-%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
+%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
 %    %By \Cref{thm:wsp_path_aa} we know that there exists an optimal path which has exactly two edges connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
 
 %    \textbf{Case 1:} There is exactly one edge connecting $C_p$ to $D_p$ and there are two edges exiting $C_p \cup D_p$.
@@ -582,11 +587,11 @@ $$x^{\log(x)}$$
 %    WLOG let one of these edges be of the form $(a_*, d_*)$ where $a_* \in A_i$ and $d_* \in D_p$ (the case where the edge is of the form $(b_*, d_*)$ is symmetric).
 
 %    \textbf{Case 1a:} The second edge exiting $C_p$ is of the form $(b_*, e_*)$ where $b_* \in B_i$ and $e_* \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
+%    Since there are no other edges exiting $C_p$ we know that the tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
 %    By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
 
 %    \textbf{Case 1b:} The second edge exiting $C_p$ is of the form $(a_\dagger, e_*)$ where $a_\dagger \in A_i$ and $e_* \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
+%    Since there are no other edges exiting $C_p$ we know that the tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
 %    By \Cref{thm:wsp_path_aa} we know that there exists an optimal path which has exactly two edges connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
 
 %    % contributed
@@ -607,27 +612,27 @@ $$x^{\log(x)}$$
 %    WLOG assume that $A_i$ contains an edge of the form $(a_1, e_*)$ where $a_* \in A_i$ and $e_* \notin C_p \cup D_p$ (the case where $B_i$ contains an edge of this form is symmetric).
 
 %    \textbf{Case 2a.i:} The other three edges are of the following form $(b_1, d_*)$, $(b_2, e_\dagger)$, $(b_3, d_\dagger)$ where $b_1, b_2, b_3 \in B_i$, $d_*, d_\dagger \in D_p$ and $e_\dagger \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two hamiltonian paths on $C_p$ with endpoints $a_1,b_1,b_2,b_3$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two Hamiltonian paths on $C_p$ with endpoints $a_1,b_1,b_2,b_3$.
 %    Then by \Cref{lem:wsp_twopath_aaab} we know that there exists an optimal combination of paths over $C_p$ with endpoints $a_1, b_1, b_2, b_3$ that has exactly one edge connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > 1$.
 
 %    \textbf{Case 2a.ii:} The other three edges are of the following form $(a_2, d_*)$, $(b_1, e_\dagger)$, $(b_2, d_\dagger)$ where $a_2 \in A_i$, $b_1, b_2 \in B_i$, $d_*, d_\dagger \in D_p$ and $e_\dagger \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two hamiltonian paths on $C_p$ with endpoints $a_1, a_2, b_1, b_2$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two Hamiltonian paths on $C_p$ with endpoints $a_1, a_2, b_1, b_2$.
 %    Then by \Cref{lem:wsp_twopath_aabb} we know that there exists an optimal combination of paths over $C_p$ with endpoints $a_1, a_2, b_1, b_2$ that has no edges connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > \frac{3}{2}$.
 
 %    \textbf{Case 2a.iii:} The other three edges are of the following form $(a_2, e_\dagger)$, $(b_1, d_*)$, $(b_2, d_\dagger)$ where $a_2 \in A_i$, $b_1, b_2 \in B_i$, $d_*, d_\dagger \in D_p$ and $e_\dagger \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two hamiltonian paths on $C_p$ with endpoints $a_1, a_2, b_1, b_2$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two Hamiltonian paths on $C_p$ with endpoints $a_1, a_2, b_1, b_2$.
 %    Then by \Cref{lem:wsp_twopath_aabb} we know that there exists an optimal combination of paths over $C_p$ with endpoints $a_1, a_2, b_1, b_2$ that has no edges connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > \frac{3}{2}$.
 
 %    \textbf{Case 2a.iv:} The other three edges are of the following form $(a_2, d_*)$, $(a_3, e_\dagger)$, $(b_1, d_\dagger)$ where $a_2, a_3 \in A_i$, $b_1 \in B_i$, $d_*, d_\dagger \in D_p$ and $e_\dagger \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two hamiltonian paths on $C_p$ with endpoints $a_1, a_2, a_3, b_1$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two Hamiltonian paths on $C_p$ with endpoints $a_1, a_2, a_3, b_1$.
 %    Then by \Cref{lem:wsp_twopath_aaab} we know that there exists an optimal combination of paths over $C_p$ with endpoints $a_1, a_2, a_3, b_1$ that has exactly one edge connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > 1$.
 
 %    \textbf{Case 2a.v:} The other three edges are of the following form $(a_2, d_*)$, $(a_3, d_\dagger)$, $(b_1, e_\dagger)$ where $a_2, a_3 \in A_i$, $b_1 \in B_i$, $d_*, d_\dagger \in D_p$ and $e_\dagger \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two hamiltonian paths on $C_p$ with endpoints $a_1, a_2, a_3, b_1$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two Hamiltonian paths on $C_p$ with endpoints $a_1, a_2, a_3, b_1$.
 %    Then by \Cref{lem:wsp_twopath_aaab} we know that there exists an optimal combination of paths over $C_p$ with endpoints $a_1, a_2, a_3, b_1$ that has exactly one edge connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > 1$.
 
 %    \textbf{Case 2a.vi:} The other three edges are of the following form $(a_2, d_*)$, $(a_3, d_\dagger)$, $(a_4, e_\dagger)$ where $a_2, a_3, a_4 \in A_i$, $d_*, d_\dagger \in D_p$ and $e_\dagger \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two hamiltonian paths on $C_p$ with endpoints $a_1, a_2, a_3, a_4$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two Hamiltonian paths on $C_p$ with endpoints $a_1, a_2, a_3, a_4$.
 %    Then by \Cref{lem:wsp_twopath_aaaa} we know that there exists an optimal combination of paths over $C_p$ with endpoints $a_1, a_2, a_3, a_4$ that has exactly two edges connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > 1$.
 
 %    % contributed
@@ -640,7 +645,7 @@ $$x^{\log(x)}$$
 
 %    \textbf{Case 2b:} Both exit edges are of the form $(d_*, e_*)$, $(d_\dagger, e_\dagger)$ where $d_*, d_\dagger \in D_p$ and $e_*, e_\dagger \notin C_p \cup D_p$.
 %    We define the edges connecting $C_p$ to $D_p$ to be $(c', d')$ and $(c'', d'')$ where $c', c'' \in C_p$ and $d', d'' \in D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a single hamiltonian path on $C_p$ with endpoints $c', c''$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a single Hamiltonian path on $C_p$ with endpoints $c', c''$.
     
 %    \textbf{Case 2b.i:} One of $c', c''$ is in $A_i$ and the other is in $B_i$.
 %    By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
@@ -658,7 +663,7 @@ $$x^{\log(x)}$$
 %    \textbf{Case 3:} There are zero edges connecting $C_p$ to $D_p$ in the optimal TSP tour and each set has two edges exiting $C_p \cup D_p$.
 %    Then there must be exactly two edges exiting $C_p$.
 %    Let these edges be of the form $(c_*, e_*)$, $(c_\dagger, e_\dagger)$ where $c_*, c_\dagger \in C_p$ and $e_*, e_\dagger \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $c_*$ and $c_\dagger$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $c_*$ and $c_\dagger$.
 
 %    \textbf{Case 3a:} One of $c_*, c_\dagger$ is in $A_i$ and the other is in $B_i$.
 %    By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
@@ -676,7 +681,7 @@ $$x^{\log(x)}$$
 
 %    \textbf{Case 4a:} There is only a single exit edge from $C_p$.
 %    Let this edge be of the form $(c', e')$ where $c' \in C_p$ and $e' \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $c_*$ and $c'$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $c_*$ and $c'$.
 
 %    \textbf{Case 4a.i:} One of $c_*, c'$ is in $A_i$ and the other is in $B_i$.
 %    By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
@@ -690,7 +695,7 @@ $$x^{\log(x)}$$
 
 %    \textbf{Case 4b:} There are three exit edges from $C_p$.
 %    Let these edges be of the form $(c', e')$, $(c'', e'')$, $(c''', e''')$ where $c', c'', c''' \in C_p$ and $e', e'', e''' \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two hamiltonian paths on $C_p$ with endpoints $c_*, c', c'', c'''$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain two Hamiltonian paths on $C_p$ with endpoints $c_*, c', c'', c'''$.
 
 %    \textbf{Case 4b.i:} All of $c', c'', c''', c_*$ are all exclusively in $A_i$ or $B_i$.
 %    Then by \Cref{lem:wsp_twopath_aaaa} we know that there exists an optimal combination of paths over $C_p$ with endpoints $c_*, c', c'', c'''$ that has exactly two edges connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > 1$.
@@ -710,7 +715,7 @@ $$x^{\log(x)}$$
 %    Let the two connecting edges be of the form $(c_*, d_*)$, $(c_\dagger, d_\dagger)$ where $c_*, c_\dagger \in C_p$ and $d_*, d_\dagger \in D_p$.
 
 %    \textbf{Case 5a:} None of the exit edges come from $C_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $c_*$ and $c_\dagger$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $c_*$ and $c_\dagger$.
 
 %    \textbf{Case 5a.i:} One of $c_*, c_\dagger$ is in $A_i$ and the other is in $B_i$.
 %    By \Cref{thm:wsp_path_ab} we know that there exists an optimal path which has exactly one edge connecting $A_i$ to $B_i$ and that all optimal paths must satisfy this if $s > 1$.
@@ -724,7 +729,7 @@ $$x^{\log(x)}$$
 
 %    \textbf{Case 5b:} Two of the exit edges come from $C_p$.
 %    Let these edges be of the form $(c_1, e_1)$, $(c_2, e_2)$ where $c_1, c_2 \in C_p$ and $e_1, e_2 \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $c_*, c_\dagger, c_1, c_2$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $c_*, c_\dagger, c_1, c_2$.
 
 %    \textbf{Case 5b.i:} All of $c_*, c_\dagger, c_1, c_2$ are all exclusively in $A_i$ or $B_i$.
 %    Then by \Cref{lem:wsp_twopath_aaaa} we know that there exists an optimal combination of paths over $C_p$ with endpoints $c_*, c_\dagger, c_1, c_2$ that has exactly two edges connecting $A_i$ to $B_i$ and that all optimal combinations of paths must satisfy this if $s > 1$.
@@ -742,14 +747,14 @@ $$x^{\log(x)}$$
 
 %    \textbf{Case 5c:} Four of the exit edges come from $C_p$.
 %    Let these edges be of the form $(c_1, e_1)$, $(c_2, e_2)$, $(c_3, e_3)$, $(c_4, e_4)$ where $c_1, c_2, c_3, c_4 \in C_p$ and $e_1, e_2, e_3, e_4 \notin C_p \cup D_p$.
-%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain three hamiltonian paths on $C_p$ with endpoints $c_*, c_\dagger, c_1, c_2, c_3, c_4$.
+%    Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain three Hamiltonian paths on $C_p$ with endpoints $c_*, c_\dagger, c_1, c_2, c_3, c_4$.
 
 
 
 
 %    %It then follows that the following edges must exist $(a_*, e_*)$, $(a_\dagger, d_*)$, $(b_*, e_\dagger)$, $(b_\dagger, d_\dagger)$ where $a_*, a_\dagger \in A_i$, $b_*, b_\dagger \in B_i$, $d_*, d_\dagger \in D_p$, and $e_*, e_\dagger \notin C_p \cup D_p$.
 
-%    %Assume by contradiction that no optimal hamiltonian path with endpoints $c_*,c_\dagger \in C_p$ over $C_p \cup D_p$ visits all of the points in $A_i$ and $B_i$ consecutively.
+%    %Assume by contradiction that no optimal Hamiltonian path with endpoints $c_*,c_\dagger \in C_p$ over $C_p \cup D_p$ visits all of the points in $A_i$ and $B_i$ consecutively.
 %    %Then there must be at least two edges connecting $A_i$ to $B_i$.
 
 
@@ -759,20 +764,20 @@ $$x^{\log(x)}$$
 %    %We proceed with a case analysis.
 
 %    %\textbf{Case 1:} There are two edges connecting $C_p$ to $D_p$ in the optimal TSP tour and the second edge is of the form $(b_*, d_\dagger)$ where $b_* \in B_i$ and $d_\dagger \in D_p$.
-%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
+%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
 %    %By Theorem~\ref{thm:wsp_path_ab} we know that this path must visit all points in $A_i$ before any point in $B_i$ (or vice versa).
 %    %Thus there must be exactly one edge connecting $A_i$ to $B_i$. And exactly two edges $(a_*, d_*)$, $(b_*, d_\dagger)$ exiting $C_p$ as desired.
 
 %    %\textbf{Case 2:} There are two edges connecting $C_p$ to $D_p$ in the optimal TSP tour and the second edge is of the form $(a_\dagger, d_\dagger)$ where $a_\dagger \in A_i$ and $d_\dagger \in D_p$.
-%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
+%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
 %    %By Theorem~\ref{thm:wsp_path_aa} we know that this path must contain exactly two edges between $A_i$ and $B_i$. Furthermore there are exactly two edges $(a_*, d_*)$, $(a_\dagger, d_\dagger)$ exiting $C_p$ as desired.
 
 %    %\textbf{Case 3:} There is only one edge connecting $C_p$ to $D_p$ in the optimal TSP tour and the other edge is of the form $(a_\dagger, e_*)$ where $a_\dagger \in A_i$ and $e_* \notin C_p \cup D_p$.
-%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
+%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $a_\dagger$.
 %    %By Theorem~\ref{thm:wsp_path_aa} we know that this path must only contain two edges between $A_i$ and $B_i$. Furthermore there are exactly two edges $(a_*, d_*)$, $(a_\dagger, e_*)$ exiting $C_p$ as desired.
 
 %    %\textbf{Case 4:} There is only one edge connecting $C_p$ to $D_p$ in the optimal TSP tour and the other edge is of the form $(b_*, e_*)$ where $b_* \in B_i$ and $e_* \notin C_p \cup D_p$.
-%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
+%    %Since there are no other edges exiting $C_p$ we know that the optimal TSP tour must contain a Hamiltonian path on $C_p$ with endpoints $a_*$ and $b_*$.
 %    %By Theorem~\ref{thm:wsp_path_ab} we know that this path must visit all points in $A_i$ before any point in $B_i$ (or vice versa).
 %    %Thus there must be exactly one edges connecting $A_i$ to $B_i$. And exactly two edges $(a_*, d_*)$, $(b_*, e_*)$ exiting $C_p$ as desired.
 
