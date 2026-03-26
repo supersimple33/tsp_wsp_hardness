@@ -305,7 +305,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     If $s > \frac{3}{2}$ then the current solution must have exactly two edges crossing between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_mixed}.
     If $s = \frac{3}{2}$ it follows that for the given configuration of endpoints there exists an optimal solution where only two edges cross between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_mixed}.
 
-    Therefore in both cases we have shown that there exists an optimal solution where across the entire solution only two edges cross between $A$ and $B$ as desired and furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property as desired.
+    Therefore in both cases we have shown that there exists an optimal solution where across the entire solution only two edges cross between $A$ and $B$ as desired and furthermore, if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property as desired.
 \end{proof}
 
 % corollary if all endpoint in the same set then these two edges must be on the same path
@@ -316,19 +316,22 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     The objective is to minimize the total length of the $k$ paths, subject to the constraint that alternating between the paths and the predefined pairs forms exactly one continuous cycle.
     Suppose that there is a non-zero \textbf{even} number of predefined pairs with one point in $A$ and the other in $B$.
     Then there exists an optimal solution where no path has an edge connecting $A$ to $B$.
-    Furthermore if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+    Furthermore, if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
     To show this we first show that in the optimal solution the endpoint cycle is ordered such that no path has its endpoints in different sets.
     Then our previous theorems will imply that given the required ordering of the endpoints in the cycle, there exists an optimal solution where no path has an edge connecting $A$ to $B$.
 
     To begin, consider some optimal solution to the problem.
+    By \Cref{thm:wsp_mpath_fixed_mixed}, there must exist a solution such that if a given path in the solution starts and ends in the same set then it has no edges connecting $A$ to $B$ and if a given path in the solution starts and ends in different sets then it has exactly one edge connecting $A$ to $B$.
+    If $s > \frac{3}{2}$ then the current solution must satisfy this property by \Cref{thm:wsp_mpath_fixed_mixed} and if $s = \frac{3}{2}$ then WLOG we assume the current solution satisfies this property.
 
-    Assume by contradiction that there is a path $P_i$ in the solution that has an edge connecting $A$ to $B$.
+    Assume that there is a path $P_i$ in the solution that has endpoints in different sets and thus has an edge connecting $A$ to $B$.
     WLOG assume that $P_i$ connects $a' \in A$ to $b' \in B$.
     Let $C$ denote the continuous cycle formed by alternating between the endpoints of the paths and the predefined pairs in the solution.
+    Let us establish an arbitrary traversal direction along $C$, against which the direction of all paths will be relative to.
     Since $C$ is closed we know that there must be an even number of alternations between $A$ and $B$ along the cycle.
-    Because there is a even number of predefined pairs with one point in $A$ and the other in $B$ then the number of paths with one endpoint in $A$ and the other in $B$ must also be even to ensure that the total number of alternations between $A$ and $B$ along the cycle is even.
+    Because there is an even number of predefined pairs with one point in $A$ and the other in $B$ then the number of paths with one endpoint in $A$ and the other in $B$ must also be even to ensure that the total number of alternations between $A$ and $B$ along the cycle is even.
     Thus there must be another path $P_j$ in the solution that has an edge connecting $A$ to $B$.
 
     \textbf{Case 1:} $P_i$ and $P_j$ are in the same direction.
@@ -338,7 +341,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     $$\dots \sim \boxed{a' \leadsto a^* \to b^* \leadsto b'} \sim \dots \sim \boxed{a'' \leadsto a^\dagger \to b^\dagger \leadsto b''} \sim \dots.$$
     It follows that we can break apart the solution at the two edges $\{a^*, b^*\}$ and $\{a^\dagger, b^\dagger\}$ and reverse the order of the cycle and paths along the cutout section between these two edges to get a new solution where the cycle goes:
     $$\dots \sim \boxed{a' \leadsto a^* \to a^\dagger \leadsto a''} \sim \dots \sim \boxed{b' \leadsto b^* \to b^\dagger \leadsto b''} \sim \dots.$$
-    Because the predefined pairs are simply undirected pairings of endpoints within the exact same set, traversing them in reverse during this cycle modification is entirely valid and maintains all predefined pairings and does not create multiple cycles.
+    Because the predefined pairs are simply undirected pairings of endpoints, traversing them in reverse during this cycle modification is entirely valid and maintains all predefined pairings and does not create multiple cycles.
 
     Since the previous solution was assumed optimal we know that $|a^* b^*| + |a^\dagger b^\dagger| \leq |a^* a^\dagger| + |b^* b^\dagger|$.
     Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$).
@@ -356,17 +359,15 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     By Case 1 it follows that these must be the only two paths crossing between $A$ and $B$ in the solution since if there were any more we could find two in the same direction.
 
     We can then note that in $P_i$ there must be an edge directly connecting from $A$ to $B$ and we will label this edge as $\{a^*, b^*\}$ and in $P_j$ there must be an edge directly connecting from $B$ to $A$ and we will label this edge as $\{b^\dagger, a^\dagger\}$.
-    By linking $a^*$ to $a^\dagger$ and $b^*$ to $b^\dagger$ we can break apart the solution at the two edges $\{a^*, b^*\}$ and $\{b^\dagger, a^\dagger\}$ and create two disjoint sub-cycles, $C_1$ and $C_2$ of which one begins and ends in $A$ and the other begins and ends in $B$.
-    WLOG assume that $C_1$ contains at least one predefined pair of endpoints where one endpoint is in $A$ and the other is in $B$ (if not then $C_2$ must contain at least one such predefined pair).
-    Since all alternations must be done via predefined pairs of endpoints it follows that $C_1$ must contain another predefined pair of endpoints whose orientation in the original solution is opposite the first pair (otherwise a contradiction would arise since $C_1$ would not be able to return to the same set it started in or would have a path other than $P_i$ and $P_j$ crossing between $A$ and $B$).
-
-    WLOG assume that $C_1$ contains $a'$ and $a''$ and $C_2$ contains $b'$ and $b''$ (the logic is symmetric if the opposite is true).
-    Let $(a_1, b_1)$ be the first predefined pair of endpoints in $C_1$ with $a_1 \in A$ and $b_1 \in B$.
-    Let $b_2 \in B$ be the endpoint on the other end of the path that begins with $b_1$.
-    Next consider this path and any other path in the solution that has at least one endpoint in $A$.
-    It follows from \Cref{lem:wsp_twopath_fixed_aa_ab,lem:wsp_twopath_fixed_aa_bb} that there exists an optimal solution to the problem where the path with $b_1,b_2$ has no points in $A$. 
-    Therefore we can choose any edge from the $b_1$ to $b_2$ path and it will always conenct two points in $B$.
-    Considering the first edge in the $b_1$ to $b_2$, it follows that the first edge must connect $b_1$ to some point in $B$ and we will label this point $b_3$.
+    By linking $a^*$ to $a^\dagger$ and $b^*$ to $b^\dagger$ we can break apart the solution at the two edges $\{a^*, b^*\}$ and $\{b^\dagger, a^\dagger\}$ and create two disjoint cycles based on the structure of the original cycle.
+    Let $C_A$ be the sub-cycle that contains $a^*$ and $a^\dagger$ (and consequently $a'$ and $a''$) and let $C_B$ be the sub-cycle that contains $b^*$ and $b^\dagger$ (and consequently $b'$ and $b''$).
+    Since all alternations must be done via predefined pairs, at least one of these two sub-cycles must contain a predefined pair of endpoints with one endpoint in $A$ and the other in $B$.
+    WLOG assume that $C_A$ contains such a predefined pair of endpoints (otherwise $C_B$ would contain it and the definition of $A$ and $B$ could be flipped).
+    
+    Let $(a_1, b_1)$ be the first predefined pair of endpoints in $C_A$ with $a_1 \in A$ and $b_1 \in B$ after $a^*$ in the cycle order of $C_A$.
+    Let $b_2 \in B$ be the endpoint on the other end of the path that begins with $b_1$ (since $b'$ and $b''$ are strictly contained within $C_B$, the endpoint $b_1 \in C_A$ must belong to a path other than $P_i$ and $P_j$ which represent the only two paths with endpoints in different sets).
+    We can choose any edge from the $b_1$ to $b_2$ path and it will always connect two points in $B$ by the previous application of \Cref{thm:wsp_mpath_fixed_mixed}.
+    Considering the first edge in the $b_1$ to $b_2$ path, it follows that the first edge must connect $b_1$ to some point in $B$ and we will label this point $b_3$.
 
     We can then break apart the solution at the edge $\{b_1, b_3\}$ and create a new solution by adding $\{b_1, b^*\}$, $\{b^\dagger, b_3\}$, and $\{a^*, a^\dagger\}$ all back in.
     This new solution maintains all predefined pairs and forms a single cycle.
@@ -376,7 +377,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Because the new topology visits all three segments exactly once before returning to the start, it forms a single continuous cycle.
     Furthermore, since none of $S_1$, $S_2$, and $S_3$ are created by cutting through any predefined pair of endpoints, the new solution maintains all predefined pairs of endpoints.
 
-    Since the previous solution was assumed optimal we know that $|a^* b^*| + |b^\dagger a^\dagger| + |b_1 b_3| \leq |a^* a^\dagger| + |b^* b^\dagger| + |b_1 b_3|$.
+    Since the previous solution was assumed optimal we know that $|a^* b^*| + |b^\dagger a^\dagger| + |b_1 b_3| \leq |a^* a^\dagger| + |b_1 b^*| + |b^\dagger b_3|$.
     Define $\omega = \dist(A,B)$.
     The following are true by the definition of well-separated pairs and non-negativity of distances:
     $$
@@ -384,16 +385,13 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
         |b^\dagger a^\dagger| \geq \omega \quad
         |b_1 b_3| \geq 0 \quad
         |a^* a^\dagger| \leq \frac{1}{s} \omega \quad
-        |b^* b^\dagger| \leq \frac{1}{s} \omega \quad
-        |b_1 b_3| \leq \frac{1}{s} \omega.
+        |b_1 b^*| \leq \frac{1}{s} \omega \quad
+        |b^\dagger b_3| \leq \frac{1}{s} \omega.
     $$
-    From these we can conclude: $2\omega \leq |a^* b^*| + |b^\dagger a^\dagger| + |b_1 b_3| \leq |a^* a^\dagger| + |b^* b^\dagger| + |b_1 b_3| \leq \frac{3}{s} \omega$ which implies that $\frac{3}{2} \leq s$.
-    If $s > \frac{3}{2}$ then this is a contradiction and thus there cannot be any paths with edges connecting $A$ to $B$.
-    If $s = \frac{3}{2}$ then we can note that all these inequalities must be tight and thus there exists an optimal solution where no path has an edge connecting $A$ to $B$ as desired.
-
-    Since the solution with no paths having endpoints in both $A$ and $B$ is optimal it is also an optimal solution to the multiple optimal Hamiltonian paths problem where the endpoints of each path are fixed in the same way as in the current solution.
-    If $s > \frac{3}{2}$ then the current solution must have no edges crossing between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_mixed}.
-    If $s = \frac{3}{2}$ it follows that for the given configuration of endpoints there exists an optimal solution where no path has an edge connecting $A$ to $B$ by \Cref{thm:wsp_mpath_fixed_mixed}.
+    From these we can conclude: $2\omega \leq |a^* b^*| + |b^\dagger a^\dagger| + |b_1 b_3| \leq |a^* a^\dagger| + |b_1 b^*| + |b^\dagger b_3| \leq \frac{3}{s} \omega$ which implies that $s \leq \frac{3}{2}$.
+    If $s > \frac{3}{2}$ then this is a contradiction and thus the original solution must not have had two paths with endpoints in different sets.
+    It immediately follows from this and the previous application of \Cref{thm:wsp_mpath_fixed_mixed} that there are no edges connecting $A$ to $B$ in the current solution as desired.
+    If $s = \frac{3}{2}$ then we can note that all these inequalities must be tight and thus since the only two edges crossing between $A$ and $B$ were removed from the original solution to create the new solution, it follows that the new solution must also be optimal and has no paths with edges connecting $A$ to $B$.
 \end{proof}
 
 \subsubsection{Binary Nested WSP Single Path Analysis}
