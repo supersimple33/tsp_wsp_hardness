@@ -319,7 +319,7 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     Furthermore, if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
 \end{thm}
 \begin{proof}
-    To show this we first show that in the optimal solution the endpoint cycle is ordered such that no path has its endpoints in different sets.
+    To prove this we first show that in the optimal solution the endpoint cycle is ordered such that no path has its endpoints in different sets.
     Then our previous theorems will imply that given the required ordering of the endpoints in the cycle, there exists an optimal solution where no path has an edge connecting $A$ to $B$.
 
     To begin, consider some optimal solution to the problem.
@@ -392,6 +392,49 @@ I haven't been able to prove it either way yet, but I believe the bound can be t
     If $s > \frac{3}{2}$ then this is a contradiction and thus the original solution must not have had two paths with endpoints in different sets.
     It immediately follows from this and the previous application of \Cref{thm:wsp_mpath_fixed_mixed} that there are no edges connecting $A$ to $B$ in the current solution as desired.
     If $s = \frac{3}{2}$ then we can note that all these inequalities must be tight and thus since the only two edges crossing between $A$ and $B$ were removed from the original solution to create the new solution, it follows that the new solution must also be optimal and has no paths with edges connecting $A$ to $B$.
+\end{proof}
+
+\begin{thm}
+    Suppose sets $A$ and $B$ are $s$-well-separated for $s \geq \frac{3}{2}$.
+    Consider a multiple optimal Hamiltonian paths problem of $k \geq 2$ paths over $2k$ endpoints, organized into $k$ pairs of endpoints.
+    The objective is to minimize the total length of the $k$ paths, subject to the constraint that alternating between the paths and the predefined pairs forms exactly one continuous cycle.
+    Suppose that there is a \textbf{odd} number of predefined pairs with one point in $A$ and the other in $B$.
+    Then there exists an optimal solution where only a single edge crosses between $A$ and $B$ across the entire solution.
+    Furthermore, if $s > \frac{3}{2}$ then all optimal solutions must satisfy this property.
+\end{thm}
+\begin{proof}
+    To prove this we first show that in the optimal solution the endpoint cycle is ordered such that only a single path has endpoints in different sets.
+    Then our previous theorems will imply that given the required ordering of the endpoints in the cycle, there exists an optimal solution where only a single edge crosses between $A$ and $B$.
+    
+    To begin, consider some optimal solution to the problem.
+    Let us establish an arbitrary traversal direction along the cycle, against which the direction of all paths will be relative to.
+    Since the total number of alternations between $A$ and $B$ along the cycle must be even and there is an odd number of predefined pairs with one point in $A$ and the other in $B$, there must be an odd number of paths with endpoints in different sets.
+    Assume by contradiction that there is more than one path in the solution that has endpoints in different sets. 
+    Thus there must be at least 3 such paths.
+
+    It follows via the pigeon hole principle that at least two of these paths must be in the same direction along the cycle.
+    WLOG we can label these two paths as $P_i$ and $P_j$ where $P_i$ connects $a' \in A$ to $b' \in B$ and $P_j$ connects $a'' \in A$ to $b'' \in B$ and both paths are in the same direction along the cycle.
+    We can then note that in both $P_i$ and $P_j$ there must be an edge directly connecting from $A$ to $B$ and we will label these edges as $\{a^*, b^*\}$ and $\{a^\dagger, b^\dagger\}$ respectively.
+    Then we can note the cycle goes:
+    $$\dots \sim \boxed{a' \leadsto a^* \to b^* \leadsto b'} \sim \dots \sim \boxed{a'' \leadsto a^\dagger \to b^\dagger \leadsto b''} \sim \dots.$$
+    It follows that we can break apart the solution at the two edges $\{a^*, b^*\}$ and $\{a^\dagger, b^\dagger\}$ and reverse the order of the cycle and paths along the cutout section between these two edges to get a new solution where the cycle goes:
+    $$\dots \sim \boxed{a' \leadsto a^* \to a^\dagger \leadsto a''} \sim \dots \sim \boxed{b' \leadsto b^* \to b^\dagger \leadsto b''} \sim \dots.$$
+    Because the predefined pairs are simply undirected pairings of endpoints, traversing them in reverse during this cycle modification is entirely valid and maintains all predefined pairs and does not create multiple cycles.
+
+    Since the previous solution was assumed optimal we know that $|a^* b^*| + |a^\dagger b^\dagger| \leq |a^* a^\dagger| + |b^* b^\dagger|$.
+    Since $A$ and $B$ are $s$-well-separated we know that $\forall i,j,k; |a_i a_j| \leq \frac{1}{s} |a_i b_k|$ (and vice versa for $B$).
+    From this we can conclude:
+    \begin{align*}
+        |a^* b^*| + |a^\dagger b^\dagger| &\leq |a^* a^\dagger| + |b^* b^\dagger| \\
+        &\leq \frac{1}{s} |a^* b^*| + \frac{1}{s} |a^\dagger b^\dagger| \\
+        &\leq \frac{1}{s} (|a^* b^*| + |a^\dagger b^\dagger|)
+    \end{align*}
+    This implies that $1 \leq \frac{1}{s}$ which is a contradiction since $s \geq \frac{3}{2}$.
+    Therefore there cannot be two paths in the same direction that have edges connecting $A$ to $B$.
+
+    Since the solution is optimal it is also an optimal solution to the multiple optimal Hamiltonian paths problem where the endpoints of each path are fixed as they are in the current solution.
+    If $s > \frac{3}{2}$ then there must only be a single edge crossing between $A$ and $B$ in the current solution by \Cref{thm:wsp_mpath_fixed_mixed}.
+    If $s = \frac{3}{2}$ then there must exist an optimal solution which uses the same ordering of the endpoints as in the current solution and has only a single edge crossing between $A$ and $B$ by \Cref{thm:wsp_mpath_fixed_mixed}.
 \end{proof}
 
 \subsubsection{Binary Nested WSP Single Path Analysis}
