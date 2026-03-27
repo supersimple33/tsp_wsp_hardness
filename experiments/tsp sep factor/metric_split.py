@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TypeVar
 
 import numpy as np
-from scipy.sparse.csgraph import connected_components, minimum_spanning_tree
+from scipy.sparse.csgraph import connected_components, minimum_spanning_tree # TODO: use numba instead of connected_components
 
 N = TypeVar("N", bound=int)
 M = TypeVar("M", bound=int)
@@ -68,7 +68,7 @@ def balanced_metric_split(D: DistMatrix, s: float, k: int, tol=1e-12) -> list[No
         adj = D < thresh + tol
         np.fill_diagonal(adj, False)
 
-        n_components, labels = connected_components(
+        n_components, labels = connected_components( # TODO: use numba instead of connected_components
             csgraph=adj,
             directed=False,
             return_labels=True,
