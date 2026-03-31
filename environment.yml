@@ -31,6 +31,7 @@ dependencies:
   - osmnx
   - numba
   - line_profiler
+  - tbb
   - pip:
       - -r requirements.txt
 prefix: ./.conda
