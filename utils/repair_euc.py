@@ -114,43 +114,54 @@ def _constrained_two_opt(
 
 
 @nb.njit(cache=True)
-def _exact_path_order(
+def _exact_block_fixed_endpoints(
     block_nodes: np.ndarray,
-    left_endpoint: int,
-    right_endpoint: int,
     points: np.ndarray,
 ) -> np.ndarray:
     k = block_nodes.size
-    if k == 0:
+    if k <= 2:
         return block_nodes.copy()
 
-    full = 1 << k
-    inf = 1e308
-    dp = np.full((full, k), inf, dtype=np.float64)
-    parent = np.full((full, k), -1, dtype=np.int64)
+    # Endpoints are fixed to preserve outside-incident edges.
+    # We optimize only the interior permutation.
+    interior = block_nodes[1 : k - 1]
+    t = interior.size
+    if t == 0:
+        return block_nodes.copy()
 
-    for i in range(k):
-        dp[1 << i, i] = _euclidean(points, left_endpoint, block_nodes[i])
+    full = 1 << t
+    inf = 1e308
+    dp = np.full((full, t), inf, dtype=np.float64)
+    parent = np.full((full, t), -1, dtype=np.int64)
+
+    start_node = block_nodes[0]
+    end_node = block_nodes[k - 1]
+
+    for i in range(t):
+        dp[1 << i, i] = _euclidean(points, start_node, interior[i])
 
     for mask in range(full):
-        for last in range(k):
+        for last in range(t):
             if mask & (1 << last):
-                _path_relax_path_state(dp, parent, mask, last, block_nodes, points, inf)
+                _path_relax_path_state(dp, parent, mask, last, interior, points, inf)
 
     all_mask = full - 1
     best_last = -1
     best_cost = inf
-    for last in range(k):
-        cand = dp[all_mask, last] + _euclidean(points, block_nodes[last], right_endpoint)
+    for last in range(t):
+        cand = dp[all_mask, last] + _euclidean(points, interior[last], end_node)
         if cand < best_cost:
             best_cost = cand
             best_last = last
 
     order = np.empty(k, dtype=block_nodes.dtype)
+    order[0] = start_node
+    order[k - 1] = end_node
+
     mask = all_mask
     last = best_last
-    for pos in range(k - 1, -1, -1):
-        order[pos] = block_nodes[last]
+    for pos in range(k - 2, 0, -1):
+        order[pos] = interior[last]
         prev = parent[mask, last]
         mask ^= 1 << last
         last = prev
@@ -207,20 +218,20 @@ def _path_relax_path_state(
     parent: np.ndarray,
     mask: int,
     last: int,
-    block_nodes: np.ndarray,
+    seq_nodes: np.ndarray,
     points: np.ndarray,
     inf: float,
 ) -> None:
     cur = dp[mask, last]
     if cur >= inf:
         return
-    k = block_nodes.size
+    k = seq_nodes.size
     for nxt in range(k):
         bit = 1 << nxt
         if mask & bit:
             continue
         new_mask = mask | bit
-        cand = cur + _euclidean(points, block_nodes[last], block_nodes[nxt])
+        cand = cur + _euclidean(points, seq_nodes[last], seq_nodes[nxt])
         if cand < dp[new_mask, nxt]:
             dp[new_mask, nxt] = cand
             parent[new_mask, nxt] = last
@@ -253,29 +264,9 @@ def _cycle_relax_cycle_state(
 
 def _build_in_ab_mask(n_points: int, A: np.ndarray, B: np.ndarray) -> np.ndarray:
     in_ab = np.zeros(n_points, dtype=np.bool_)
-    if A.size > 0:
-        in_ab[A.astype(np.int64, copy=False)] = True
-    if B.size > 0:
-        in_ab[B.astype(np.int64, copy=False)] = True
+    in_ab[A] = True
+    in_ab[B] = True
     return in_ab
-
-
-def _count_mutable_blocks(tour: np.ndarray, in_ab: np.ndarray) -> int:
-    if tour.size == 0:
-        return 0
-    mutable_count = int(np.count_nonzero(in_ab[tour]))
-    if mutable_count == 0:
-        return 0
-    if mutable_count == tour.size:
-        return 1
-    blocks = 0
-    prev = bool(in_ab[tour[-1]])
-    for idx in range(tour.size):
-        cur = bool(in_ab[tour[idx]])
-        if cur and not prev:
-            blocks += 1
-        prev = cur
-    return blocks
 
 
 def _rotate_tour(tour: np.ndarray, start_idx: int) -> np.ndarray:
@@ -284,10 +275,19 @@ def _rotate_tour(tour: np.ndarray, start_idx: int) -> np.ndarray:
     return np.concatenate((tour[start_idx:], tour[:start_idx]))
 
 
-def _exact_repair_single_block(tour: np.ndarray, in_ab: np.ndarray, points: np.ndarray) -> np.ndarray:
+def _unrotate_tour(rotated: np.ndarray, start_idx: int) -> np.ndarray:
+    if start_idx == 0:
+        return rotated.copy()
+    n = rotated.size
+    shift = n - start_idx
+    return np.concatenate((rotated[shift:], rotated[:shift]))
+
+
+def _exact_repair_blocks(tour: np.ndarray, in_ab: np.ndarray, points: np.ndarray) -> np.ndarray:
     n = tour.size
     if n == 0:
         return tour.copy()
+
     if np.count_nonzero(in_ab[tour]) == n:
         return _exact_cycle_order(tour.astype(np.int64, copy=False), points).astype(tour.dtype, copy=False)
 
@@ -299,28 +299,25 @@ def _exact_repair_single_block(tour: np.ndarray, in_ab: np.ndarray, points: np.n
     if first_outside < 0:
         return _exact_cycle_order(tour.astype(np.int64, copy=False), points).astype(tour.dtype, copy=False)
 
-    rotated = _rotate_tour(tour, first_outside)
-    start = -1
-    end = -1
-    for idx in range(n):
-        if in_ab[rotated[idx]]:
-            start = idx
-            break
-    if start < 0:
-        return tour.copy()
-    end = start
-    while end + 1 < n and in_ab[rotated[end + 1]]:
-        end += 1
+    rotated = _rotate_tour(tour, first_outside).astype(np.int64, copy=True)
 
-    block_nodes = rotated[start : end + 1].astype(np.int64, copy=False)
-    left_endpoint = rotated[start - 1]
-    right_endpoint = rotated[end + 1] if end + 1 < n else rotated[0]
-    repaired_block = _exact_path_order(block_nodes, int(left_endpoint), int(right_endpoint), points)
-    rotated[start : end + 1] = repaired_block.astype(rotated.dtype, copy=False)
+    idx = 0
+    while idx < n:
+        if not in_ab[rotated[idx]]:
+            idx += 1
+            continue
+        start = idx
+        while idx + 1 < n and in_ab[rotated[idx + 1]]:
+            idx += 1
+        end = idx
 
-    if first_outside == 0:
-        return rotated.astype(tour.dtype, copy=False)
-    return np.concatenate((rotated[-first_outside:], rotated[:-first_outside])).astype(tour.dtype, copy=False)
+        block_nodes = rotated[start : end + 1]
+        repaired = _exact_block_fixed_endpoints(block_nodes, points)
+        rotated[start : end + 1] = repaired
+        idx += 1
+
+    repaired_tour = _unrotate_tour(rotated, first_outside)
+    return repaired_tour.astype(tour.dtype, copy=False)
 
 
 def repair_tour_euc(
@@ -348,15 +345,14 @@ def repair_tour_euc(
         raise ValueError("tour contains node ids outside points")
 
     in_ab = _build_in_ab_mask(n_points, A, B)
-    mutable_count = int(np.count_nonzero(in_ab[tour]))
+    mutable_count = np.count_nonzero(in_ab[tour])
 
     # Fewer than 2 points in A union B means there is no mutable edge.
     if mutable_count < 2:
         return tour.copy()
 
-    block_count = _count_mutable_blocks(tour, in_ab)
-    if mutable_count <= 14 and block_count <= 1:
-        return _exact_repair_single_block(tour.astype(np.int64, copy=False), in_ab, np.ascontiguousarray(points)).astype(tour.dtype, copy=False)
+    if mutable_count <= 14:
+        return _exact_repair_blocks(tour.astype(np.int64, copy=False), in_ab, np.ascontiguousarray(points)).astype(tour.dtype, copy=False)
 
     work_tour = np.ascontiguousarray(tour.astype(np.int64, copy=True))
     work_points = np.ascontiguousarray(points)
