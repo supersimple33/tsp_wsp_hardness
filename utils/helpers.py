@@ -22,7 +22,7 @@ def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:
 @njit(inline="always", cache=True)
 def valid_tour(tour: np.ndarray, n: int) -> bool:
     """Check if a tour is valid (contains all nodes exactly once)"""
-    if tour.shape[0] != n:
+    if tour.size != n:
         return False
     seen = np.zeros(n, dtype=np.bool_)
     for i in range(n):
