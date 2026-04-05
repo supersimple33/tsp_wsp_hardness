@@ -78,7 +78,7 @@ def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, poin
     # Map indices to their corresponding node IDs:
     # 0 to M-1: AB nodes
     # M to M+2K-1: Segments (A_k is entrance, B_k is exit)
-    active_nodes = np.zeros(L, dtype=int)
+    active_nodes = np.zeros(L, dtype=AB.dtype)
     if M > 0:
         active_nodes[:M] = AB
         
@@ -87,7 +87,7 @@ def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, poin
         active_nodes[M + 2*k + 1] = entrance_exit_pairs[k]["exit"]   # B_k
 
     # Precompute distance matrix to avoid recalculating in inner loops
-    dist_matrix = np.zeros((L, L), dtype=float) # REVIEW: do we want dist matrix?
+    dist_matrix = np.zeros((L, L), dtype=points.dtype)
     for i in range(L):
         for j in range(L):
             if i != j:
@@ -97,7 +97,7 @@ def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, poin
     # mask_K has K-1 bits (since we always start at segment 0, we only track segments 1 to K-1)
     shape = (1 << M, 1 << max(0, K - 1), L)
     
-    dp = np.full(shape, np.inf, dtype=float)
+    dp = np.full(shape, np.inf, dtype=points.dtype)
     parent_mask_AB = np.empty(shape, dtype=AB.dtype)
     parent_mask_K = np.empty(shape, dtype=AB.dtype)
     parent_u = np.empty(shape, dtype=AB.dtype)
@@ -172,7 +172,7 @@ def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, poin
     paths: list[Path] = []
 
     curr_start = best_last_u
-    curr_path = []
+    curr_path: list[int] = []
 
     curr_mask_AB, curr_mask_K, curr_u = parent_mask_AB[final_mask_AB, final_mask_K, best_last_u], parent_mask_K[final_mask_AB, final_mask_K, best_last_u], parent_u[final_mask_AB, final_mask_K, best_last_u]
 
