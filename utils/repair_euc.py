@@ -254,6 +254,8 @@ def repair_tour_euc(
     A: ListOfInt,
     B: ListOfInt,
     points: ListOfPoints,
+    LOW: int = 0,
+    HIGH: int = 24
 ) -> np.ndarray:
     r"""
     Repair a Euclidean TSP tour by re-optimizing only edges fully internal to :math:`A \cup B`
@@ -284,7 +286,7 @@ def repair_tour_euc(
 
     if AB.size < 2:
         raise ValueError("At least two nodes must be in A union B for there to be any mutable edges")
-    elif AB.size + len(entrance_exit_inds) <= 24:
+    elif LOW < AB.size + len(entrance_exit_inds) <= HIGH:
         return _exhaustive_repair(tour, entrance_exit_inds, AB, points)
     else:
         raise NotImplementedError(f"Greedy repair not implemented yet for large problems (|AB|={AB.size}, K={len(entrance_exit_inds)})")
