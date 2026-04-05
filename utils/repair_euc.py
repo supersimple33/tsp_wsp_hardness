@@ -9,6 +9,8 @@ from .helpers import _euclidean, calc_tour_len_euc
 
 BRUTE_FORCE_THRESHOLD = 10  # If there are fewer than this many mutable edges, just brute force all possibilities
 
+Path = namedtuple("Path", ["start", "end", "internal_nodes"])
+
 type ListOfBool = np.ndarray[tuple[int], np.dtype[np.bool_]]
 type ListOfInt = np.ndarray[tuple[int], np.dtype[np.signedinteger]]
 type ListOfEnterExit = np.ndarray[tuple[int], np.dtype[np.void]] # TODO: update to better numpy typing
@@ -60,138 +62,144 @@ def _entrance_exit_pairs(
         entrance_exit_pairs[-1]["exit"] = exit_indices[0]
     return entrance_exit_pairs
 
-def _dp_for_endpoints(paths: list[tuple[int, int, list]], AB: ListOfInt, points: ListOfPoints) -> float:
-    """Fills in paths with the points of AB so that it is the optimal solution and returns the total cost of the reconnection strategy"""
+def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> tuple[float, list[Path]]:
+    """
+    Simultaneously finds the optimal segment sequence, traversal direction, and AB point distribution.
+    Returns: (best_cost, list_of_paths)
+    """
+    K = len(entrance_exit_pairs)
     M = len(AB)
-    K = len(paths)
+    
+    if K == 0:
+        raise ValueError("entrance exit pairs was empty")
 
-    active_nodes = np.concatenate((AB, [p[0] for p in paths]))
-    L = len(active_nodes)
+    L = M + 2 * K  # Total physical nodes in our state space
 
-    # map from node id of start to index in dp table
-    start_to_idx = {p[0]: M + i for i, p in enumerate(paths)}
+    # Map indices to their corresponding node IDs:
+    # 0 to M-1: AB nodes
+    # M to M+2K-1: Segments (A_k is entrance, B_k is exit)
+    active_nodes = np.zeros(L, dtype=int)
+    if M > 0:
+        active_nodes[:M] = AB
+        
+    for k in range(K):
+        active_nodes[M + 2*k] = entrance_exit_pairs[k]["entrance"] # A_k
+        active_nodes[M + 2*k + 1] = entrance_exit_pairs[k]["exit"]   # B_k
 
-    # main loop
-    dp = np.full((1 << M, L, K), np.inf, dtype=points.dtype)
+    # Precompute distance matrix to avoid recalculating in inner loops
+    dist_matrix = np.zeros((L, L), dtype=float) # REVIEW: do we want dist matrix?
+    for i in range(L):
+        for j in range(L):
+            if i != j:
+                dist_matrix[i, j] = _euclidean(points, active_nodes[i], active_nodes[j])
 
-    # reverse pointers # this could also just be a structured array
-    parent_mask = np.full((1 << M, L, K), -1, dtype=AB.dtype)
-    parent_uidx = np.full((1 << M, L, K), -1, dtype=AB.dtype)
-    parent_vidx = np.full((1 << M, L, K), -1, dtype=AB.dtype)
+    # DP dimensions: (mask_AB, mask_K, current_node)
+    # mask_K has K-1 bits (since we always start at segment 0, we only track segments 1 to K-1)
+    shape = (1 << M, 1 << max(0, K - 1), L)
+    
+    dp = np.full(shape, np.inf, dtype=float)
+    parent_mask_AB = np.empty(shape, dtype=AB.dtype)
+    parent_mask_K = np.empty(shape, dtype=AB.dtype)
+    parent_u = np.empty(shape, dtype=AB.dtype)
 
-    # initialize dp
-    dp[0, start_to_idx[paths[0][0]], 0] = 0.0
-    for i in range(K): # iterate over paths in order, we must finish path i before starting path i+1
-        valid_uidxs = list(range(M)) + [start_to_idx[paths[i][0]]] # TODO: this doesnt need to be in memory
+    # Initialize: We break the cyclic symmetry by fixing Segment 0 to be traversed forward.
+    # Therefore, we start exactly at the EXIT of segment 0 (B_0).
+    A0 = M              # Entrance of Segment 0
+    start_u = M + 1     # Exit of Segment 0
+    dp[0, 0, start_u] = 0.0
 
-        for mask in range(1 << M):
-            for u_idx in valid_uidxs:
-                cost_u = dp[mask, u_idx, i]
-                if np.isinf(cost_u):
-                    continue # REVIEW: why?
+    # DP Transitions
+    for mask_K in range(1 << max(0, K - 1)):
+        for mask_AB in range(1 << M):
+            for u in range(L):
+                cost_u = dp[mask_AB, mask_K, u]
+                if np.isinf(cost_u): # ensures we only expand reachable states
+                    continue
 
-                u_orig = active_nodes[u_idx]
+                # Option 1: Jump to an unvisited AB node
+                for v in range(M):
+                    if not (mask_AB & (1 << v)):
+                        nxt_mask_AB = mask_AB | (1 << v)
+                        new_cost = cost_u + dist_matrix[u, v]
+                        if new_cost < dp[nxt_mask_AB, mask_K, v]:
+                            dp[nxt_mask_AB, mask_K, v] = new_cost
+                            parent_mask_AB[nxt_mask_AB, mask_K, v] = mask_AB
+                            parent_mask_K[nxt_mask_AB, mask_K, v] = mask_K
+                            parent_u[nxt_mask_AB, mask_K, v] = u
 
-                # Option 1: continue path i visiting an unvisited node in AB  
-                for v_bit in range(M):
-                    if mask & (1 << v_bit):
-                        continue
-                    next_mask = mask | (1 << v_bit)
-                    v_orig = AB[v_bit]
-                    new_cost = cost_u + _euclidean(points, u_orig, v_orig)
+                # Option 2: Jump to an unvisited Segment (k in 1..K-1)
+                for k in range(1, K):
+                    k_bit = k - 1
+                    if not (mask_K & (1 << k_bit)):
+                        nxt_mask_K = mask_K | (1 << k_bit)
+                        Ak, Bk = M + 2*k, M + 2*k + 1
+                        
+                        # 2A: Traverse Segment Forward (Enter A_k, Exit B_k -> we land at B_k)
+                        new_cost_fwd = cost_u + dist_matrix[u, Ak]
+                        if new_cost_fwd < dp[mask_AB, nxt_mask_K, Bk]:
+                            dp[mask_AB, nxt_mask_K, Bk] = new_cost_fwd
+                            parent_mask_AB[mask_AB, nxt_mask_K, Bk] = mask_AB
+                            parent_mask_K[mask_AB, nxt_mask_K, Bk] = mask_K
+                            parent_u[mask_AB, nxt_mask_K, Bk] = u
 
-                    if new_cost < dp[next_mask, v_bit, i]:
-                        dp[next_mask, v_bit, i] = new_cost
-                        parent_mask[next_mask, v_bit, i] = mask
-                        parent_uidx[next_mask, v_bit, i] = u_idx
-                        parent_vidx[next_mask, v_bit, i] = i
+                        # 2B: Traverse Segment Backward (Enter B_k, Exit A_k -> we land at A_k)
+                        new_cost_bwd = cost_u + dist_matrix[u, Bk]
+                        if new_cost_bwd < dp[mask_AB, nxt_mask_K, Ak]:
+                            dp[mask_AB, nxt_mask_K, Ak] = new_cost_bwd
+                            parent_mask_AB[mask_AB, nxt_mask_K, Ak] = mask_AB
+                            parent_mask_K[mask_AB, nxt_mask_K, Ak] = mask_K
+                            parent_u[mask_AB, nxt_mask_K, Ak] = u
 
-                # Option 2: end path i and jump to start of path i+1
-                if i < K - 1:
-                    new_cost = cost_u + _euclidean(points, u_orig, paths[i][1])
-                    next_u_idx = start_to_idx[paths[i + 1][0]]
-
-                    if new_cost < dp[mask, next_u_idx, i + 1]:
-                        dp[mask, next_u_idx, i + 1] = new_cost
-                        parent_mask[mask, next_u_idx, i + 1] = mask
-                        parent_uidx[mask, next_u_idx, i + 1] = u_idx
-                        parent_vidx[mask, next_u_idx, i + 1] = i
-
-    # reconstruct solution
-    final_mask = (1 << M) - 1
+    # Find the best valid cycle closure back to the entrance of Segment 0 (A_0)
+    final_mask_AB = (1 << M) - 1
+    final_mask_K = (1 << max(0, K - 1)) - 1
+    
     best_cost = np.inf
-    best_last_uidx = -1
+    best_last_u = -1
 
-    valid_last_uidxs = list(range(M)) + [start_to_idx[paths[K - 1][0]]]
-
-    for u_idx in valid_last_uidxs:
-        cost_u = dp[final_mask, u_idx, K - 1]
-        if np.isinf(cost_u):
-            continue
-
-        u_orig = active_nodes[u_idx]
-        total_cost = cost_u + _euclidean(points, u_orig, paths[K - 1][1])
-
-        if total_cost < best_cost:
-            best_cost = total_cost
-            best_last_uidx = u_idx
+    for u in range(L):
+        if not np.isinf(dp[final_mask_AB, final_mask_K, u]):
+            # Close the loop by connecting the final node 'u' back to A0
+            cost = dp[final_mask_AB, final_mask_K, u] + dist_matrix[u, A0]
+            if cost < best_cost:
+                best_cost = cost
+                best_last_u = u
 
     if np.isinf(best_cost):
         raise ValueError("No valid reconnection strategy found")
-    
-    curr_mask = final_mask
-    curr_uidx = best_last_uidx
-    curr_i = K - 1
 
-    paths[curr_i][2].append(paths[curr_i][1]) # add entrance node to path
+    # --- Reconstruct the Paths ---
+    paths: list[Path] = []
 
-    while curr_i >= 0 and parent_uidx[curr_mask, curr_uidx, curr_i] != -1:
-        curr_u_orig = active_nodes[curr_uidx]
-        paths[curr_i][2].append(curr_u_orig)
+    curr_start = best_last_u
+    curr_path = []
 
-        p_mask = parent_mask[curr_mask, curr_uidx, curr_i]
-        p_uidx = parent_uidx[curr_mask, curr_uidx, curr_i]
-        p_i = parent_vidx[curr_mask, curr_uidx, curr_i]
+    curr_mask_AB, curr_mask_K, curr_u = parent_mask_AB[final_mask_AB, final_mask_K, best_last_u], parent_mask_K[final_mask_AB, final_mask_K, best_last_u], parent_u[final_mask_AB, final_mask_K, best_last_u]
 
-        if p_i == curr_i:
-            paths[curr_i][2].append(paths[curr_i][1])
+    while curr_u != start_u:
+        prev_u = parent_u[curr_mask_AB, curr_mask_K, curr_u]
+        prev_mask_AB = parent_mask_AB[curr_mask_AB, curr_mask_K, curr_u]
+        prev_mask_K = parent_mask_K[curr_mask_AB, curr_mask_K, curr_u]
 
-        curr_mask, curr_uidx, curr_i = p_mask, p_uidx, p_i
+        if curr_mask_K == prev_mask_K:  # we took an AB node
+            curr_path.append(active_nodes[curr_u])
+        else:  # we took a segment
+            k = (curr_u - M) // 2
+            is_B = (curr_u - M) % 2 == 1
+            entrance = M + 2*k + (0 if is_B else 1)
 
-    paths[0][2].append(paths[0][0]) # add entrance node to first path
+            paths.append(Path(start=active_nodes[curr_start], end=active_nodes[entrance], internal_nodes=curr_path))
 
-    for i in range(K):
-        paths[i][2].reverse() # reverse each path to be in the correct order
+            curr_start = curr_u
+            curr_path = []
 
-    return best_cost
+        curr_mask_AB, curr_mask_K, curr_u = prev_mask_AB, prev_mask_K, prev_u
 
+    # Add the final path back to the start of Segment 0
+    paths.append(Path(start=active_nodes[curr_start], end=active_nodes[A0], internal_nodes=curr_path))
 
-def _brute_force_repair(tour: ListOfInt, entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> ListOfInt:
-    # iterate over all endpoint combinations then do a dp style search to find the best reconnection strategy
-    # (ab, cd, ef) (ab, cd fe), (ab, dc, ef) (ab, dc fe) (ab, ef, cd) (ab, ef, dc) (ab, fe, cd) (ab, fe, dc)
-    best_paths = None
-    best_cost = float("inf")
-    for perm in signed_cyclic_permutations(len(entrance_exit_pairs)): # TODO: parallelize
-        # entrance, exit, reversed, internal edges that have been collected
-        paths: list[tuple[int, int, list]] = [(0, 0, [])] * len(entrance_exit_pairs)
-        for i in perm:
-            last_path_ind = (i - 1) % len(entrance_exit_pairs)
+    return best_cost, paths
 
-            entrance_node, exit_node = entrance_exit_pairs[abs(i)]
-            if i < 0:
-                entrance_node, exit_node = exit_node, entrance_node
-
-            paths[i] = (exit_node, paths[i][1], paths[i][2])
-            paths[last_path_ind] = (paths[last_path_ind][0], entrance_node, paths[last_path_ind][2])
-        
-        min_cost = _dp_for_endpoints(paths, AB, points)
-        if min_cost < best_cost:
-            best_paths = paths
-            best_cost = min_cost
-
-    if best_paths is None:
-        raise ValueError("entrance exit pairs was empty")
-    
 
 def repair_tour_euc(
     tour: ListOfInt,
