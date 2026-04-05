@@ -1,6 +1,6 @@
 from typing import Literal
 import itertools
-from collections import namedtuple
+from typing import NamedTuple
 
 import numpy as np
 import numba as nb
@@ -9,7 +9,10 @@ from .helpers import _euclidean, calc_tour_len_euc
 
 BRUTE_FORCE_THRESHOLD = 10  # If there are fewer than this many mutable edges, just brute force all possibilities
 
-Path = namedtuple("Path", ["start", "end", "internal_nodes"])
+class Path(NamedTuple):
+    start: int
+    end: int
+    internal_nodes: list[int]
 
 type ListOfBool = np.ndarray[tuple[int], np.dtype[np.bool_]]
 type ListOfInt = np.ndarray[tuple[int], np.dtype[np.signedinteger]]
@@ -45,29 +48,30 @@ def _entrance_exit_masks(
     return entrance_mask, exit_mask
 
 @nb.njit(inline="always")
-def _entrance_exit_pairs(
+def _entrance_exit_inds(
     tour: ListOfInt, entrance_indices: ListOfInt, exit_indices: ListOfInt
 ) -> ListOfEnterExit:
     """Return a list of (exit_index, entrance_index) pairs in the order they appear in the tour"""
     assert exit_indices.size == entrance_indices.size, "Number of exit edges must equal number of entrance edges"
 
     starts_entrance = exit_indices[0] < entrance_indices[0]
-    entrance_exit_pairs = np.empty(exit_indices.size, dtype=[("entrance", tour.dtype), ("exit", tour.dtype)])
+    entrance_exit_inds = np.empty(exit_indices.size, dtype=[("entrance", tour.dtype), ("exit", tour.dtype)])
     if starts_entrance:
-        entrance_exit_pairs["entrance"] = entrance_indices
-        entrance_exit_pairs["exit"] = exit_indices
+        entrance_exit_inds["entrance"] = entrance_indices
+        entrance_exit_inds["exit"] = exit_indices
     else:
-        entrance_exit_pairs["entrance"] = entrance_indices
-        entrance_exit_pairs[:-1]["exit"] = exit_indices[1:]
-        entrance_exit_pairs[-1]["exit"] = exit_indices[0]
-    return entrance_exit_pairs
+        entrance_exit_inds["entrance"] = entrance_indices
+        entrance_exit_inds[:-1]["exit"] = exit_indices[1:]
+        entrance_exit_inds[-1]["exit"] = exit_indices[0]
+    return entrance_exit_inds
 
-def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> tuple[float, list[Path]]:
+#@nb.njit()
+def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> tuple[float, list[Path]]:
     """
     Simultaneously finds the optimal segment sequence, traversal direction, and AB point distribution.
     Returns: (best_cost, list_of_paths)
     """
-    K = len(entrance_exit_pairs)
+    K = len(entrance_exit_nodes)
     M = len(AB)
     
     if K == 0:
@@ -83,8 +87,8 @@ def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, poin
         active_nodes[:M] = AB
         
     for k in range(K):
-        active_nodes[M + 2*k] = entrance_exit_pairs[k]["entrance"] # A_k
-        active_nodes[M + 2*k + 1] = entrance_exit_pairs[k]["exit"]   # B_k
+        active_nodes[M + 2*k] = entrance_exit_nodes[k]["entrance"] # A_k
+        active_nodes[M + 2*k + 1] = entrance_exit_nodes[k]["exit"]   # B_k
 
     # Precompute distance matrix to avoid recalculating in inner loops
     dist_matrix = np.zeros((L, L), dtype=points.dtype)
@@ -200,6 +204,41 @@ def _unified_dp_repair(entrance_exit_pairs: ListOfEnterExit, AB: ListOfInt, poin
 
     return best_cost, paths
 
+def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: ListOfInt, B: ListOfInt, points: ListOfPoints) -> np.ndarray:
+    AB = np.concatenate((A, B))
+
+    entrance_exit_nodes = np.empty(entrance_exit_inds.size, dtype=entrance_exit_inds.dtype)
+    entrance_exit_nodes["entrance"] = tour[entrance_exit_inds["entrance"]]
+    entrance_exit_nodes["exit"] = tour[entrance_exit_inds["exit"]]
+
+    best_cost, best_paths = _unified_dp_repair(entrance_exit_nodes, AB, points)
+
+    # maps nodes to their segments
+    enter_exit_segments: dict[int, ListOfInt] = {} 
+    for i, (enter_ind, exit_ind) in enumerate(entrance_exit_inds):
+        if enter_ind < exit_ind:
+            segment = tour[enter_ind:exit_ind+1]
+        else:
+            segment = np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
+
+        enter_exit_segments[entrance_exit_nodes["entrance"][i]] = segment
+        enter_exit_segments[entrance_exit_nodes["exit"][i]] = segment[::-1]
+
+    # Reconstruct the tour by following the best paths
+    new_tour = np.empty_like(tour)
+    idx = 0
+
+    for _, end, internal in best_paths:
+        for node in internal:
+            new_tour[idx] = node
+            idx += 1
+        
+        outside_segment = enter_exit_segments[end]
+
+        new_tour[idx:idx+outside_segment.size] = outside_segment
+        idx += outside_segment.size
+
+    return new_tour
 
 def repair_tour_euc(
     tour: ListOfInt,
@@ -231,14 +270,14 @@ def repair_tour_euc(
     entrance_indices = np.nonzero(entrance_mask)[0]
     exit_indices = np.nonzero(exit_mask)[0]
 
-    entrance_exit_pairs = _entrance_exit_pairs(tour, entrance_indices, exit_indices)
+    entrance_exit_inds = _entrance_exit_inds(tour, entrance_indices, exit_indices)
 
     if A.size + B.size < 2:
         print("Cannot repair tour: not enough mutable edges")
         return tour.copy()
-    elif A.size + B.size < 14:
+    elif A.size + B.size + entrance_exit_inds.size < 14:
         print("Few mutable edges, using brute force search")
-        return _brute_force_repair(tour, entrance_exit_pairs, A, B, points)
+        return _exhaustive_repair(tour, entrance_exit_inds, A, B, points)
     else:
         print("Many mutable edges, using greedy repair")
         raise NotImplementedError("Greedy repair not implemented yet")
