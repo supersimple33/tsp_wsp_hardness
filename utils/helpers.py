@@ -3,11 +3,11 @@ from numba import njit
 
 @njit(inline="always")
 def _euclidean(points: np.ndarray, u: int, v: int) -> float:
-    acc = (points[u, 1] - points[v, 1]) ** 2
+    acc = (points[u, 0] - points[v, 0]) ** 2
     for k in range(1, points.shape[1]):
         dv = points[u, k] - points[v, k]
         acc += dv * dv
-    return np.sqrt(acc)
+    return np.round(np.sqrt(acc))
 
 @njit(inline="always", cache=True)
 def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:

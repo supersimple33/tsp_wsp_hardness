@@ -38,14 +38,13 @@ def _entrance_exit_masks(
 
     return entrance_mask, exit_mask
 
-@nb.njit(inline="always")
 def _entrance_exit_inds(
     tour: ListOfInt, entrance_indices: ListOfInt, exit_indices: ListOfInt
 ) -> ListOfEnterExit:
     """Return a list of (exit_index, entrance_index) pairs in the order they appear in the tour"""
     assert exit_indices.size == entrance_indices.size, "Number of exit edges must equal number of entrance edges"
 
-    starts_entrance = exit_indices[0] < entrance_indices[0]
+    starts_entrance = entrance_indices[0] < exit_indices[0] 
     entrance_exit_inds = np.empty(exit_indices.size, dtype=[("entrance", tour.dtype), ("exit", tour.dtype)])
     if starts_entrance:
         entrance_exit_inds["entrance"] = entrance_indices
@@ -163,42 +162,60 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     if np.isinf(best_cost):
         raise ValueError("No valid reconnection strategy found")
 
-    # --- Reconstruct the Paths ---
+   # --- Reconstruct the Paths ---
     paths: list[Path] = []
 
-    curr_start = best_last_u
-    curr_path: list[int] = []
+    # In forward time, the sequence is: 
+    # Segment 0 (Exit B0) -> Path 1 -> Segment K1 (Entrance) ... (Exit) -> Path Last -> A0
+    
+    # We backtrack from the end (the jump to A0)
+    curr_path_end_node = A0
+    curr_path_internal = []
+    
+    curr_u = best_last_u
+    curr_mask_AB = final_mask_AB
+    curr_mask_K = final_mask_K
 
-    curr_mask_AB, curr_mask_K, curr_u = parent_mask_AB[final_mask_AB, final_mask_K, best_last_u], parent_mask_K[final_mask_AB, final_mask_K, best_last_u], parent_u[final_mask_AB, final_mask_K, best_last_u]
+    while True:
+        if curr_u < M:
+            # It's an AB node: add to the internal nodes of the current gap
+            curr_path_internal.append(active_nodes[curr_u])
+        else:
+            # It's a Segment Exit: This is where a forward-moving path STARTS.
+            # We close the current path gap here.
+            paths.append(Path(
+                start=active_nodes[curr_u],
+                end=active_nodes[curr_path_end_node],
+                internal_nodes=curr_path_internal[::-1] # Reverse because we collected backwards
+            ))
+            
+            # The NEXT path (going backwards) will end at the ENTRANCE of this segment
+            k = (curr_u - M) // 2
+            is_B = (curr_u - M) % 2 == 1
+            # If we are at the Exit (B_k), the entrance was A_k, and vice versa.
+            entrance_idx = M + 2*k + (0 if is_B else 1)
+            
+            curr_path_end_node = entrance_idx
+            curr_path_internal = []
 
-    while curr_u != start_u:
+        # If we have reached the very first exit (B0), we are done.
+        if curr_u == start_u:
+            break
+
+        # Move to the parent state
         prev_u = parent_u[curr_mask_AB, curr_mask_K, curr_u]
         prev_mask_AB = parent_mask_AB[curr_mask_AB, curr_mask_K, curr_u]
         prev_mask_K = parent_mask_K[curr_mask_AB, curr_mask_K, curr_u]
 
-        if curr_mask_K == prev_mask_K:  # we took an AB node
-            curr_path.append(active_nodes[curr_u])
-        else:  # we took a segment
-            k = (curr_u - M) // 2
-            is_B = (curr_u - M) % 2 == 1
-            entrance = M + 2*k + (0 if is_B else 1)
+        curr_u, curr_mask_AB, curr_mask_K = prev_u, prev_mask_AB, prev_mask_K
 
-            paths.append(Path(start=active_nodes[curr_start], end=active_nodes[entrance], internal_nodes=curr_path))
-
-            curr_start = curr_u
-            curr_path = []
-
-        curr_mask_AB, curr_mask_K, curr_u = prev_mask_AB, prev_mask_K, prev_u
-
-    # Add the final path back to the start of Segment 0
-    paths.append(Path(start=active_nodes[curr_start], end=active_nodes[A0], internal_nodes=curr_path))
-
+    # The paths are currently in reverse chronological order (Last Path -> First Path)
     return best_cost, paths
 
 def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: ListOfInt, B: ListOfInt, points: ListOfPoints) -> np.ndarray:
     AB = np.concatenate((A, B))
 
-    entrance_exit_nodes = np.empty(entrance_exit_inds.size, dtype=entrance_exit_inds.dtype)
+    entrance_exit_nodes = np.empty_like(entrance_exit_inds)
     entrance_exit_nodes["entrance"] = tour[entrance_exit_inds["entrance"]]
     entrance_exit_nodes["exit"] = tour[entrance_exit_inds["exit"]]
 
@@ -267,8 +284,6 @@ def repair_tour_euc(
         print("Cannot repair tour: not enough mutable edges")
         return tour.copy()
     elif A.size + B.size + entrance_exit_inds.size < 14:
-        print("Few mutable edges, using brute force search")
         return _exhaustive_repair(tour, entrance_exit_inds, A, B, points)
     else:
-        print("Many mutable edges, using greedy repair")
         raise NotImplementedError("Greedy repair not implemented yet")
