@@ -248,13 +248,263 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB:
 
     return new_tour
 
-@nb.njit(cache=True, nogil=True)
+@nb.njit(inline="always", cache=True, nogil=True)
+def _beam_search_repair(
+    entrance_exit_nodes: ListOfEnterExit, 
+    AB: ListOfInt, 
+    points: ListOfPoints, 
+    BEAM_WIDTH: int = 150
+) -> tuple[float, list[Path]]:
+    """
+    Beam Search heuristic for TSP segment reconnection.
+    Explores the top `BEAM_WIDTH` parallel paths to avoid greedy local optima
+    while remaining strictly memory-bounded and fast.
+    """
+    K = len(entrance_exit_nodes)
+    M = len(AB)
+
+    if K == 0:
+        raise ValueError("entrance exit pairs was empty")
+
+    L = M + 2 * K
+
+    active_nodes = np.zeros(L, dtype=AB.dtype)
+    if M > 0:
+        active_nodes[:M] = AB
+
+    for k in range(K):
+        active_nodes[M + 2 * k] = entrance_exit_nodes[k, ENTRANCE]
+        active_nodes[M + 2 * k + 1] = entrance_exit_nodes[k, EXIT]
+
+    # Distance table over all active nodes (AB nodes + segment endpoints)
+    dist_matrix = np.zeros((L, L), dtype=points.dtype)
+    for i in range(L):
+        for j in range(i + 1, L):
+            dist = _euclidean(points, active_nodes[i], active_nodes[j])
+            dist_matrix[i, j] = dist
+            dist_matrix[j, i] = dist
+
+    num_segment_bits = max(0, K - 1)
+    total_steps = M + num_segment_bits
+
+    beam_cap = BEAM_WIDTH
+    if beam_cap < 1:
+        beam_cap = 1
+
+    branch_factor = M + 2 * num_segment_bits
+    cand_cap = beam_cap * max(1, branch_factor)
+
+    A0 = M
+    start_u = M + 1
+
+    cost_curr = np.full(beam_cap, np.inf, dtype=points.dtype)
+    cost_next = np.full(beam_cap, np.inf, dtype=points.dtype)
+    u_curr = np.full(beam_cap, -1, dtype=AB.dtype)
+    u_next = np.full(beam_cap, -1, dtype=AB.dtype)
+
+    visited_ab_curr = np.zeros((beam_cap, M), dtype=np.bool_)
+    visited_ab_next = np.zeros((beam_cap, M), dtype=np.bool_)
+    visited_seg_curr = np.zeros((beam_cap, num_segment_bits), dtype=np.bool_)
+    visited_seg_next = np.zeros((beam_cap, num_segment_bits), dtype=np.bool_)
+
+    # Backtracking tables indexed by [depth, beam_position]
+    hist_u = np.full((total_steps + 1, beam_cap), -1, dtype=AB.dtype)
+    hist_parent = np.full((total_steps + 1, beam_cap), -1, dtype=AB.dtype)
+
+    cand_cost = np.empty(cand_cap, dtype=points.dtype)
+    cand_u = np.empty(cand_cap, dtype=AB.dtype)
+    cand_parent = np.empty(cand_cap, dtype=AB.dtype)
+    cand_type = np.empty(cand_cap, dtype=AB.dtype)  # 0: AB jump, 1: segment traversal
+    cand_id = np.empty(cand_cap, dtype=AB.dtype)
+
+    num_curr = 1
+    cost_curr[0] = 0.0
+    u_curr[0] = start_u
+    hist_u[0, 0] = start_u
+    hist_parent[0, 0] = -1
+
+    for depth in range(total_steps):
+        cand_count = 0
+
+        for i in range(num_curr):
+            u = u_curr[i]
+            cost_u = cost_curr[i]
+
+            # Option 1: visit an unvisited AB node
+            for v in range(M):
+                if not visited_ab_curr[i, v]:
+                    cand_cost[cand_count] = cost_u + dist_matrix[u, v]
+                    cand_u[cand_count] = v
+                    cand_parent[cand_count] = i
+                    cand_type[cand_count] = 0
+                    cand_id[cand_count] = v
+                    cand_count += 1
+
+            # Option 2: traverse an unvisited segment (k in 1..K-1), either direction
+            for s in range(num_segment_bits):
+                if not visited_seg_curr[i, s]:
+                    k = s + 1
+                    Ak = M + 2 * k
+                    Bk = Ak + 1
+
+                    cand_cost[cand_count] = cost_u + dist_matrix[u, Ak]
+                    cand_u[cand_count] = Bk
+                    cand_parent[cand_count] = i
+                    cand_type[cand_count] = 1
+                    cand_id[cand_count] = s
+                    cand_count += 1
+
+                    cand_cost[cand_count] = cost_u + dist_matrix[u, Bk]
+                    cand_u[cand_count] = Ak
+                    cand_parent[cand_count] = i
+                    cand_type[cand_count] = 1
+                    cand_id[cand_count] = s
+                    cand_count += 1
+
+        if cand_count == 0:
+            raise ValueError("Beam search failed: no candidates")
+
+        order = np.argsort(cand_cost[:cand_count])
+
+        num_next = beam_cap
+        if cand_count < num_next:
+            num_next = cand_count
+
+        for j in range(num_next):
+            cidx = order[j]
+            p = cand_parent[cidx]
+
+            cost_next[j] = cand_cost[cidx]
+            u_next[j] = cand_u[cidx]
+
+            if M > 0:
+                visited_ab_next[j, :] = visited_ab_curr[p, :]
+            if num_segment_bits > 0:
+                visited_seg_next[j, :] = visited_seg_curr[p, :]
+
+            if cand_type[cidx] == 0:
+                visited_ab_next[j, cand_id[cidx]] = True
+            else:
+                visited_seg_next[j, cand_id[cidx]] = True
+
+            hist_u[depth + 1, j] = u_next[j]
+            hist_parent[depth + 1, j] = p
+
+        # Reset unused tail in next-beam buffers to keep state clean between depths
+        for j in range(num_next, beam_cap):
+            cost_next[j] = np.inf
+            u_next[j] = -1
+            if M > 0:
+                visited_ab_next[j, :] = False
+            if num_segment_bits > 0:
+                visited_seg_next[j, :] = False
+
+        cost_curr, cost_next = cost_next, cost_curr
+        u_curr, u_next = u_next, u_curr
+        visited_ab_curr, visited_ab_next = visited_ab_next, visited_ab_curr
+        visited_seg_curr, visited_seg_next = visited_seg_next, visited_seg_curr
+        num_curr = num_next
+
+    best_cost = np.inf
+    best_last_pos = -1
+
+    for i in range(num_curr):
+        u = u_curr[i]
+        cost = cost_curr[i] + dist_matrix[u, A0]
+        if cost < best_cost:
+            best_cost = cost
+            best_last_pos = i
+
+    if best_last_pos < 0 or np.isinf(best_cost):
+        raise ValueError("No valid reconnection strategy found")
+
+    paths: list[Path] = []
+
+    curr_depth = total_steps
+    curr_pos = best_last_pos
+    curr_u = hist_u[curr_depth, curr_pos]
+
+    curr_path_end_node = A0
+    curr_path_internal: list[int] = List.empty_list(NB_INT_TYPE_GUIDE)
+
+    while True:
+        if curr_u < M:
+            curr_path_internal.append(int(active_nodes[curr_u]))
+        else:
+            paths.append(Path(
+                start=int(active_nodes[curr_u]),
+                end=int(active_nodes[curr_path_end_node]),
+                internal_nodes=curr_path_internal[::-1]
+            ))
+
+            k = (curr_u - M) // 2
+            is_B = (curr_u - M) % 2 == 1
+            entrance_idx = M + 2 * k + (0 if is_B else 1)
+
+            curr_path_end_node = entrance_idx
+            curr_path_internal = List.empty_list(NB_INT_TYPE_GUIDE)
+
+        if curr_u == start_u:
+            break
+
+        parent_pos = hist_parent[curr_depth, curr_pos]
+        if parent_pos < 0:
+            raise ValueError("Beam reconstruction failed")
+
+        curr_depth -= 1
+        curr_pos = parent_pos
+        curr_u = hist_u[curr_depth, curr_pos]
+
+    return best_cost, paths[::-1]
+
+
+#@nb.njit(inline="always", cache=True, nogil=True)
+def _approximate_repair(
+    tour: ListOfInt, 
+    entrance_exit_inds: ListOfEnterExit, 
+    AB: ListOfInt, 
+    points: ListOfPoints
+) -> np.ndarray:
+    
+    entrance_exit_nodes = np.empty_like(entrance_exit_inds)
+    entrance_exit_nodes[:, ENTRANCE] = tour[entrance_exit_inds[:, ENTRANCE]]
+    entrance_exit_nodes[:, EXIT] = tour[entrance_exit_inds[:, EXIT]]
+
+    # Routes to the robust Beam Search solver instead of blowing up exact DP
+    _, best_paths = _beam_search_repair(entrance_exit_nodes, AB, points, BEAM_WIDTH=150)
+
+    enter_exit_segments: dict[int, ListOfInt] = Dict.empty(key_type=NB_INT_TYPE_GUIDE, value_type=NB_INT_TYPE_GUIDE[:])
+    for i in range(entrance_exit_inds.shape[0]):
+        enter_ind = entrance_exit_inds[i, ENTRANCE]
+        exit_ind = entrance_exit_inds[i, EXIT]
+        if enter_ind <= exit_ind:
+            segment = tour[enter_ind:exit_ind+1]
+        else:
+            segment = np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
+
+        enter_exit_segments[entrance_exit_nodes[i, ENTRANCE]] = segment
+        enter_exit_segments[entrance_exit_nodes[i, EXIT]] = segment[::-1]
+
+    new_tour = np.empty_like(tour)
+    idx = 0
+
+    for _, end, internal in best_paths:
+        for node in internal:
+            new_tour[idx] = node
+            idx += 1
+        
+        outside_segment = enter_exit_segments[end]
+        new_tour[idx:idx+outside_segment.size] = outside_segment
+        idx += outside_segment.size
+
+    return new_tour
+
+#@nb.njit(cache=True, nogil=True)
 def repair_tour_euc(
     tour: ListOfInt,
     A: ListOfInt,
     B: ListOfInt,
     points: ListOfPoints,
-    LOW: int = 0,
     HIGH: int = 24
 ) -> np.ndarray:
     r"""
@@ -286,7 +536,7 @@ def repair_tour_euc(
 
     if AB.size < 2:
         raise ValueError("At least two nodes must be in A union B for there to be any mutable edges")
-    elif LOW < AB.size + len(entrance_exit_inds) <= HIGH:
+    elif AB.size + len(entrance_exit_inds) <= HIGH:
         return _exhaustive_repair(tour, entrance_exit_inds, AB, points)
     else:
-        raise NotImplementedError(f"Greedy repair not implemented yet for large problems (|AB|={AB.size}, K={len(entrance_exit_inds)})")
+        return _approximate_repair(tour, entrance_exit_inds, AB, points)
