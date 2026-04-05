@@ -25,13 +25,11 @@ class Path(NamedTuple):
 
 @nb.njit(inline="always", cache=True, nogil=True)
 def _entrance_exit_masks(
-    tour: ListOfInt, A: ListOfInt, B: ListOfInt
+    tour: ListOfInt, AB: ListOfInt
 ) -> tuple[ListOfBool, ListOfBool]:
     """Return boolean masks of which nodes in the tour are entrances and exits to !(A union B)"""
     n = tour.size
-    in_a = np.isin(tour, A, assume_unique=True)
-    in_b = np.isin(tour, B, assume_unique=True)
-    in_ab = in_a | in_b
+    in_ab = np.isin(tour, AB, assume_unique=True)
 
     # A node is an exit if it is outside A union B and the next node in the tour is inside A union B
     exit_mask = np.empty(n, dtype=np.bool_)
@@ -220,9 +218,7 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     return best_cost, paths[::-1] 
 
 @nb.njit(inline="always", cache=True, nogil=True)
-def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: ListOfInt, B: ListOfInt, points: ListOfPoints) -> np.ndarray:
-    AB = np.concatenate((A, B))
-
+def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> np.ndarray:
     entrance_exit_nodes = np.empty_like(entrance_exit_inds)
     entrance_exit_nodes[:, ENTRANCE] = tour[entrance_exit_inds[:, ENTRANCE]]
     entrance_exit_nodes[:, EXIT] = tour[entrance_exit_inds[:, EXIT]]
@@ -264,8 +260,7 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: 
 @nb.njit(cache=True, nogil=True)
 def repair_tour_euc(
     tour: ListOfInt,
-    A: ListOfInt,
-    B: ListOfInt,
+    AB: ListOfInt,
     points: ListOfPoints,
 ) -> np.ndarray:
     r"""
@@ -287,16 +282,16 @@ def repair_tour_euc(
     if np.any(tour < 0) or np.any(tour >= n_points):
         raise ValueError("tour contains node ids outside points")
 
-    entrance_mask, exit_mask = _entrance_exit_masks(tour, A, B)
+    entrance_mask, exit_mask = _entrance_exit_masks(tour, AB)
 
     entrance_indices = np.nonzero(entrance_mask)[0]
     exit_indices = np.nonzero(exit_mask)[0]
 
     entrance_exit_inds = _entrance_exit_inds(tour, entrance_indices, exit_indices)
 
-    if A.size + B.size < 2:
+    if AB.size < 2:
         raise ValueError("At least two nodes must be in A union B for there to be any mutable edges")
-    elif A.size + B.size + len(entrance_exit_inds) <= 25:
-        return _exhaustive_repair(tour, entrance_exit_inds, A, B, points)
+    elif AB.size + len(entrance_exit_inds) <= 26:
+        return _exhaustive_repair(tour, entrance_exit_inds, AB, points)
     else:
-        raise NotImplementedError(f"Greedy repair not implemented yet for large problems (|A|+|B|={A.size + B.size}, K={len(entrance_exit_inds)})")
+        raise NotImplementedError(f"Greedy repair not implemented yet for large problems (|AB|={AB.size}, K={len(entrance_exit_inds)})")
