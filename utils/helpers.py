@@ -1,5 +1,15 @@
+import os
+
 import numpy as np
 from numba import njit
+
+from concorde.tsp import TSPSolver
+
+STDOUT = 1
+STDERR = 2
+saved_fd = os.dup(STDOUT)
+error_fd = os.dup(STDERR)
+null_fd = os.open(os.devnull, os.O_WRONLY)
 
 def roll_to_node(tour: np.ndarray, node: int) -> np.ndarray:
     """Roll the tour so that it starts with the given node"""
@@ -47,3 +57,21 @@ def valid_tour(tour: np.ndarray, n: int) -> bool:
             return False
         seen[node] = True
     return True
+
+def build_concorde_solver(dist_matrix: np.ndarray) -> TSPSolver:
+    n = dist_matrix.shape[0]
+    ltri = np.round(dist_matrix[np.tril_indices(n, k=-1)]).astype(np.int32)
+    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+    solver = TSPSolver.from_lower_tri(shape=n, edges=ltri)
+    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+    return solver
+
+
+def solve_concorde_once(solver: TSPSolver, random_seed: int) -> tuple[np.ndarray, int]:
+    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+    sol = solver.solve(verbose=False, random_seed=random_seed)
+    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+
+    assert sol.found_tour, "Concorde did not find a tour"
+    assert sol.success, "Concorde did not certify optimality"
+    return np.array(sol.tour, dtype=np.int32), int(sol.optimal_value)
