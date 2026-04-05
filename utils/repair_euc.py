@@ -458,7 +458,7 @@ def _beam_search_repair(
     return best_cost, paths[::-1]
 
 
-#@nb.njit(inline="always", cache=True, nogil=True)
+@nb.njit(inline="always", cache=True, nogil=True)
 def _approximate_repair(
     tour: ListOfInt, 
     entrance_exit_inds: ListOfEnterExit, 
@@ -499,7 +499,7 @@ def _approximate_repair(
 
     return new_tour
 
-#@nb.njit(cache=True, nogil=True)
+@nb.njit(cache=True, nogil=True)
 def repair_tour_euc(
     tour: ListOfInt,
     A: ListOfInt,
