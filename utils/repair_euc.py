@@ -1,30 +1,22 @@
-from typing import Literal
-import itertools
 from typing import NamedTuple
 
 import numpy as np
 import numba as nb
 
-from .helpers import _euclidean, calc_tour_len_euc
+from .helpers import _euclidean
 
 BRUTE_FORCE_THRESHOLD = 10  # If there are fewer than this many mutable edges, just brute force all possibilities
+
+type ListOfBool = np.ndarray[tuple[int], np.dtype[np.bool_]]
+type ListOfInt = np.ndarray[tuple[int], np.dtype[np.integer]]
+type ListOfEnterExit = np.ndarray[tuple[int], np.dtype[np.void]] # TODO: update to better numpy typing
+type ListOfPoints = np.ndarray[tuple[int, ...], np.dtype[np.floating]]
 
 class Path(NamedTuple):
     start: int
     end: int
     internal_nodes: list[int]
 
-type ListOfBool = np.ndarray[tuple[int], np.dtype[np.bool_]]
-type ListOfInt = np.ndarray[tuple[int], np.dtype[np.signedinteger]]
-type ListOfEnterExit = np.ndarray[tuple[int], np.dtype[np.void]] # TODO: update to better numpy typing
-type ListOfPoints = np.ndarray[tuple[int, ...], np.dtype[np.floating]]
-
-def signed_cyclic_permutations(n):
-    nums = list(range(1, n))
-    
-    for perm in itertools.permutations(nums):
-        for signs in itertools.product((-1, 1), repeat=n-1):
-            yield (0,) + tuple(s * x for s, x in zip(signs, perm))
 
 def _entrance_exit_masks(
     tour: ListOfInt, A: ListOfInt, B: ListOfInt
@@ -34,7 +26,6 @@ def _entrance_exit_masks(
     in_a = np.isin(tour, A, assume_unique=True)
     in_b = np.isin(tour, B, assume_unique=True)
     in_ab = in_a | in_b
-
 
     # A node is an exit if it is outside A union B and the next node in the tour is inside A union B
     exit_mask = np.empty(n, dtype=np.bool_)
@@ -159,7 +150,7 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     final_mask_K = (1 << max(0, K - 1)) - 1
     
     best_cost = np.inf
-    best_last_u = -1
+    best_last_u = 0
 
     for u in range(L):
         if not np.isinf(dp[final_mask_AB, final_mask_K, u]):
