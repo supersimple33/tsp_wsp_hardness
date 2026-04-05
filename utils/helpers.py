@@ -1,6 +1,10 @@
 import numpy as np
 from numba import njit
 
+def roll_to_node(tour: np.ndarray, node: int) -> np.ndarray:
+    """Roll the tour so that it starts with the given node"""
+    return np.roll(tour, -np.nonzero(tour == node)[0][0])
+
 @njit(inline="always")
 def _euclidean(points: np.ndarray, u: int, v: int) -> float:
     acc = (points[u, 0] - points[v, 0]) ** 2
