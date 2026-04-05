@@ -5,7 +5,7 @@ def roll_to_node(tour: np.ndarray, node: int) -> np.ndarray:
     """Roll the tour so that it starts with the given node"""
     return np.roll(tour, -np.nonzero(tour == node)[0][0])
 
-@njit(inline="always")
+@njit(inline="always", cache= True, nogil=True)
 def _euclidean(points: np.ndarray, u: int, v: int) -> float:
     acc = (points[u, 0] - points[v, 0]) ** 2
     for k in range(1, points.shape[1]):
@@ -13,7 +13,7 @@ def _euclidean(points: np.ndarray, u: int, v: int) -> float:
         acc += dv * dv
     return np.round(np.sqrt(acc))
 
-@njit(inline="always", cache=True)
+@njit(inline="always", cache=True, nogil=True)
 def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:
     """Calculate the length of a tour given the points and the tour order. Done in just numpy"""
     acc = _euclidean(points, tour[-1], tour[0])
@@ -23,7 +23,7 @@ def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:
         acc += _euclidean(points, u, v)
     return acc
 
-@njit(inline="always", cache=True)
+@njit(inline="always", cache=True, nogil=True)
 def valid_tour(tour: np.ndarray, n: int) -> bool:
     """Check if a tour is valid (contains all nodes exactly once)"""
     if tour.size != n:

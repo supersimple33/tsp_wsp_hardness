@@ -23,7 +23,7 @@ class Path(NamedTuple):
     end: int
     internal_nodes: list[int]
 
-@nb.njit(inline="always", cache=True)
+@nb.njit(inline="always", cache=True, nogil=True)
 def _entrance_exit_masks(
     tour: ListOfInt, A: ListOfInt, B: ListOfInt
 ) -> tuple[ListOfBool, ListOfBool]:
@@ -44,7 +44,7 @@ def _entrance_exit_masks(
 
     return entrance_mask, exit_mask
 
-@nb.njit(inline="always", cache=True)
+@nb.njit(inline="always", cache=True, nogil=True)
 def _entrance_exit_inds(
     tour: ListOfInt, entrance_indices: ListOfInt, exit_indices: ListOfInt
 ) -> ListOfEnterExit:
@@ -62,7 +62,7 @@ def _entrance_exit_inds(
         entrance_exit_inds[-1, EXIT] = exit_indices[0]
     return entrance_exit_inds
 
-@nb.njit(cache=True)
+@nb.njit(inline="always", cache=True, nogil=True)
 def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> tuple[float, list[Path]]:
     """
     Simultaneously finds the optimal segment sequence, traversal direction, and AB point distribution.
@@ -219,7 +219,7 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     # The paths are currently in reverse chronological order (Last Path -> First Path)
     return best_cost, paths[::-1] 
 
-@nb.njit(inline="always", cache=True)
+@nb.njit(inline="always", cache=True, nogil=True)
 def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: ListOfInt, B: ListOfInt, points: ListOfPoints) -> np.ndarray:
     AB = np.concatenate((A, B))
 
@@ -261,7 +261,7 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: 
 
     return new_tour
 
-@nb.njit(cache=True)
+@nb.njit(cache=True, nogil=True)
 def repair_tour_euc(
     tour: ListOfInt,
     A: ListOfInt,
@@ -296,7 +296,7 @@ def repair_tour_euc(
 
     if A.size + B.size < 2:
         raise ValueError("At least two nodes must be in A union B for there to be any mutable edges")
-    elif A.size + B.size + len(entrance_exit_inds) <= 14:
+    elif A.size + B.size + len(entrance_exit_inds) <= 25:
         return _exhaustive_repair(tour, entrance_exit_inds, A, B, points)
     else:
         raise NotImplementedError(f"Greedy repair not implemented yet for large problems (|A|+|B|={A.size + B.size}, K={len(entrance_exit_inds)})")
