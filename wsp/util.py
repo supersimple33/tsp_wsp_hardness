@@ -4,6 +4,11 @@ from typing import Optional
 from itertools import permutations
 from collections import defaultdict
 import os
+import sys
+import ctypes
+import threading
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
+from typing import Iterator
 
 from deprecation import deprecated
 
@@ -14,9 +19,44 @@ from wsp import ds
 
 STDOUT = 1
 STDERR = 2
-saved_fd = os.dup(STDOUT)
-error_fd = os.dup(STDERR)
-null_fd = os.open(os.devnull, os.O_WRONLY)
+_libc = ctypes.CDLL(None)
+_OUTPUT_LOCK = threading.Lock()
+
+
+def _flush_all_streams() -> None:
+    # Flush both Python-level and C stdio buffers before fd swaps.
+    try:
+        sys.stdout.flush()
+    except Exception:
+        pass
+    try:
+        sys.stderr.flush()
+    except Exception:
+        pass
+    try:
+        _libc.fflush(None)
+    except Exception:
+        pass
+
+
+@contextmanager
+def _silence_process_output() -> Iterator[None]:
+    # Redirect both Python streams and raw FDs to suppress Cython/C output in notebooks.
+    with _OUTPUT_LOCK:
+        with open(os.devnull, "w") as devnull, redirect_stdout(devnull), redirect_stderr(devnull):
+            saved_stdout_fd = os.dup(STDOUT)
+            saved_stderr_fd = os.dup(STDERR)
+            try:
+                _flush_all_streams()
+                os.dup2(devnull.fileno(), STDOUT)
+                os.dup2(devnull.fileno(), STDERR)
+                yield
+            finally:
+                _flush_all_streams()
+                os.dup2(saved_stdout_fd, STDOUT)
+                os.dup2(saved_stderr_fd, STDERR)
+                os.close(saved_stdout_fd)
+                os.close(saved_stderr_fd)
 
 # MARK: Distances
 
@@ -269,9 +309,8 @@ def build_concorde_solver(dist_matrix: np.ndarray) -> TSPSolver:
 
 
 def solve_concorde_once(solver: TSPSolver, random_seed: int) -> tuple[np.ndarray, int]:
-    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR) # pyright: ignore[reportUnusedExpression]
-    sol = solver.solve(verbose=False, random_seed=random_seed)
-    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+    with _silence_process_output():
+        sol = solver.solve(verbose=False, random_seed=random_seed)
 
     assert sol.found_tour, "Concorde did not find a tour"
     assert sol.success, "Concorde did not certify optimality"

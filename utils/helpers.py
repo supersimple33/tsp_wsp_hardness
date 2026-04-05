@@ -1,4 +1,9 @@
 import os
+import sys
+import ctypes
+import threading
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
+from typing import Iterator
 
 import numpy as np
 from numba import njit
@@ -7,9 +12,44 @@ from concorde.tsp import TSPSolver
 
 STDOUT = 1
 STDERR = 2
-saved_fd = os.dup(STDOUT)
-error_fd = os.dup(STDERR)
-null_fd = os.open(os.devnull, os.O_WRONLY)
+_libc = ctypes.CDLL(None)
+_OUTPUT_LOCK = threading.Lock()
+
+
+def _flush_all_streams() -> None:
+    # Flush both Python-level and C stdio buffers before fd swaps.
+    try:
+        sys.stdout.flush()
+    except Exception:
+        pass
+    try:
+        sys.stderr.flush()
+    except Exception:
+        pass
+    try:
+        _libc.fflush(None)
+    except Exception:
+        pass
+
+
+@contextmanager
+def _silence_process_output() -> Iterator[None]:
+    # Redirect both Python streams and raw FDs to suppress Cython/C output in notebooks.
+    with _OUTPUT_LOCK:
+        with open(os.devnull, "w") as devnull, redirect_stdout(devnull), redirect_stderr(devnull):
+            saved_stdout_fd = os.dup(STDOUT)
+            saved_stderr_fd = os.dup(STDERR)
+            try:
+                _flush_all_streams()
+                os.dup2(devnull.fileno(), STDOUT)
+                os.dup2(devnull.fileno(), STDERR)
+                yield
+            finally:
+                _flush_all_streams()
+                os.dup2(saved_stdout_fd, STDOUT)
+                os.dup2(saved_stderr_fd, STDERR)
+                os.close(saved_stdout_fd)
+                os.close(saved_stderr_fd)
 
 def roll_to_node(tour: np.ndarray, node: int) -> np.ndarray:
     """Roll the tour so that it starts with the given node"""
@@ -61,17 +101,16 @@ def valid_tour(tour: np.ndarray, n: int) -> bool:
 def build_concorde_solver(dist_matrix: np.ndarray) -> TSPSolver:
     n = dist_matrix.shape[0]
     ltri = np.round(dist_matrix[np.tril_indices(n, k=-1)]).astype(np.int32)
-    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR) # pyright: ignore[reportUnusedExpression]
-    solver = TSPSolver.from_lower_tri(shape=n, edges=ltri)
-    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR) # pyright: ignore[reportUnusedExpression]
-    return solver
+    return TSPSolver.from_lower_tri(shape=n, edges=ltri)
 
 
-def solve_concorde_once(solver: TSPSolver, random_seed: int) -> tuple[np.ndarray, int]:
-    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR) # pyright: ignore[reportUnusedExpression]
-    sol = solver.solve(verbose=False, random_seed=random_seed)
-    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR) # pyright: ignore[reportUnusedExpression]
+def solve_concorde_once(solver: TSPSolver, random_seed: int, dtype: type[np.integer] = np.int32) -> tuple[np.ndarray, int]:
+    with _silence_process_output():
+        sol = solver.solve(verbose=False, random_seed=random_seed)
+        found_tour = sol.found_tour
+        success = sol.success
+        tour, opt_val = sol.tour, sol.optimal_value
 
-    assert sol.found_tour, "Concorde did not find a tour"
-    assert sol.success, "Concorde did not certify optimality"
-    return np.array(sol.tour, dtype=np.int32), int(sol.optimal_value)
+    assert found_tour, "Concorde did not find a tour"
+    assert success, "Concorde did not certify optimality"
+    return np.array(tour, dtype=dtype), int(opt_val)
