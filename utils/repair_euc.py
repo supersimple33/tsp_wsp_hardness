@@ -210,7 +210,7 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
         curr_u, curr_mask_AB, curr_mask_K = prev_u, prev_mask_AB, prev_mask_K
 
     # The paths are currently in reverse chronological order (Last Path -> First Path)
-    return best_cost, paths
+    return best_cost, paths[::-1] 
 
 def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: ListOfInt, B: ListOfInt, points: ListOfPoints) -> np.ndarray:
     AB = np.concatenate((A, B))
@@ -224,7 +224,7 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: 
     # maps nodes to their segments
     enter_exit_segments: dict[int, ListOfInt] = {} 
     for i, (enter_ind, exit_ind) in enumerate(entrance_exit_inds):
-        if enter_ind < exit_ind:
+        if enter_ind <= exit_ind:
             segment = tour[enter_ind:exit_ind+1]
         else:
             segment = np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
@@ -236,6 +236,9 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, A: 
     new_tour = np.empty_like(tour)
     idx = 0
 
+    #print(best_paths)
+    #print(entrance_exit_inds)
+    #print(entrance_exit_nodes)
     for _, end, internal in best_paths:
         for node in internal:
             new_tour[idx] = node
@@ -281,9 +284,8 @@ def repair_tour_euc(
     entrance_exit_inds = _entrance_exit_inds(tour, entrance_indices, exit_indices)
 
     if A.size + B.size < 2:
-        print("Cannot repair tour: not enough mutable edges")
-        return tour.copy()
-    elif A.size + B.size + entrance_exit_inds.size < 14:
+        raise ValueError("At least two nodes must be in A union B for there to be any mutable edges")
+    elif A.size + B.size + entrance_exit_inds.size <= 14:
         return _exhaustive_repair(tour, entrance_exit_inds, A, B, points)
     else:
-        raise NotImplementedError("Greedy repair not implemented yet")
+        raise NotImplementedError(f"Greedy repair not implemented yet for large problems (|A|+|B|={A.size + B.size}, K={entrance_exit_inds.size})")
