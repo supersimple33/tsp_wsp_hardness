@@ -4,7 +4,7 @@ import numpy as np
 import numba as nb
 from numba.typed import List, Dict
 
-from .helpers import _euclidean
+from .helpers import _euclidean, build_concorde_solver, solve_concorde_once
 
 BRUTE_FORCE_THRESHOLD = 10  # If there are fewer than this many mutable edges, just brute force all possibilities
 NB_INT_TYPE_GUIDE = nb.uint32  # Guide for numba list type inference, should be set to the integer type used for node IDs in the tour
@@ -22,6 +22,8 @@ class Path(NamedTuple):
     start: int
     end: int
     internal_nodes: list[int]
+
+# MARK: - Helpers
 
 @nb.njit(inline="always", cache=True, nogil=True)
 def _entrance_exit_masks(
@@ -59,6 +61,8 @@ def _entrance_exit_inds(
         entrance_exit_inds[:-1, EXIT] = exit_indices[1:]
         entrance_exit_inds[-1, EXIT] = exit_indices[0]
     return entrance_exit_inds
+
+# MARK: - Dynamic Programming Repair Function
 
 @nb.njit(inline="always", cache=True, nogil=True)
 def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> tuple[float, list[Path]]:
@@ -247,6 +251,8 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB:
         idx += outside_segment.size
 
     return new_tour
+
+# MARK: - Approximate Repair Function
 
 @nb.njit(inline="always", cache=True, nogil=True)
 def _beam_search_repair(
@@ -499,7 +505,92 @@ def _approximate_repair(
 
     return new_tour
 
-@nb.njit(cache=True, nogil=True)
+# MARK: - Concorde Repair (for Euclidean TSP)
+
+@nb.njit(inline="always", cache=True, nogil=True)
+def build_mini_problem(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> np.ndarray:
+    entrance_exit_flat = np.ravel(entrance_exit_nodes)
+
+    dist_mat = np.zeros((AB.size + entrance_exit_nodes.size, AB.size + entrance_exit_nodes.size), dtype=np.float64)
+    for i in range(AB.size):
+        for j in range(i + 1, AB.size):
+            d = _euclidean(points, AB[i], AB[j])
+            dist_mat[i, j] = d
+            dist_mat[j, i] = d
+        for j in range(entrance_exit_flat.size):
+            d = _euclidean(points, AB[i], entrance_exit_flat[j])
+            dist_mat[i, AB.size + j] = d
+            dist_mat[AB.size + j, i] = d
+    for i in range(entrance_exit_flat.size):
+        for j in range(i + 1, entrance_exit_flat.size):
+            d = _euclidean(points, entrance_exit_flat[i], entrance_exit_flat[j])
+            dist_mat[AB.size + i, AB.size + j] = d
+            dist_mat[AB.size + j, AB.size + i] = d
+    for i in range(entrance_exit_nodes.shape[0]):
+        dist_mat[AB.size + 2*i, AB.size + 2*i + 1] = 0.0
+        dist_mat[AB.size + 2*i + 1, AB.size + 2*i] = 0.0
+
+    return dist_mat
+
+@nb.njit(inline="always", cache=True, nogil=True)
+def build_up_from_partial_tour(
+        partial_tour: np.ndarray, 
+        tour: np.ndarray, 
+        entrance_exit_inds: ListOfEnterExit, 
+        entrance_exit_nodes: ListOfEnterExit, 
+        AB: ListOfInt, 
+        points: ListOfPoints
+) -> np.ndarray:
+    enter_exit_segments: dict[int, ListOfInt] = Dict.empty(key_type=NB_INT_TYPE_GUIDE, value_type=NB_INT_TYPE_GUIDE[:])
+    for i in range(entrance_exit_inds.shape[0]):
+        enter_ind = entrance_exit_inds[i, ENTRANCE]
+        exit_ind = entrance_exit_inds[i, EXIT]
+        if enter_ind <= exit_ind:
+            segment = tour[enter_ind:exit_ind+1]
+        else:
+            segment = np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
+
+        enter_exit_segments[entrance_exit_nodes[i, ENTRANCE]] = segment
+        enter_exit_segments[entrance_exit_nodes[i, EXIT]] = segment[::-1]
+
+    new_tour = np.empty_like(tour)
+    idx = 0
+    i = 0
+    while i < partial_tour.size:
+        node = partial_tour[i]
+        if node < AB.size:
+            new_tour[idx] = AB[node]
+            idx += 1
+            i += 1
+        else:
+            segment_end_node = node
+            segment = enter_exit_segments[segment_end_node]
+            new_tour[idx:idx+segment.size] = segment
+            idx += segment.size
+            i += 2
+    return new_tour
+
+@nb.jit(cache=True, nogil=True)
+def _concorde_opt_euc(
+    tour: ListOfInt,
+    entrance_exit_inds: ListOfEnterExit, 
+    AB: ListOfInt, 
+    points: ListOfPoints
+) -> np.ndarray:
+    entrance_exit_nodes = np.empty_like(entrance_exit_inds)
+    entrance_exit_nodes[:, ENTRANCE] = tour[entrance_exit_inds[:, ENTRANCE]]
+    entrance_exit_nodes[:, EXIT] = tour[entrance_exit_inds[:, EXIT]]
+
+    dist_mat = build_mini_problem(entrance_exit_nodes, AB, points)
+
+    tsp_prob = build_concorde_solver(dist_mat)
+    partial_tour, _ = solve_concorde_once(tsp_prob, 42)
+
+    return build_up_from_partial_tour(partial_tour, tour, entrance_exit_inds, entrance_exit_nodes, AB, points)
+
+# MARK: - Master Repair Function
+
+@nb.jit(cache=True, nogil=True)
 def repair_tour_euc(
     tour: ListOfInt,
     A: ListOfInt,
@@ -539,4 +630,4 @@ def repair_tour_euc(
     elif AB.size + len(entrance_exit_inds) <= HIGH:
         return _exhaustive_repair(tour, entrance_exit_inds, AB, points)
     else:
-        return _approximate_repair(tour, entrance_exit_inds, AB, points)
+        return _concorde_opt_euc(tour, entrance_exit_inds, AB, points)
