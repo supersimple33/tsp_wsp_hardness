@@ -14,6 +14,18 @@ def _euclidean(points: np.ndarray, u: int, v: int) -> float:
     return np.round(np.sqrt(acc), decimals=0)
 
 @njit(inline="always", cache=True, nogil=True)
+def build_dist_matrix(points: np.ndarray) -> np.ndarray:
+    """Build a distance matrix from the points using Euclidean distance"""
+    n = points.shape[0]
+    dist_matrix = np.zeros((n, n), dtype=np.float64)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = _euclidean(points, i, j)
+            dist_matrix[i, j] = d
+            dist_matrix[j, i] = d
+    return dist_matrix
+
+@njit(inline="always", cache=True, nogil=True)
 def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:
     """Calculate the length of a tour given the points and the tour order. Done in just numpy"""
     acc = _euclidean(points, tour[-1], tour[0])
