@@ -88,78 +88,70 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     # Precompute distance matrix to avoid recalculating in inner loops
     dist_matrix = np.zeros((L, L), dtype=points.dtype)
     for i in range(L):
-        for j in range(L):
+        for j in range(i+1, L):
             if i != j:
                 dist_matrix[i, j] = _euclidean(points, active_nodes[i], active_nodes[j])
+                dist_matrix[j, i] = dist_matrix[i, j]
 
     # DP dimensions: (mask_AB, mask_K, current_node)
     # mask_K has K-1 bits (since we always start at segment 0, we only track segments 1 to K-1)
-    shape = (1 << M, 1 << max(0, K - 1), L)
+    TOTAL_BITS = M + max(0, K - 1)
+    shape = (1 << TOTAL_BITS, L)
     
     dp = np.full(shape, np.inf, dtype=points.dtype)
-    parent_mask_AB = np.empty(shape, dtype=AB.dtype)
-    parent_mask_K = np.empty(shape, dtype=AB.dtype)
-    parent_u = np.empty(shape, dtype=AB.dtype)
+    parent = np.empty(shape, dtype=AB.dtype)
 
     # Initialize: We break the cyclic symmetry by fixing Segment 0 to be traversed forward.
     # Therefore, we start exactly at the EXIT of segment 0 (B_0).
     A0 = M              # Entrance of Segment 0
     start_u = M + 1     # Exit of Segment 0
-    dp[0, 0, start_u] = 0.0
+    dp[0, start_u] = 0.0
 
     # DP Transitions
-    for mask_K in range(1 << max(0, K - 1)):
-        for mask_AB in range(1 << M):
-            for u in range(L):
-                cost_u = dp[mask_AB, mask_K, u]
-                if np.isinf(cost_u): # ensures we only expand reachable states
-                    continue
+    for mask in range(1 << TOTAL_BITS):
+        for u in range(L):
+            cost_u = dp[mask, u]
+            if np.isinf(cost_u): # ensures we only expand reachable states
+                continue
 
-                # Option 1: Jump to an unvisited AB node
-                for v in range(M):
-                    if not (mask_AB & (1 << v)):
-                        nxt_mask_AB = mask_AB | (1 << v)
-                        new_cost = cost_u + dist_matrix[u, v]
-                        if new_cost < dp[nxt_mask_AB, mask_K, v]:
-                            dp[nxt_mask_AB, mask_K, v] = new_cost
-                            parent_mask_AB[nxt_mask_AB, mask_K, v] = mask_AB
-                            parent_mask_K[nxt_mask_AB, mask_K, v] = mask_K
-                            parent_u[nxt_mask_AB, mask_K, v] = u
+            # Option 1: Jump to an unvisited AB node
+            for v in range(M):
+                if not (mask & (1 << v)):
+                    nxt_mask = mask | (1 << v)
+                    new_cost = cost_u + dist_matrix[u, v]
+                    if new_cost < dp[nxt_mask, v]:
+                        dp[nxt_mask, v] = new_cost
+                        parent[nxt_mask, v] = (mask << 8) | u
 
-                # Option 2: Jump to an unvisited Segment (k in 1..K-1)
-                for k in range(1, K):
-                    k_bit = k - 1
-                    if not (mask_K & (1 << k_bit)):
-                        nxt_mask_K = mask_K | (1 << k_bit)
-                        Ak, Bk = M + 2*k, M + 2*k + 1
-                        
-                        # 2A: Traverse Segment Forward (Enter A_k, Exit B_k -> we land at B_k)
-                        new_cost_fwd = cost_u + dist_matrix[u, Ak]
-                        if new_cost_fwd < dp[mask_AB, nxt_mask_K, Bk]:
-                            dp[mask_AB, nxt_mask_K, Bk] = new_cost_fwd
-                            parent_mask_AB[mask_AB, nxt_mask_K, Bk] = mask_AB
-                            parent_mask_K[mask_AB, nxt_mask_K, Bk] = mask_K
-                            parent_u[mask_AB, nxt_mask_K, Bk] = u
+            # Option 2: Jump to an unvisited Segment (k in 1..K-1)
+            for k in range(1, K):
+                bit_k = 1 << (M + k - 1)
+                if not (mask & bit_k):
+                    nxt_mask = mask | bit_k
+                    Ak, Bk = M + 2*k, M + 2*k + 1
+                    
+                    # 2A: Traverse Segment Forward (Enter A_k, Exit B_k -> we land at B_k)
+                    new_cost_fwd = cost_u + dist_matrix[u, Ak]
+                    if new_cost_fwd < dp[nxt_mask, Bk]:
+                        dp[nxt_mask, Bk] = new_cost_fwd
+                        parent[nxt_mask, Bk] = (mask << 8) | u
 
-                        # 2B: Traverse Segment Backward (Enter B_k, Exit A_k -> we land at A_k)
-                        new_cost_bwd = cost_u + dist_matrix[u, Bk]
-                        if new_cost_bwd < dp[mask_AB, nxt_mask_K, Ak]:
-                            dp[mask_AB, nxt_mask_K, Ak] = new_cost_bwd
-                            parent_mask_AB[mask_AB, nxt_mask_K, Ak] = mask_AB
-                            parent_mask_K[mask_AB, nxt_mask_K, Ak] = mask_K
-                            parent_u[mask_AB, nxt_mask_K, Ak] = u
+                    # 2B: Traverse Segment Backward (Enter B_k, Exit A_k -> we land at A_k)
+                    new_cost_bwd = cost_u + dist_matrix[u, Bk]
+                    if new_cost_bwd < dp[nxt_mask, Ak]:
+                        dp[nxt_mask, Ak] = new_cost_bwd
+                        parent[nxt_mask, Ak] = (mask << 8) | u
 
     # Find the best valid cycle closure back to the entrance of Segment 0 (A_0)
-    final_mask_AB = (1 << M) - 1
-    final_mask_K = (1 << max(0, K - 1)) - 1
+    final_mask = (1 << TOTAL_BITS) - 1
     
     best_cost = np.inf
     best_last_u = 0
 
     for u in range(L):
-        if not np.isinf(dp[final_mask_AB, final_mask_K, u]):
+        if not np.isinf(dp[final_mask, u]):
             # Close the loop by connecting the final node 'u' back to A0
-            cost = dp[final_mask_AB, final_mask_K, u] + dist_matrix[u, A0]
+            cost = dp[final_mask, u] + dist_matrix[u, A0]
             if cost < best_cost:
                 best_cost = cost
                 best_last_u = u
@@ -178,8 +170,7 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     curr_path_internal: list[int] = List.empty_list(NB_INT_TYPE_GUIDE)  # Collect internal nodes for the current path segment
     
     curr_u = best_last_u
-    curr_mask_AB = final_mask_AB
-    curr_mask_K = final_mask_K
+    curr_mask = final_mask
 
     while True:
         if curr_u < M:
@@ -208,11 +199,11 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
             break
 
         # Move to the parent state
-        prev_u = parent_u[curr_mask_AB, curr_mask_K, curr_u]
-        prev_mask_AB = parent_mask_AB[curr_mask_AB, curr_mask_K, curr_u]
-        prev_mask_K = parent_mask_K[curr_mask_AB, curr_mask_K, curr_u]
+        p = parent[curr_mask, curr_u]
+        prev_mask = p >> 8
+        prev_u = p & 0xFF
 
-        curr_u, curr_mask_AB, curr_mask_K = prev_u, prev_mask_AB, prev_mask_K
+        curr_u, curr_mask = prev_u, prev_mask
 
     # The paths are currently in reverse chronological order (Last Path -> First Path)
     return best_cost, paths[::-1] 
@@ -223,7 +214,7 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB:
     entrance_exit_nodes[:, ENTRANCE] = tour[entrance_exit_inds[:, ENTRANCE]]
     entrance_exit_nodes[:, EXIT] = tour[entrance_exit_inds[:, EXIT]]
 
-    best_cost, best_paths = _unified_dp_repair(entrance_exit_nodes, AB, points)
+    _, best_paths = _unified_dp_repair(entrance_exit_nodes, AB, points)
 
     # maps nodes to their segments
     enter_exit_segments: dict[int, ListOfInt] = Dict.empty(key_type=NB_INT_TYPE_GUIDE, value_type=NB_INT_TYPE_GUIDE[:])
@@ -260,7 +251,8 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB:
 @nb.njit(cache=True, nogil=True)
 def repair_tour_euc(
     tour: ListOfInt,
-    AB: ListOfInt,
+    A: ListOfInt,
+    B: ListOfInt,
     points: ListOfPoints,
 ) -> np.ndarray:
     r"""
@@ -282,6 +274,7 @@ def repair_tour_euc(
     if np.any(tour < 0) or np.any(tour >= n_points):
         raise ValueError("tour contains node ids outside points")
 
+    AB = np.concatenate((A, B))
     entrance_mask, exit_mask = _entrance_exit_masks(tour, AB)
 
     entrance_indices = np.nonzero(entrance_mask)[0]
@@ -291,7 +284,7 @@ def repair_tour_euc(
 
     if AB.size < 2:
         raise ValueError("At least two nodes must be in A union B for there to be any mutable edges")
-    elif AB.size + len(entrance_exit_inds) <= 26:
+    elif AB.size + len(entrance_exit_inds) <= 24:
         return _exhaustive_repair(tour, entrance_exit_inds, AB, points)
     else:
         raise NotImplementedError(f"Greedy repair not implemented yet for large problems (|AB|={AB.size}, K={len(entrance_exit_inds)})")

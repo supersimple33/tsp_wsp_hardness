@@ -11,7 +11,7 @@ def _euclidean(points: np.ndarray, u: int, v: int) -> float:
     for k in range(1, points.shape[1]):
         dv = points[u, k] - points[v, k]
         acc += dv * dv
-    return np.round(np.sqrt(acc))
+    return np.round(np.sqrt(acc), decimals=0)
 
 @njit(inline="always", cache=True, nogil=True)
 def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:
