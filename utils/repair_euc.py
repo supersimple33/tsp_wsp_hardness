@@ -534,13 +534,13 @@ def build_mini_problem(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
 
 @nb.njit(inline="always", cache=True, nogil=True)
 def build_up_from_partial_tour(
-        partial_tour: np.ndarray, 
-        tour: np.ndarray, 
+        partial_tour: ListOfInt, 
+        tour: ListOfInt, 
         entrance_exit_inds: ListOfEnterExit, 
         entrance_exit_nodes: ListOfEnterExit, 
         AB: ListOfInt, 
-        points: ListOfPoints
 ) -> np.ndarray:
+    entrance_exit_flat = np.ravel(entrance_exit_nodes)
     enter_exit_segments: dict[int, ListOfInt] = Dict.empty(key_type=NB_INT_TYPE_GUIDE, value_type=NB_INT_TYPE_GUIDE[:])
     for i in range(entrance_exit_inds.shape[0]):
         enter_ind = entrance_exit_inds[i, ENTRANCE]
@@ -557,20 +557,20 @@ def build_up_from_partial_tour(
     idx = 0
     i = 0
     while i < partial_tour.size:
-        node = partial_tour[i]
+        node: int = partial_tour[i]
         if node < AB.size:
             new_tour[idx] = AB[node]
             idx += 1
             i += 1
         else:
-            segment_end_node = node
+            segment_end_node = entrance_exit_flat[node - AB.size]
             segment = enter_exit_segments[segment_end_node]
             new_tour[idx:idx+segment.size] = segment
             idx += segment.size
             i += 2
     return new_tour
 
-@nb.jit(cache=True, nogil=True)
+
 def _concorde_opt_euc(
     tour: ListOfInt,
     entrance_exit_inds: ListOfEnterExit, 
@@ -586,11 +586,11 @@ def _concorde_opt_euc(
     tsp_prob = build_concorde_solver(dist_mat)
     partial_tour, _ = solve_concorde_once(tsp_prob, 42)
 
-    return build_up_from_partial_tour(partial_tour, tour, entrance_exit_inds, entrance_exit_nodes, AB, points)
+    return build_up_from_partial_tour(partial_tour, tour, entrance_exit_inds, entrance_exit_nodes, AB)
 
 # MARK: - Master Repair Function
 
-@nb.jit(cache=True, nogil=True)
+
 def repair_tour_euc(
     tour: ListOfInt,
     A: ListOfInt,
