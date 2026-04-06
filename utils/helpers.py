@@ -16,6 +16,7 @@ type ListOfInt = np.ndarray[tuple[int], np.dtype[np.integer]]
 #type ListOfEnterExit = np.ndarray[tuple[int], np.dtype[np.void]] # TODO: update to better numpy typing
 type ListOfEnterExit = np.ndarray[tuple[int, Literal[2]], np.dtype[np.integer]]
 type ListOfPoints = np.ndarray[tuple[int, ...], np.dtype[np.floating]]
+type DistMatrix = np.ndarray[tuple[int, int], np.dtype[np.floating]] # TODO: use numpydantic here
 
 
 STDOUT = 1
@@ -59,12 +60,12 @@ def _silence_process_output() -> Iterator[None]:
                 os.close(saved_stdout_fd)
                 os.close(saved_stderr_fd)
 
-def roll_to_node(tour: np.ndarray, node: int) -> np.ndarray:
+def roll_to_node(tour: ListOfInt, node: int) -> ListOfInt:
     """Roll the tour so that it starts with the given node"""
     return np.roll(tour, -np.nonzero(tour == node)[0][0])
 
 @njit(inline="always", cache= True, nogil=True)
-def _euclidean(points: np.ndarray, u: int, v: int) -> float:
+def _euclidean(points: ListOfPoints, u: int, v: int) -> float:
     acc = (points[u, 0] - points[v, 0]) ** 2
     for k in range(1, points.shape[1]):
         dv = points[u, k] - points[v, k]
@@ -72,7 +73,7 @@ def _euclidean(points: np.ndarray, u: int, v: int) -> float:
     return np.round(np.sqrt(acc), decimals=0)
 
 @njit(inline="always", cache=True, nogil=True)
-def build_dist_matrix(points: np.ndarray) -> np.ndarray:
+def build_dist_matrix(points: ListOfPoints) -> DistMatrix:
     """Build a distance matrix from the points using Euclidean distance"""
     n = points.shape[0]
     dist_matrix = np.zeros((n, n), dtype=np.float64)
@@ -84,7 +85,7 @@ def build_dist_matrix(points: np.ndarray) -> np.ndarray:
     return dist_matrix
 
 @njit(inline="always", cache=True, nogil=True)
-def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:
+def calc_tour_len_euc(points: ListOfPoints, tour: ListOfInt) -> float:
     """Calculate the length of a tour given the points and the tour order. Done in just numpy"""
     acc = _euclidean(points, tour[-1], tour[0])
     for i in range(len(tour) - 1):
@@ -94,7 +95,7 @@ def calc_tour_len_euc(points: np.ndarray, tour: np.ndarray) -> float:
     return acc
 
 @njit(inline="always", cache=True, nogil=True)
-def valid_tour(tour: np.ndarray, n: int) -> bool:
+def valid_tour(tour: ListOfInt, n: int) -> bool:
     """Check if a tour is valid (contains all nodes exactly once)"""
     if tour.size != n:
         return False
@@ -106,13 +107,13 @@ def valid_tour(tour: np.ndarray, n: int) -> bool:
         seen[node] = True
     return True
 
-def build_concorde_solver(dist_matrix: np.ndarray) -> TSPSolver:
+def build_concorde_solver(dist_matrix: DistMatrix) -> TSPSolver:
     n = dist_matrix.shape[0]
     ltri = np.round(dist_matrix[np.tril_indices(n, k=-1)]).astype(np.int32)
     return TSPSolver.from_lower_tri(shape=n, edges=ltri)
 
 
-def solve_concorde_once(solver: TSPSolver, random_seed: int, dtype: type[np.integer] = np.int32) -> tuple[np.ndarray, int]:
+def solve_concorde_once(solver: TSPSolver, random_seed: int, dtype: type[np.integer] = np.int32) -> tuple[ListOfInt, int]:
     with _silence_process_output():
         sol = solver.solve(verbose=False, random_seed=random_seed)
         found_tour = sol.found_tour

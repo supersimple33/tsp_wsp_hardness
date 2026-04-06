@@ -1,10 +1,10 @@
 import numpy as np
 import numba as nb
 
-from .helpers import _euclidean
+from .helpers import _euclidean, DistMatrix, ListOfInt, ListOfPoints
 
 @nb.njit(cache=True, inline="always", boundscheck=False, fastmath=True, nogil=True)
-def solve_nn(dist_mat: np.ndarray, start: int = 0) -> np.ndarray:
+def solve_nn(dist_mat: DistMatrix, start: int = 0) -> ListOfInt:
     """Solves a TSP using the nearest neighbor heuristic."""
     n = dist_mat.shape[0]
     tour = np.empty(n, dtype=np.int64)
@@ -28,7 +28,7 @@ def solve_nn(dist_mat: np.ndarray, start: int = 0) -> np.ndarray:
     return tour
 
 @nb.njit(cache=True, inline="always", boundscheck=False, fastmath=True, nogil=True)
-def solve_nn_euc(points: np.ndarray, start: int = 0, dtype=np.intp) -> np.ndarray:
+def solve_nn_euc(points: ListOfPoints, start: int = 0, dtype=np.intp) -> ListOfInt:
     """Solves a TSP using the nearest neighbor heuristic for euclidean points by computing distances on the fly."""
     n = points.shape[0]
     tour = np.empty(n, dtype=dtype)
