@@ -526,6 +526,8 @@ def build_mini_problem(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
             d = _euclidean(points, entrance_exit_flat[i], entrance_exit_flat[j])
             dist_mat[AB.size + i, AB.size + j] = d
             dist_mat[AB.size + j, AB.size + i] = d
+    # add a constant penalty to ensure that rules are followed
+    dist_mat += 1_000.0
     for i in range(entrance_exit_nodes.shape[0]):
         dist_mat[AB.size + 2*i, AB.size + 2*i + 1] = 0.0
         dist_mat[AB.size + 2*i + 1, AB.size + 2*i] = 0.0
@@ -537,39 +539,33 @@ def build_up_from_partial_tour(
         partial_tour: ListOfInt, 
         tour: ListOfInt, 
         entrance_exit_inds: ListOfEnterExit, 
-        entrance_exit_nodes: ListOfEnterExit, 
         AB: ListOfInt, 
 ) -> np.ndarray:
-    entrance_exit_flat = np.ravel(entrance_exit_nodes)
-    enter_exit_segments: dict[int, ListOfInt] = Dict.empty(key_type=NB_INT_TYPE_GUIDE, value_type=NB_INT_TYPE_GUIDE[:])
-    for i in range(entrance_exit_inds.shape[0]):
-        enter_ind = entrance_exit_inds[i, ENTRANCE]
-        exit_ind = entrance_exit_inds[i, EXIT]
-        if enter_ind <= exit_ind:
-            segment = tour[enter_ind:exit_ind+1]
-        else:
-            segment = np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
-
-        enter_exit_segments[entrance_exit_nodes[i, ENTRANCE]] = segment
-        enter_exit_segments[entrance_exit_nodes[i, EXIT]] = segment[::-1]
-
     new_tour = np.empty_like(tour)
     idx = 0
-    i = 0
-    while i < partial_tour.size:
-        node: int = partial_tour[i]
+    for i, node in enumerate(partial_tour):
         if node < AB.size:
             new_tour[idx] = AB[node]
             idx += 1
-            i += 1
         else:
-            segment_end_node = entrance_exit_flat[node - AB.size]
-            segment = enter_exit_segments[segment_end_node]
-            new_tour[idx:idx+segment.size] = segment
-            idx += segment.size
-            i += 2
-    return new_tour
+            segment_idx = (node - AB.size) // 2
+            beginner = (partial_tour[(i + 1) % partial_tour.size] - AB.size) // 2 == segment_idx
+            if beginner:
+                enter_ind = entrance_exit_inds[segment_idx, ENTRANCE]
+                exit_ind = entrance_exit_inds[segment_idx, EXIT]
+                segment = tour[enter_ind:exit_ind+1] if enter_ind <= exit_ind else np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
 
+                reverse_seg = (node - AB.size) % 2 == 1
+                if reverse_seg:
+                    segment = segment[::-1]
+                
+                new_tour[idx:idx+segment.size] = segment
+                idx += segment.size
+
+    if idx != tour.size:
+        raise ValueError("Reconstructed tour size does not match original tour size")
+    
+    return new_tour
 
 def _concorde_opt_euc(
     tour: ListOfInt,
@@ -586,7 +582,7 @@ def _concorde_opt_euc(
     tsp_prob = build_concorde_solver(dist_mat)
     partial_tour, _ = solve_concorde_once(tsp_prob, 42)
 
-    return build_up_from_partial_tour(partial_tour, tour, entrance_exit_inds, entrance_exit_nodes, AB)
+    return build_up_from_partial_tour(partial_tour, tour, entrance_exit_inds, AB)
 
 # MARK: - Master Repair Function
 
@@ -596,7 +592,7 @@ def repair_tour_euc(
     A: ListOfInt,
     B: ListOfInt,
     points: ListOfPoints,
-    HIGH: int = 24
+    HIGH: int = 25
 ) -> np.ndarray:
     r"""
     Repair a Euclidean TSP tour by re-optimizing only edges fully internal to :math:`A \cup B`
