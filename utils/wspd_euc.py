@@ -120,10 +120,12 @@ def _find_wspd(u, v, s, children, centers, radii, pairs):
     r_v = radii[v]
     
     # Separation bound checking (using squared distance to avoid sqrt overhead)
-    threshold = (2 * s * max(r_u, r_v)) + r_u + r_v
+    radius_big = max(r_u, r_v)
+    threshold = 2 * s * radius_big
+    dist = np.sqrt(dist_sq)
     
-    if dist_sq >= threshold * threshold:
-        pairs.append((u, v))
+    if dist - (r_u + r_v) > threshold:
+        pairs.append((u, v, np.nan if threshold == 0.0 else (dist - (r_u + r_v)) / (2.0 * radius_big))) # TODO: compute the actual separation factor for testing purposes
         return
         
     # Not well separated: Split the node with the larger radius
@@ -165,7 +167,7 @@ def get_wspd(points: np.ndarray, s: float, int_dtype: type[np.signedinteger] = n
         
     centers, radii, indices = _build_fair_split_tree(children, node_ranges, points, int_dtype)
     
-    pairs = List.empty_list(nb.types.Tuple((nb.from_dtype(int_dtype), nb.from_dtype(int_dtype)))) # TODO: preallocate this list
+    pairs = List.empty_list(nb.types.Tuple((nb.from_dtype(int_dtype), nb.from_dtype(int_dtype), nb.from_dtype(points.dtype)))) # TODO: preallocate this list
     
     _traverse_and_wspd(0, s, children, centers, radii, pairs)
     
