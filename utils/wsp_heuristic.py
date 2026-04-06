@@ -7,7 +7,7 @@ from .sort_by_key_inplace import sort_by_key_inplace
 
 S_FACTOR = 1.5
 
-@nb.njit(cache=True, inline="always", boundscheck=False, fastmath=True)
+@nb.njit(cache=True, inline="always", boundscheck=False, fastmath=True, nogil=True)
 def wsp_heuristic_good(a_list: np.ndarray, b_list: np.ndarray, pos_in_tour: np.ndarray) -> bool:
     r"""A heuristic to check if a path is good based on the WSPs
 
@@ -137,7 +137,7 @@ def wsp_heuristic_good(a_list: np.ndarray, b_list: np.ndarray, pos_in_tour: np.n
         return (biconn_AB_count == 1 and biconn_BA_count == 0) or (biconn_AB_count == 0 and biconn_BA_count == 1)
     
 
-@nb.njit(parallel=True, boundscheck=False)
+@nb.njit(cache=True, parallel=True, boundscheck=False, nogil=True)
 def count_bad_wspd_parallel(pos_in_tour, pairs, node_ranges, indices):
     num_pairs = len(pairs)
     is_bad = np.zeros(num_pairs, dtype=np.bool_)

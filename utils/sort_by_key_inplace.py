@@ -117,7 +117,7 @@ _impl = _make_inplace_argsort_impl(lambda f: register_jitable(f))
 # so Numba doesn't have to do a namedtuple attribute lookup at runtime.
 _run_quicksort_jitable = _impl.run_quicksort
 
-@njit
+@njit(cache=True, nogil=True)
 def sort_by_key_inplace(indices, a):
     """
     Sorts the `indices` array in-place using the values in array `a` as keys.

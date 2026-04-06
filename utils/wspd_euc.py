@@ -7,7 +7,7 @@ from numba.typed import List
 
 LEAF_ID = 0
 
-@njit(inline='always')
+@njit(inline='always', nogil=True, cache=True)
 def _build_fair_split_tree[float_dtype: np.floating](children: np.ndarray, node_ranges: np.ndarray, points: np.ndarray[tuple[int, int], np.dtype[float_dtype]], int_dtype: type[np.integer]):
     """
     Builds an array-based binary split tree for the input points.
@@ -106,7 +106,7 @@ def _build_fair_split_tree[float_dtype: np.floating](children: np.ndarray, node_
         
     return centers, radii, indices
 
-@njit
+@njit(nogil=True, cache=True)
 def _find_wspd(u, v, s, children, centers, radii, pairs):
     """
     Recursively compares two nodes. If they are well-separated, adds them 
@@ -140,7 +140,7 @@ def _find_wspd(u, v, s, children, centers, radii, pairs):
         _find_wspd(u, children[v]['left'], s, children, centers, radii, pairs)
         _find_wspd(u, children[v]['right'], s, children, centers, radii, pairs)
 
-@njit
+@njit(nogil=True, cache=True)
 def _traverse_and_wspd(node, s, children, centers, radii, pairs):
     """
     Traverses the tree to generate all internal WSPD pairs.
