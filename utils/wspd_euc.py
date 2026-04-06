@@ -8,7 +8,7 @@ from numba.typed import List
 LEAF_ID = 0
 
 @njit(inline='always')
-def _build_fair_split_tree[float_dtype: np.floating](children, node_range, points: np.ndarray[tuple[int, int], np.dtype[float_dtype]], int_dtype: type[np.integer]):
+def _build_fair_split_tree[float_dtype: np.floating](children: np.ndarray, node_ranges: np.ndarray, points: np.ndarray[tuple[int, int], np.dtype[float_dtype]], int_dtype: type[np.integer]):
     """
     Builds an array-based binary split tree for the input points.
     Splits nodes spatially along their longest bounding-box axis.
@@ -17,16 +17,14 @@ def _build_fair_split_tree[float_dtype: np.floating](children, node_range, point
     max_nodes = 2 * n - 1
     
     # Tree data structures # TODO: update init on a better numab version
-    #children = np.full(max_nodes, 0, dtype=[('left', int_dtype), ('right', int_dtype)])
     centers = np.empty((max_nodes, d), dtype=points.dtype)
     radii = np.empty(max_nodes, dtype=points.dtype)
 
-    #node_range = np.zeros(max_nodes, dtype=[('start', np.int32), ('end', np.int32)])
     indices = np.arange(n, dtype=int_dtype)
     
     # Initialize root
-    node_range[0]['start'] = 0
-    node_range[0]['end'] = n
+    node_ranges[0]['start'] = 0
+    node_ranges[0]['end'] = n
     node_count = 1
     
     # Use a standard list as a stack for iterative traversal (Numba handles this perfectly)
@@ -36,8 +34,8 @@ def _build_fair_split_tree[float_dtype: np.floating](children, node_range, point
     bmax = np.empty(d, dtype=points.dtype)
     while len(stack) > 0:
         u = stack.pop()
-        start = node_range[u]['start']
-        end = node_range[u]['end']
+        start = node_ranges[u]['start']
+        end = node_ranges[u]['end']
 
         # Base case: Leaf node
         if end - start <= 1:
@@ -95,18 +93,18 @@ def _build_fair_split_tree[float_dtype: np.floating](children, node_range, point
             
         # 5. Create children
         children[u]['left'] = node_count
-        node_range[node_count]['start'] = start
-        node_range[node_count]['end'] = mid
+        node_ranges[node_count]['start'] = start
+        node_ranges[node_count]['end'] = mid
         stack.append(node_count)
         node_count += 1
         
         children[u]['right'] = node_count
-        node_range[node_count]['start'] = mid
-        node_range[node_count]['end'] = end
+        node_ranges[node_count]['start'] = mid
+        node_ranges[node_count]['end'] = end
         stack.append(node_count)
         node_count += 1
         
-    return children, centers, radii, node_range, indices
+    return centers, radii, indices
 
 @njit
 def _find_wspd(u, v, s, children, centers, radii, pairs):
@@ -154,10 +152,8 @@ def _traverse_and_wspd(node, s, children, centers, radii, pairs):
     # Find cross pairs between left and right children
     _find_wspd(children[node]['left'], children[node]['right'], s, children, centers, radii, pairs)
 
-    return pairs
-
 #@njit # TODO: make this njit cause why not in a future version
-def get_wspd(points, s, int_dtype: type[np.integer] = np.intp):
+def get_wspd(points: np.ndarray, s: float, int_dtype: type[np.signedinteger] = np.int64):
     """
     Main entry point. Builds the tree and computes the WSPD.
     """
@@ -167,7 +163,7 @@ def get_wspd(points, s, int_dtype: type[np.integer] = np.intp):
     children = np.empty(max_nodes, dtype=[('left', int_dtype), ('right', int_dtype)])
     node_ranges = np.empty(max_nodes, dtype=[('start', int_dtype), ('end', int_dtype)])
         
-    children, centers, radii, node_ranges, indices = _build_fair_split_tree(children, node_ranges, points, int_dtype)
+    centers, radii, indices = _build_fair_split_tree(children, node_ranges, points, int_dtype)
     
     pairs = List.empty_list(nb.types.Tuple((nb.from_dtype(int_dtype), nb.from_dtype(int_dtype)))) # TODO: preallocate this list
     
@@ -176,4 +172,5 @@ def get_wspd(points, s, int_dtype: type[np.integer] = np.intp):
     return pairs, node_ranges, indices
 
 
-get_wspd(np.array([[0, 0], [1, 1]]), 1.5)
+if __name__ == "__main__":
+    get_wspd(np.array([[0.0, 0.0], [1.0, 1.1]]), 1.5)
