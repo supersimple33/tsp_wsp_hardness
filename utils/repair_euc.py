@@ -208,7 +208,7 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     return best_cost, paths[::-1] 
 
 @nb.njit(inline="always", cache=True, nogil=True)
-def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> np.ndarray:
+def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB: ListOfInt, points: ListOfPoints) -> ListOfInt:
     entrance_exit_nodes = np.empty_like(entrance_exit_inds)
     entrance_exit_nodes[:, ENTRANCE] = tour[entrance_exit_inds[:, ENTRANCE]]
     entrance_exit_nodes[:, EXIT] = tour[entrance_exit_inds[:, EXIT]]
@@ -567,7 +567,7 @@ def _concorde_opt_euc(
     entrance_exit_inds: ListOfEnterExit, 
     AB: ListOfInt, 
     points: ListOfPoints
-) -> np.ndarray:
+) -> ListOfInt:
     entrance_exit_nodes = np.empty_like(entrance_exit_inds)
     entrance_exit_nodes[:, ENTRANCE] = tour[entrance_exit_inds[:, ENTRANCE]]
     entrance_exit_nodes[:, EXIT] = tour[entrance_exit_inds[:, EXIT]]
@@ -588,7 +588,7 @@ def repair_tour_euc(
     B: ListOfInt,
     points: ListOfPoints,
     HIGH: int = 25
-) -> np.ndarray:
+) -> ListOfInt:
     r"""
     Repair a Euclidean TSP tour by re-optimizing only edges fully internal to :math:`A \cup B`
     Note :math:`A \cap B = \emptyset`

@@ -175,21 +175,22 @@ def check_tour_with_wspd(wspd: tuple[np.ndarray, np.ndarray, np.ndarray], tour: 
     pos_in_tour[tour] = np.arange(len(tour), dtype=np.uint32)
 
     # 2. Execute parallel loop natively in Numba
-    bad_count = count_bad_wspd_parallel(
+    bad_pairs = count_bad_wspd_parallel(
         pos_in_tour,
         pairs,
         node_ranges,
         indices,
     )
 
-    return bad_count
+    return bad_pairs
 
-def check_problem_tour(prob: tsplib95.models.StandardProblem, tour: np.ndarray, s: float = S_FACTOR):
+def check_problem_tour(prob: tsplib95.models.StandardProblem, tour: np.ndarray, s: float = S_FACTOR, verbose: bool = True, ):
     """Given a TSP and a non-wrapping tour, checks if the WSP heuristic holds"""
     points = np.array([prob.node_coords[i] for i in prob.get_nodes()], dtype=np.float64) # pyright: ignore[reportIndexIssue]
 
     # Build the WSPDs with different separation factors
     pairs, node_ranges, indices = get_wspd(points, s, np.int64)
-    print("built wspd1.5", flush=True)
+    if verbose:
+        print("built wspd1.5", flush=True)
 
     return check_tour_with_wspd((pairs, node_ranges, indices), tour), pairs, node_ranges, indices

@@ -9,7 +9,7 @@ def solve_nn(dist_mat: DistMatrix, start: int = 0) -> ListOfInt:
     n = dist_mat.shape[0]
     tour = np.empty(n, dtype=np.int64)
     tour[0] = start
-    visited = np.zeros(n, dtype=bool)
+    visited = np.zeros(n, dtype=np.bool_)
     visited[start] = True
 
     for i in range(1, n):
@@ -33,7 +33,7 @@ def solve_nn_euc(points: ListOfPoints, start: int = 0, dtype=np.intp) -> ListOfI
     n = points.shape[0]
     tour = np.empty(n, dtype=dtype)
     tour[0] = start
-    visited = np.zeros(n, dtype=bool)
+    visited = np.zeros(n, dtype=np.bool_)
     visited[start] = True
 
     for i in range(1, n):
