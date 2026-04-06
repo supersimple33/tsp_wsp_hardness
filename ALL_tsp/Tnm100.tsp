@@ -1,4 +1,4 @@
-NAME : Tnm100.tsp
+NAME : Tnm100
 COMMENT : 100-city problem, points on edges of tetrahedron. n = 26  m = 8 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 100

@@ -1,4 +1,4 @@
-NAME : Tnm196.tsp
+NAME : Tnm196
 COMMENT : 196-city problem, points on edges of tetrahedron. n = 54  m = 12 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 196

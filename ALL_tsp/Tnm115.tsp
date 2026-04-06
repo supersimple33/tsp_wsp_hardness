@@ -1,4 +1,4 @@
-NAME : Tnm115.tsp
+NAME : Tnm115
 COMMENT : 115-city problem, points on edges of tetrahedron. n = 30  m = 9 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 115

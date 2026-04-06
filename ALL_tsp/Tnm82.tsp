@@ -1,4 +1,4 @@
-NAME : Tnm82.tsp
+NAME : Tnm82
 COMMENT : 82-city problem, points on edges of tetrahedron. n = 20  m = 8 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 82

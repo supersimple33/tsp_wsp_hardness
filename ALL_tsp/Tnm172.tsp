@@ -1,4 +1,4 @@
-NAME : Tnm172.tsp
+NAME : Tnm172
 COMMENT : 172-city problem, points on edges of tetrahedron. n = 47  m = 11 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 172

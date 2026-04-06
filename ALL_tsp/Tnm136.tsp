@@ -1,4 +1,4 @@
-NAME : Tnm136.tsp
+NAME : Tnm136
 COMMENT : 136-city problem, points on edges of tetrahedron. n = 36  m = 10 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 136

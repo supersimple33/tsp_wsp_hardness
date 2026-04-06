@@ -1,4 +1,4 @@
-NAME : Tnm79.tsp
+NAME : Tnm79
 COMMENT : 79-city problem, points on edges of tetrahedron. n = 19  m = 8 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 79

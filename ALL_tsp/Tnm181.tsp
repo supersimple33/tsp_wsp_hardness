@@ -1,4 +1,4 @@
-NAME : Tnm181.tsp
+NAME : Tnm181
 COMMENT : 181-city problem, points on edges of tetrahedron. n = 50  m = 11 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 181

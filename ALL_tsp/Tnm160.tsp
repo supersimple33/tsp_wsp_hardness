@@ -1,4 +1,4 @@
-NAME : Tnm160.tsp
+NAME : Tnm160
 COMMENT : 160-city problem, points on edges of tetrahedron. n = 44  m = 10 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 160

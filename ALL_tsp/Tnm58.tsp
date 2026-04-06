@@ -1,4 +1,4 @@
-NAME : Tnm58.tsp
+NAME : Tnm58
 COMMENT : 58-city problem, points on edges of tetrahedron. n = 13  m = 7 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 58

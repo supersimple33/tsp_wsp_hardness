@@ -1,4 +1,4 @@
-NAME : Tnm142.tsp
+NAME : Tnm142
 COMMENT : 142-city problem, points on edges of tetrahedron. n = 38  m = 10 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 142

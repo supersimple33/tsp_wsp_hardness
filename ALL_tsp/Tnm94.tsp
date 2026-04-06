@@ -1,4 +1,4 @@
-NAME : Tnm94.tsp
+NAME : Tnm94
 COMMENT : 94-city problem, points on edges of tetrahedron. n = 24  m = 8 (Hougardy + Zhong)
 TYPE : TSP
 DIMENSION : 94
