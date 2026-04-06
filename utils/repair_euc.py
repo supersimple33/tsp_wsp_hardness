@@ -179,8 +179,8 @@ def _unified_dp_repair(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
             # It's a Segment Exit: This is where a forward-moving path STARTS.
             # We close the current path gap here.
             paths.append(Path(
-                start=active_nodes[curr_u],
-                end=active_nodes[curr_path_end_node],
+                start=curr_u - M,  # Segment index (0-based)
+                end=curr_path_end_node - M,  # Segment index (0-based)
                 internal_nodes=curr_path_internal[::-1] # Reverse because we collected backwards
             ))
             
@@ -215,19 +215,6 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB:
 
     _, best_paths = _unified_dp_repair(entrance_exit_nodes, AB, points)
 
-    # maps nodes to their segments
-    enter_exit_segments: dict[int, ListOfInt] = Dict.empty(key_type=NB_INT_TYPE_GUIDE, value_type=NB_INT_TYPE_GUIDE[:])
-    for i in range(entrance_exit_inds.shape[0]):
-        enter_ind = entrance_exit_inds[i, ENTRANCE]
-        exit_ind = entrance_exit_inds[i, EXIT]
-        if enter_ind <= exit_ind:
-            segment = tour[enter_ind:exit_ind+1]
-        else:
-            segment = np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
-
-        enter_exit_segments[entrance_exit_nodes[i, ENTRANCE]] = segment
-        enter_exit_segments[entrance_exit_nodes[i, EXIT]] = segment[::-1]
-
     # Reconstruct the tour by following the best paths
     new_tour = np.empty_like(tour)
     idx = 0
@@ -240,7 +227,16 @@ def _exhaustive_repair(tour: ListOfInt, entrance_exit_inds: ListOfEnterExit, AB:
             new_tour[idx] = node
             idx += 1
         
-        outside_segment = enter_exit_segments[end]
+        segment_idx = end // 2
+        enter_ind = entrance_exit_inds[segment_idx, ENTRANCE]
+        exit_ind = entrance_exit_inds[segment_idx, EXIT]
+        if enter_ind <= exit_ind:
+            outside_segment = tour[enter_ind:exit_ind+1]
+        else:
+            outside_segment = np.concatenate((tour[enter_ind:], tour[:exit_ind+1]))
+
+        if end % 2 == 1:
+            outside_segment = outside_segment[::-1]
 
         new_tour[idx:idx+outside_segment.size] = outside_segment
         idx += outside_segment.size
