@@ -4,7 +4,7 @@ import numpy as np
 import numba as nb
 from numba.typed import List, Dict
 
-from .helpers import _euclidean, build_concorde_solver, solve_concorde_once
+from .helpers import _euclidean, build_concorde_solver, solve_concorde_once, ListOfInt, ListOfPoints, ListOfEnterExit, ListOfBool
 
 BRUTE_FORCE_THRESHOLD = 10  # If there are fewer than this many mutable edges, just brute force all possibilities
 NB_INT_TYPE_GUIDE = nb.uint32  # Guide for numba list type inference, should be set to the integer type used for node IDs in the tour
@@ -12,11 +12,6 @@ NB_INT_TYPE_GUIDE = nb.uint32  # Guide for numba list type inference, should be 
 ENTRANCE = 0
 EXIT = 1
 
-type ListOfBool = np.ndarray[tuple[int], np.dtype[np.bool_]]
-type ListOfInt = np.ndarray[tuple[int], np.dtype[np.integer]]
-#type ListOfEnterExit = np.ndarray[tuple[int], np.dtype[np.void]] # TODO: update to better numpy typing
-type ListOfEnterExit = np.ndarray[tuple[int, Literal[2]], np.dtype[np.integer]]
-type ListOfPoints = np.ndarray[tuple[int, ...], np.dtype[np.floating]]
 
 class Path(NamedTuple):
     start: int

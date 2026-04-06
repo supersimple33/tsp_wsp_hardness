@@ -3,12 +3,20 @@ import sys
 import ctypes
 import threading
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
-from typing import Iterator
+from typing import Iterator, Literal
 
 import numpy as np
 from numba import njit
 
 from concorde.tsp import TSPSolver
+
+
+type ListOfBool = np.ndarray[tuple[int], np.dtype[np.bool_]]
+type ListOfInt = np.ndarray[tuple[int], np.dtype[np.integer]]
+#type ListOfEnterExit = np.ndarray[tuple[int], np.dtype[np.void]] # TODO: update to better numpy typing
+type ListOfEnterExit = np.ndarray[tuple[int, Literal[2]], np.dtype[np.integer]]
+type ListOfPoints = np.ndarray[tuple[int, ...], np.dtype[np.floating]]
+
 
 STDOUT = 1
 STDERR = 2
