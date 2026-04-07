@@ -12,6 +12,7 @@ NB_INT_TYPE_GUIDE = nb.uint32  # Guide for numba list type inference, should be 
 
 ENTRANCE = 0
 EXIT = 1
+PENALTY = 1_000.0 # A large constant added to all distances to ensure that the solution respects the rules of the problem (e.g. doesn't jump between AB nodes without going through a segment, doesn't traverse segments in the wrong direction, etc.). This should be larger than any possible distance in the original TSP instance to ensure correctness.
 
 
 class Path(NamedTuple):
@@ -508,19 +509,18 @@ def build_mini_problem(entrance_exit_nodes: ListOfEnterExit, AB: ListOfInt, poin
     for i in range(AB.size):
         for j in range(i + 1, AB.size):
             d = _euclidean(points, AB[i], AB[j])
-            dist_mat[i, j] = d
-            dist_mat[j, i] = d
+            dist_mat[i, j] = d + PENALTY
+            dist_mat[j, i] = d + PENALTY
         for j in range(entrance_exit_flat.size):
             d = _euclidean(points, AB[i], entrance_exit_flat[j])
-            dist_mat[i, AB.size + j] = d
-            dist_mat[AB.size + j, i] = d
+            dist_mat[i, AB.size + j] = d + PENALTY
+            dist_mat[AB.size + j, i] = d + PENALTY
     for i in range(entrance_exit_flat.size):
         for j in range(i + 1, entrance_exit_flat.size):
             d = _euclidean(points, entrance_exit_flat[i], entrance_exit_flat[j])
-            dist_mat[AB.size + i, AB.size + j] = d
-            dist_mat[AB.size + j, AB.size + i] = d
+            dist_mat[AB.size + i, AB.size + j] = d + PENALTY
+            dist_mat[AB.size + j, AB.size + i] = d + PENALTY
     # add a constant penalty to ensure that rules are followed
-    dist_mat += 1_000.0
     for i in range(entrance_exit_nodes.shape[0]):
         dist_mat[AB.size + 2*i, AB.size + 2*i + 1] = 0.0
         dist_mat[AB.size + 2*i + 1, AB.size + 2*i] = 0.0
