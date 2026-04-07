@@ -67,9 +67,11 @@ def build_concorde_solver(dist_matrix: DistMatrix) -> TSPSolver:
     return TSPSolver.from_lower_tri(shape=n, edges=ltri)
 
 
-def solve_concorde_once(solver: TSPSolver, random_seed: int, dtype: type[np.integer] = np.int32, time_bound: int = -1) -> tuple[ListOfInt, int]:
-    sol = solver.solve(verbose=False, random_seed=random_seed, time_bound=time_bound)
+def solve_concorde_once(solver: TSPSolver, random_seed: int, dtype: type[np.integer] = np.int32, timeout: int = -1) -> tuple[ListOfInt, int]:
+    sol = solver.solve(verbose=False, random_seed=random_seed, time_bound=timeout)
 
+    if sol.hit_timebound:
+        raise TimeoutError("Concorde hit time bound without finding a solution")
     assert sol.found_tour, "Concorde did not find a tour"
     assert sol.success, "Concorde did not certify optimality"
     return np.array(sol.tour, dtype=dtype), int(sol.optimal_value)

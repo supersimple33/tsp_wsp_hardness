@@ -3,6 +3,7 @@ from typing import NamedTuple, Literal
 import numpy as np
 import numba as nb
 from numba.typed import List, Dict
+import elkai
 
 from .helpers import _euclidean, build_concorde_solver, solve_concorde_once, ListOfInt, ListOfPoints, ListOfEnterExit, ListOfBool
 
@@ -559,11 +560,12 @@ def build_up_from_partial_tour(
     
     return new_tour
 
-def _concorde_opt_euc(
+def _tool_based_repair_euc(
     tour: ListOfInt,
     entrance_exit_inds: ListOfEnterExit, 
     AB: ListOfInt, 
-    points: ListOfPoints
+    points: ListOfPoints,
+    concorde_timeout: int = -1
 ) -> ListOfInt:
     entrance_exit_nodes = np.empty_like(entrance_exit_inds)
     entrance_exit_nodes[:, ENTRANCE] = tour[entrance_exit_inds[:, ENTRANCE]]
@@ -572,7 +574,11 @@ def _concorde_opt_euc(
     dist_mat = build_mini_problem(entrance_exit_nodes, AB, points)
 
     tsp_prob = build_concorde_solver(dist_mat)
-    partial_tour, _ = solve_concorde_once(tsp_prob, 42)
+    try:
+        partial_tour, _ = solve_concorde_once(tsp_prob, 42, dtype=AB.dtype, timeout=concorde_timeout) # pyright: ignore[reportArgumentType]
+    except TimeoutError:
+        mini_prob = elkai.DistanceMatrix(dist_mat) # pyright: ignore[reportArgumentType]
+        partial_tour = np.array(mini_prob.solve_tsp(runs=3), dtype=AB.dtype)
 
     return build_up_from_partial_tour(partial_tour, tour, entrance_exit_inds, AB)
 
@@ -618,4 +624,4 @@ def repair_tour_euc(
     elif AB.size + len(entrance_exit_inds) <= HIGH:
         return _exhaustive_repair(tour, entrance_exit_inds, AB, points)
     else:
-        return _concorde_opt_euc(tour, entrance_exit_inds, AB, points)
+        return _tool_based_repair_euc(tour, entrance_exit_inds, AB, points)
