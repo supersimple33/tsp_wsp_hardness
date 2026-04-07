@@ -46,7 +46,8 @@ def _entrance_exit_inds(
     """Return a list of (exit_index, entrance_index) pairs in the order they appear in the tour"""
     assert exit_indices.size == entrance_indices.size, "Number of exit edges must equal number of entrance edges"
 
-    starts_entrance = entrance_indices[0] < exit_indices[0] 
+    # Use <= so singleton outside segments (entrance == exit at same index) pair correctly.
+    starts_entrance = entrance_indices[0] <= exit_indices[0]
     entrance_exit_inds = np.empty((exit_indices.size, 2), dtype=tour.dtype) # [("entrance", tour.dtype), ("exit", tour.dtype)])
     if starts_entrance:
         entrance_exit_inds[:, ENTRANCE] = entrance_indices
