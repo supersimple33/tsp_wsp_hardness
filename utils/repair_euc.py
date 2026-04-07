@@ -590,7 +590,8 @@ def repair_tour_euc(
     A: ListOfInt,
     B: ListOfInt,
     points: ListOfPoints,
-    HIGH: int = 25
+    HIGH: int = 25,
+    concorde_timeout: int = 60
 ) -> ListOfInt:
     r"""
     Repair a Euclidean TSP tour by re-optimizing only edges fully internal to :math:`A \cup B`
@@ -624,4 +625,4 @@ def repair_tour_euc(
     elif AB.size + len(entrance_exit_inds) <= HIGH:
         return _exhaustive_repair(tour, entrance_exit_inds, AB, points)
     else:
-        return _tool_based_repair_euc(tour, entrance_exit_inds, AB, points)
+        return _tool_based_repair_euc(tour, entrance_exit_inds, AB, points, concorde_timeout)
