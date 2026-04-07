@@ -578,7 +578,7 @@ def _tool_based_repair_euc(
         partial_tour, _ = solve_concorde_once(tsp_prob, 42, dtype=AB.dtype, timeout=concorde_timeout) # pyright: ignore[reportArgumentType]
     except TimeoutError:
         mini_prob = elkai.DistanceMatrix(dist_mat) # pyright: ignore[reportArgumentType]
-        partial_tour = np.array(mini_prob.solve_tsp(runs=3), dtype=AB.dtype)
+        partial_tour = np.array(mini_prob.solve_tsp(runs=3)[:-1], dtype=AB.dtype)
 
     return build_up_from_partial_tour(partial_tour, tour, entrance_exit_inds, AB)
 
