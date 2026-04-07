@@ -1,4 +1,4 @@
-pyconcorde @ git+https://github.com/supersimple33/pyconcorde
+pyconcorde @ git+https://github.com/supersimple33/pyconcorde@patch-conc
 tsplib95 @ git+https://github.com/supersimple33/tsplib95@newmain
 wspd @ git+https://github.com/supersimple33/wspd_pip.git@numpy
 python_tsp>=0.5.0

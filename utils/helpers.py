@@ -1,9 +1,4 @@
-import os
-import sys
-import ctypes
-import threading
-from contextlib import contextmanager, redirect_stderr, redirect_stdout
-from typing import Iterator, Literal
+from typing import Literal
 
 import numpy as np
 from numba import njit
@@ -18,47 +13,6 @@ type ListOfEnterExit = np.ndarray[tuple[int, Literal[2]], np.dtype[np.integer]]
 type ListOfPoints = np.ndarray[tuple[int, ...], np.dtype[np.floating]]
 type DistMatrix = np.ndarray[tuple[int, int], np.dtype[np.floating]] # TODO: use numpydantic here
 
-
-STDOUT = 1
-STDERR = 2
-_libc = ctypes.CDLL(None)
-_OUTPUT_LOCK = threading.Lock()
-
-
-def _flush_all_streams() -> None:
-    # Flush both Python-level and C stdio buffers before fd swaps.
-    try:
-        sys.stdout.flush()
-    except Exception:
-        pass
-    try:
-        sys.stderr.flush()
-    except Exception:
-        pass
-    try:
-        _libc.fflush(None)
-    except Exception:
-        pass
-
-
-@contextmanager
-def _silence_process_output() -> Iterator[None]:
-    # Redirect both Python streams and raw FDs to suppress Cython/C output in notebooks.
-    with _OUTPUT_LOCK:
-        with open(os.devnull, "w") as devnull, redirect_stdout(devnull), redirect_stderr(devnull):
-            saved_stdout_fd = os.dup(STDOUT)
-            saved_stderr_fd = os.dup(STDERR)
-            try:
-                _flush_all_streams()
-                os.dup2(devnull.fileno(), STDOUT)
-                os.dup2(devnull.fileno(), STDERR)
-                yield
-            finally:
-                _flush_all_streams()
-                os.dup2(saved_stdout_fd, STDOUT)
-                os.dup2(saved_stderr_fd, STDERR)
-                os.close(saved_stdout_fd)
-                os.close(saved_stderr_fd)
 
 def roll_to_node(tour: ListOfInt, node: int) -> ListOfInt:
     """Roll the tour so that it starts with the given node"""
@@ -113,13 +67,9 @@ def build_concorde_solver(dist_matrix: DistMatrix) -> TSPSolver:
     return TSPSolver.from_lower_tri(shape=n, edges=ltri)
 
 
-def solve_concorde_once(solver: TSPSolver, random_seed: int, dtype: type[np.integer] = np.int32) -> tuple[ListOfInt, int]:
-    with _silence_process_output():
-        sol = solver.solve(verbose=False, random_seed=random_seed)
-        found_tour = sol.found_tour
-        success = sol.success
-        tour, opt_val = sol.tour, sol.optimal_value
+def solve_concorde_once(solver: TSPSolver, random_seed: int, dtype: type[np.integer] = np.int32, time_bound: int = -1) -> tuple[ListOfInt, int]:
+    sol = solver.solve(verbose=False, random_seed=random_seed, time_bound=time_bound)
 
-    assert found_tour, "Concorde did not find a tour"
-    assert success, "Concorde did not certify optimality"
-    return np.array(tour, dtype=dtype), int(opt_val)
+    assert sol.found_tour, "Concorde did not find a tour"
+    assert sol.success, "Concorde did not certify optimality"
+    return np.array(sol.tour, dtype=dtype), int(sol.optimal_value)

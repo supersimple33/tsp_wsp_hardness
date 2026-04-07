@@ -244,16 +244,12 @@ def enforce_diameter_separation(
 def build_concorde_solver(dist_matrix: np.ndarray) -> TSPSolver:
     n = dist_matrix.shape[0]
     ltri = np.round(dist_matrix[np.tril_indices(n, k=-1)]).astype(np.int32)
-    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
     solver = TSPSolver.from_lower_tri(shape=n, edges=ltri)
-    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
     return solver
 
 
 def solve_concorde_once(solver: TSPSolver, random_seed: int) -> Tuple[np.ndarray, int]:
-    os.dup2(null_fd, STDOUT) and os.dup2(null_fd, STDERR)
     sol = solver.solve(verbose=False, random_seed=random_seed)
-    os.dup2(saved_fd, STDOUT) and os.dup2(error_fd, STDERR)
 
     assert sol.found_tour, "Concorde did not find a tour"
     assert sol.success, "Concorde did not certify optimality"
