@@ -33,6 +33,7 @@ dependencies:
   - line_profiler
   - tbb
   - scienceplots
+  - seaborn
   - pip:
       - -r requirements.txt
 prefix: ./.conda
