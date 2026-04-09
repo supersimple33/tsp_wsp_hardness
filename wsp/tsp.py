@@ -255,7 +255,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
 
     @cached_property
     def wspd(self) -> set[tuple[frozenset[QuadTreeType], ds.SpecialDist]]:
-        """Returns the well-seperated pair decomposition of the underlying quadtree, based on"""
+        """Returns the well-separated pair decomposition of the underlying quadtree, based on"""
         ws_pairs = set()
         is_pk = issubclass(type(self.quadtree), ds.AbstractPKQuadTree)
 
@@ -752,7 +752,7 @@ class TravellingSalesmanProblem(Generic[QuadTreeType]):  # TODO: better use of g
         biggest = max(
             self.single_indexable_wspd.keys(), key=len
         )  # start with the subproblem with most points -> it should be the biggest
-        # biggest = max(self.single_indexable_wspd[biggest], key=lambda x: x.radius) # choose the biggest radius ie what must be the most seperated
+        # biggest = max(self.single_indexable_wspd[biggest], key=lambda x: x.radius) # choose the biggest radius ie what must be the most separated
         # biggest = max(self.single_indexable_wspd.values(), key=lambda x: len(x[1]))[0] # choose the wsp with the most options
 
         sub_problem_order = self.generate_sub_problem_order(biggest, t=t)

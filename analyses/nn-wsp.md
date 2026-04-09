@@ -1,14 +1,14 @@
-# Nearest Well Seperated Pair (NN-WSP)
+# Nearest Well Separated Pair (NN-WSP)
 
 ## Introduction
-My plan here was to create a new method to solve the TSP where we would jump between well seperated pairs. Unfortunately this algorithm at least in the way I imagined it did not work very well.
+My plan here was to create a new method to solve the TSP where we would jump between well separated pairs. Unfortunately this algorithm at least in the way I imagined it did not work very well.
 
 ## Algorithm
 ### Subproblem Ordering (takes in starting subtree and tolerance for brute force)
-Generate a list of subtrees from the decomposition which contain no greater than `t` points and try to order the subtrees so that they are the nearest well seperated pair to the previous subtree. This is done by:
+Generate a list of subtrees from the decomposition which contain no greater than `t` points and try to order the subtrees so that they are the nearest well separated pair to the previous subtree. This is done by:
 1. Starting with the starting subtree (traditionally the one with the most points) run the following
-    1. Loop through each well seperated pair to the current subtree from closest to furthest and check if that subtree can be added and if it can then do so
-    2. If no well seperated pair of the current subtree is a viable candidate then just choose whatever the closest subtree is that is somewhere in the decomposition and shares no points
+    1. Loop through each well separated pair to the current subtree from closest to furthest and check if that subtree can be added and if it can then do so
+    2. If no well separated pair of the current subtree is a viable candidate then just choose whatever the closest subtree is that is somewhere in the decomposition and shares no points
 
 To check if a subtree can be added do the following:
 1. If this subtree is already in the list skip it
@@ -87,7 +87,7 @@ def generate_sub_problem_order(self, start, t) -> list[QuadTreeType]:
     @cache
     def nwsp_path(self, t=8) -> tuple[list[ds.Point], float, tuple]:
         biggest = max(self.single_indexable_wspd.keys(), key=len) # start with the subproblem with most points -> it should be the biggest
-        # biggest = max(self.single_indexable_wspd[biggest], key=lambda x: x.radius) # choose the biggest radius ie what must be the most seperated
+        # biggest = max(self.single_indexable_wspd[biggest], key=lambda x: x.radius) # choose the biggest radius ie what must be the most separated
         # biggest = max(self.single_indexable_wspd.values(), key=lambda x: len(x[1]))[0] # choose the wsp with the most options
         
         sub_problem_order = self.generate_sub_problem_order(biggest, t=t)

@@ -43,8 +43,8 @@ splits = []
 def find_relations(tree_node: ds.AbstractQuadTree, add=True) -> set[ds.Point]:
     sub_relations = set()
 
-    for well_seperated_node in tree_node.connection: # loop through each node which is Well Seperated
-        sub_relations.update(well_seperated_node.covered_points)
+    for well_separated_node in tree_node.connection: # loop through each node which is Well Separated
+        sub_relations.update(well_separated_node.covered_points)
 
     if quadtree == ds.PKPRQuadTree or quadtree == ds.PKPMRQuadTree:
         for child in tree_node.children:
