@@ -28,12 +28,12 @@ def main():
 
     # Colorbar
     cbar = fig.colorbar(im, ax=ax)
-    cbar.set_label("NOT TSP-separated (log scale)")
+    cbar.set_label("TSPs not partition-separated (log scale)")
 
     # Axes / labels
-    ax.set_title("Bad tour counts (log scale)")
-    ax.set_xlabel("separation factor s")
-    ax.set_ylabel("num points")
+    ax.set_title("Violating tour counts (log scale)")
+    ax.set_xlabel("Separation factor s")
+    ax.set_ylabel("Number of points")
 
     ax.set_xticks(np.arange(len(s_values)))
     ax.set_xticklabels([f"{s:.2f}" for s in s_values], rotation=45, ha="right")
