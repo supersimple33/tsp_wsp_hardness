@@ -4,3 +4,4 @@ wspd @ git+https://github.com/supersimple33/wspd_pip.git@numpy
 python_tsp>=0.5.0
 elkai @ git+https://github.com/supersimple33/elkai
 sortednp @ git+https://gitlab.sauerburger.com/frank/sortednp
+manim-themes>=0.1.3
