@@ -35,6 +35,7 @@ dependencies:
   - scienceplots
   - seaborn
   - manim
+  - pillow
   - pip:
       - -r requirements.txt
 prefix: ./.conda
