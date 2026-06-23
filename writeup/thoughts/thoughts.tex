@@ -27,6 +27,7 @@
 
 \newcommand{\BigLength}{\mathcal{L}}
 \newcommand{\Cover}{\mathcal{C}}
+\newcommand{\ACollection}{\mathcal{A}}
 
 \newcommand{\dist}{\delta}
 %\newcommand{\dist}{\mathcal{d}}
@@ -317,40 +318,119 @@ There may be a way to deterministically say which of the two cases will occur ba
 \input{../MSThesis/theorems/triple_wsp_tsp.tex} % cor
 
 \subsubsection{Generalization to \texorpdfstring{$k$}{k} pairwise separation}
-\input{../MSThesis/theorems/direct_k_wsp_path.tex}
 
-% TODO: THIS PROOF IN NOT FINISHED
+\begin{defn}
+    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+    We define the \textbf{Set Transition Multidigraph} $G = (V,E)$ induced by some Hamiltonian path over $P$ to be the multidigraph where $V = \{A_1, A_2, \ldots, A_n\}$ and there is an edge from $A_i$ to $A_j$ for every time the Hamiltonian path over $P$ transitions from a point in $A_i$ and to a point in $A_j$ for $i \neq j$.
+\end{defn}
+
 \begin{thm}
-    Let $P = \bigcup_i A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
-    Then there exists a optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no two non-overlapping subpaths of the Hamiltonian path both start in the same set $A_k$ and end in the same set $A_l$ for any $k,l$ (where $k \neq l$).
-    If $s > 1$ then all optimal Hamiltonian paths must satisfy this property.
+    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+    Consider some hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Then every node in the set transition multidigraph $G$ induced by this Hamiltonian path is balanced except if $i \neq j$ in which case $A_i$ has one more outgoing edge than incoming edge and $A_j$ has one more incoming edge than outgoing edge.
 \end{thm}
 \begin{proof}
-    Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
-    Assume there is two pairs of sets $B = A_k$ and $C = A_l$ which are directly connected by two edges in the same direction (where $k \neq l$).
-    WLOG let these edges be $(b_1, c_1)$ and $(b_2, c_2)$ where $b_1, b_2 \in B$ and $c_1, c_2 \in C$ ordered as they appear in the path (if $C$ occurs before $B$ then flip the names).
-
-    This can be shown via induction on the number of sets $n$.
-
-    \textbf{Base case:} $n=2$. This follows directly from \Cref{thm:wsp_path_ab,thm:wsp_path_aa}.
-
-    \textbf{Base case:} $n=3$. This follows directly from %\Cref{thm:triple_wsp_path_aa,thm:triple_wsp_path_ab}.
-
-    \textbf{Inductive step:} Assume the statement is true for all $n' < n$.
-
-    Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
-    Assume there is two pairs of sets $B = A_k$ and $C = A_l$ such that there are two non-overlapping subpaths of the Hamiltonian path which both start in $B$ and end in $C$.
-    Let one path start at $b_1$ and end at $c_1$ and the other path start at $b_2$ and end at $c_2$.
-
-    Let $t$ represent the number of sets from $A_1, A_2, \ldots, A_n$ that are visited by the path from $b_1$ to $c_2$ (including $B$ and $C$).
-    
-    \textbf{Case 1:} $t < n$. Then we can then create a new instance $P'$ by only including the set of points visited by the path from $b_1$ to $c_2$.
-    If $s > 1$ then it follows from the inductive hypothesis that this path could not be optimal.
-    If $s = 1$ then it follows from the inductive hypothesis that there exists a separate optimal path that does not have two non-overlapping subpaths between $b_1$ and $c_2$.
-
-    \textbf{Case 2:} $t = n$. Then the path from $b_1$ to $c_2$ visits all sets in $P$.
-    They cannot both be direct connects as this follows from %\Cref{thm:original}
+    \emph{Trivial}
 \end{proof}
+
+\input{../MSThesis/theorems/direct_k_wsp_path.tex}
+
+\begin{corollary}
+    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+    Then there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ such that the set transition multidigraph  induced by the path reduces to a regular digraph (i.e. there are no parallel directed edges).
+    If $s > 1$ then all optimal Hamiltonian paths must satisfy this property.
+\end{corollary}
+
+
+%\begin{thm}
+%    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+%    There exists an optimal Hamiltonian path between $a' \in A_i$ and $a'' \in A_j$ such that for any two simple cycles in the set transition multidigraph $G$ induced by the path do not share any 
+%\end{thm}
+%\begin{proof}
+%    Suppose that there exists an optimal Hamiltonian path between $a' \in A_i$ and $a'' \in A_j$ such that for some two vertices $A_k$ and $A_l$ in the set transition multidigraph $G$ induced by the path the edges $A_k \to A_l$ and $A_l \to A_k$ are both present.
+%\end{proof}
+
+
+% facts about the optimal tour
+% in two set case: no parallel directed edges (reduces to a regular digraph)
+% in the three set case: no parallel directed edges - at most one global cycle - reduces to a cactus graph
+
+%% TODO: THIS PROOF IN NOT FINISHED
+%\begin{thm}
+%    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+%    Then there exists a optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where no two non-overlapping subpaths of the Hamiltonian path both start in the same set $A_k$ and end in the same set $A_l$ for any $k,l$ (where $k \neq l$).
+%    If $s > 1$ then all optimal Hamiltonian paths must satisfy this property.
+%\end{thm}
+%\begin{proof}
+%    This can be shown via induction on the number of sets $n$.
+
+%    \textbf{Base case:} $n=2$. This follows directly from \Cref{thm:wsp_path_ab,thm:wsp_path_aa}.
+
+%    \textbf{Inductive hypothesis:} Assume the theorem holds for all $n' < n$ (where $n$ is the number of sets that are pairwise well-separated).
+
+%    \textbf{Inductive step:} Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+%    Assume by contradiction there exists two distinct sets from $\ACollection$ such that there are two non-overlapping subpaths of the Hamiltonian path which both start in the first set and end in the second set.
+%    Define $B,C$ to be the first and second of these sets and $b_1, b_2, c_1, c_2$ to be the corresponding endpoints of these two subpaths such that the first subpath starts at $b_1 \in B$ and ends at $c_1 \in C$ and the second subpath starts at $b_2 \in B$ and ends at $c_2 \in C$ all chosen such that the number of nodes between $b_1$ and $c_2$ on the hamiltonian path is minimized.
+%    Thus the Hamiltonian path must have the following structure:
+%    $$a' \leadsto b_1 \leadsto c_1 \leadsto b_2 \leadsto c_2 \leadsto a''.$$
+
+%    Let $t$ represent the number of sets from $\ACollection$ that are visited by the path from $b_1$ to $c_2$ (including $B$ and $C$).
+    
+%    \textbf{Case 1:} $t < n$. Then we can then create a new instance $P'$ by only including the set of points visited by the path from $b_1$ to $c_2$.
+%    If $s > 1$ then it follows from the inductive hypothesis that this path could not be optimal.
+%    If $s = 1$ then it follows from the inductive hypothesis that there exists a separate optimal path that does not have two non-overlapping subpaths between $b_1$ and $c_2$. (can fix all of this type via repeated applications)
+
+%    \textbf{Case 2:} $t = n$. Then the path from $b_1$ to $c_2$ visits every set from $\ACollection$. 
+    
+%    Define $S = (k, \dots, l, \dots, k, \dots, l)$ be the indexes of each set visited by the path from $b_1$ to $c_2$ in the order they are visited.
+%    We know that $S$ must contain every index from $1$ to $n$ and it must contain at least two $k$s and two $l$s (of which one occurs exactly twice else a better choice of endpoints exists).
+%    Each index other than $k$ and $l$ may not occur both between the first $k$ and the first $l$ and between the last $k$ and the last $l$ since otherwise we would have a smaller counterexample.
+
+%\end{proof}
+
+%\begin{thm}
+%    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+%    Suppose there exists a optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_i$ where no two non-overlapping subpaths of the Hamiltonian path both start in the same set $A_k$ and end in the same set $A_l$ for any $k,l$ (where $k \neq l$).
+%    Then there must be between $n$ and $2(n-1)$ crossing edges.
+%\end{thm}
+%\begin{proof}
+%    Must be at least $n$ crossing edges since we need to visit each set at least once.
+%    Suppose there are at least $2n$ crossing edges (can't be $2n-1$ since that would be odd).
+%    follows from cactus graph and may not require contradiction proof
+%\end{proof}
+
+%\begin{lem}[Density Constraint of Inter-Set Transitions]
+%    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$. Let $G=(V,E)$ be the set transition multidigraph induced by an optimal Hamiltonian path. The total number of edges in $G$ satisfies $|E| \leq 2(n-1)$.
+%\end{lem}
+%\begin{proof}
+%    Assume by contradiction that $|E| > 2(n-1)$. 
+    
+%    Because $G$ is induced by a Hamiltonian path over $P$, $G$ contains a connected Eulerian trail visiting all $n$ sets. By our previous results, $G$ contains no parallel directed edges (no two non-overlapping subpaths start and end in the same respective sets). 
+    
+%    A connected directed graph on $n$ vertices with no parallel directed edges can have at most $2(n-1)$ edges if it is strictly a bidirectional tree (where every edge belongs to a 2-cycle). Because $G$ is an Eulerian-like trail with $|E| > 2(n-1)$, $G$ cannot merely be a bidirectional tree. By Euler's cycle decomposition, $G$ must contain at least one directed cycle $C$ of length $m \geq 3$.
+
+%    Let the sequence of sets in this directed cycle be $(A_{c_1}, A_{c_2}, \dots, A_{c_m}, A_{c_1})$. Let the $m$ corresponding inter-set edges in the Hamiltonian path be $e_k = (u_k, v_k)$ where $u_k \in A_{c_k}$ and $v_k \in A_{c_{k+1}}$ (with $A_{c_{m+1}} = A_{c_1}$).
+    
+%    Consider the cost of traversing these $m$ inter-set edges. Because the sets are pairwise $s$-well-separated, the length of each edge is bounded below:
+%    $$d(u_k, v_k) \geq s \cdot \max(\text{diam}(A_{c_k}), \text{diam}(A_{c_{k+1}}))$$
+%    Using the inequality $\max(x, y) \geq \frac{x+y}{2}$, the total length of the inter-set edges in $C$ is:
+%    $$\sum_{k=1}^m d(u_k, v_k) \geq s \sum_{k=1}^m \frac{\text{diam}(A_{c_k}) + \text{diam}(A_{c_{k+1}})}{2} = s \sum_{k=1}^m \text{diam}(A_{c_k})$$
+
+%    We can construct an alternative Hamiltonian path by bypassing the cycle $C$ entirely. For each set $A_{c_k}$ in the cycle, the original path exits to $A_{c_{k+1}}$ and eventually re-enters from $A_{c_{k-1}}$. We short-circuit this excursion by connecting the exit point and re-entry point directly within $A_{c_k}$ using a new intra-set edge. Because $C$ is an Eulerian cycle component, removing it does not disconnect the remaining Hamiltonian path.
+
+%    The cost of adding these $m$ intra-set splicing edges is strictly bounded by the set diameters:
+%    $$\sum_{k=1}^m d_{\text{splice}}(A_{c_k}) \leq \sum_{k=1}^m \text{diam}(A_{c_k})$$
+
+%    Comparing the removed inter-set edges to the added intra-set edges:
+%    $$\Delta \text{Cost} = \sum_{k=1}^m d_{\text{splice}}(A_{c_k}) - \sum_{k=1}^m d(u_k, v_k) \leq \sum_{k=1}^m \text{diam}(A_{c_k}) - s \sum_{k=1}^m \text{diam}(A_{c_k})$$
+%    $$\Delta \text{Cost} \leq (1 - s) \sum_{k=1}^m \text{diam}(A_{c_k})$$
+
+%    If $s > 1$, then $\Delta \text{Cost} < 0$. The modified path is strictly shorter, which contradicts the length optimality of the original Hamiltonian path.
+
+%    If $s = 1$, then $\Delta \text{Cost} \leq 0$. The length of the new Hamiltonian path is less than or equal to the original. However, this operation removes $m$ inter-set transitions ($m \geq 3$) and replaces them with $m$ intra-set transitions. Consequently, the total number of inter-set transitions strictly decreases. Since a path connecting $n$ sets requires a finite minimum number of inter-set transitions, repeating this cycle-elimination must eventually terminate at an optimal Hamiltonian path where $|E| \leq 2(n-1)$.
+    
+%    This completes the proof.
+%\end{proof}
 
 \section{Algorithms}
 
