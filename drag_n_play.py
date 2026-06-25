@@ -4,7 +4,7 @@ import itertools
 
 # You can now safely change this to 6, 7, 8, etc. 
 # (Note: Anything above 10 will start to lag because brute-force TSP scales factorially!)
-NUM_POINTS = 4
+NUM_POINTS = 9
 
 class TSPSolverApp:
     def __init__(self, root):
@@ -37,11 +37,16 @@ class TSPSolverApp:
 
         self.point_radius = 8
         self.dragged_idx = None
+        self.distance_view_idx = None  # Tracks which node is toggled for the "all-distances" view
 
         # Bind mouse events
         self.canvas.bind("<ButtonPress-1>", self.on_press)
         self.canvas.bind("<B1-Motion>", self.on_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
+        
+        # Bind Right-Click (Button-3 for Windows/Linux, Button-2 for some Mac setups)
+        self.canvas.bind("<Button-3>", self.on_right_click)
+        self.canvas.bind("<Button-2>", self.on_right_click)
 
         # Initial solve and render
         self.solve_and_draw()
@@ -91,7 +96,7 @@ class TSPSolverApp:
 
         best_path, min_dist = self.solve_tsp()
 
-        # 1. Draw the connection lines + edge lengths
+        # 1. Draw the main TSP connection lines + edge lengths (Drawn first so they are on the bottom)
         if best_path:
             for i in range(NUM_POINTS - 1):
                 p1 = self.points[best_path[i]]
@@ -117,7 +122,7 @@ class TSPSolverApp:
                     fill="purple"
                 )
 
-        # 2. Draw the points on top of the lines
+        # 2. Draw the points on top of the main path lines
         for i, (x, y) in enumerate(self.points):
             if i == 0:
                 color, label = "green", "Start"
@@ -125,31 +130,65 @@ class TSPSolverApp:
                 color, label = "red", "End"
             else:
                 color, label = "dodgerblue", f"P{i}"
+                
+            # Highlight the toggled node
+            outline_color = "orange" if i == self.distance_view_idx else "black"
+            outline_width = 4 if i == self.distance_view_idx else 2
 
             # Point Graphic
             self.canvas.create_oval(
                 x - self.point_radius, y - self.point_radius,
                 x + self.point_radius, y + self.point_radius,
-                fill=color, outline="black", width=2
+                fill=color, outline=outline_color, width=outline_width
             )
             # Text Label
             self.canvas.create_text(x, y - 18, text=label, font=("Arial", 9, "bold"))
 
-        # 3. Print the active metric and distance
+        # 3. Print the active metric and distance text
         metric_name = {"L1": "Manhattan", "L2": "Euclidean", "L_inf": "Chebyshev"}[self.norm_var.get()]
         self.canvas.create_text(
             15, 15, anchor=tk.NW,
             text=f"Shortest Path ({metric_name}): {min_dist:.2f}",
             font=("Arial", 12, "bold"), fill="darkred"
         )
+        
+        self.canvas.create_text(
+            15, 35, anchor=tk.NW,
+            text="Right-click a node to toggle all distances",
+            font=("Arial", 9, "italic"), fill="gray"
+        )
+
+        # 4. Draw "All Distances" view (Drawn LAST so it sits entirely on top of everything else)
+        if self.distance_view_idx is not None:
+            p1 = self.points[self.distance_view_idx]
+            for i, p2 in enumerate(self.points):
+                if i == self.distance_view_idx:
+                    continue
+                
+                # Draw the foreground edge
+                self.canvas.create_line(p1, p2, fill="orange", width=2, dash=(2, 4))
+                
+                dist = self.get_distance(p1, p2)
+                
+                # Midpoint for label
+                mx = (p1[0] + p2[0]) / 2
+                my = (p1[1] + p2[1]) / 2
+                
+                # Background for the text to make it completely opaque over other lines/nodes
+                self.canvas.create_rectangle(mx-14, my-8, mx+14, my+8, fill="white", outline="orange", width=1)
+                self.canvas.create_text(
+                    mx, my,
+                    text=f"{dist:.1f}",
+                    font=("Arial", 8, "bold"),
+                    fill="darkorange"
+                )
 
     # --- Mouse Event Handlers ---
     
     def on_press(self, event):
-        """Selects the point clicked by the user."""
+        """Selects the point clicked by the user for dragging."""
         self.dragged_idx = None
         for i, (x, y) in enumerate(self.points):
-            # Give a generous click hitbox (radius + 5 pixels)
             if math.hypot(event.x - x, event.y - y) <= self.point_radius + 5:
                 self.dragged_idx = i
                 break
@@ -162,7 +201,6 @@ class TSPSolverApp:
             new_y = max(10, min(event.y, self.canvas.winfo_height() - 10))
             self.points[self.dragged_idx] = (new_x, new_y)
             
-            # Temporarily draw without connections per requirements
             self.draw_dragging()
 
     def draw_dragging(self):
@@ -188,6 +226,23 @@ class TSPSolverApp:
         """Resolves the TSP math and redraws upon releasing the mouse."""
         if self.dragged_idx is not None:
             self.dragged_idx = None
+            self.solve_and_draw()
+
+    def on_right_click(self, event):
+        """Toggles the 'all distances' view for the right-clicked node."""
+        clicked_idx = None
+        for i, (x, y) in enumerate(self.points):
+            if math.hypot(event.x - x, event.y - y) <= self.point_radius + 5:
+                clicked_idx = i
+                break
+                
+        if clicked_idx is not None:
+            # Toggle logic: if clicking the already selected node, turn it off. Otherwise, turn it on.
+            if self.distance_view_idx == clicked_idx:
+                self.distance_view_idx = None
+            else:
+                self.distance_view_idx = clicked_idx
+            
             self.solve_and_draw()
 
 if __name__ == "__main__":
