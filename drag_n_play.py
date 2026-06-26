@@ -23,6 +23,9 @@ class TSPSolverApp:
         tk.Radiobutton(control_frame, text="L2 (Euclidean)", variable=self.norm_var, value="L2", command=self.solve_and_draw).pack(side=tk.LEFT)
         tk.Radiobutton(control_frame, text="L_inf (Chebyshev)", variable=self.norm_var, value="L_inf", command=self.solve_and_draw).pack(side=tk.LEFT)
 
+        # Added export button
+        tk.Button(control_frame, text="Copy Weight Matrix", command=self.export_matrix_to_clipboard, bg="#e0e0e0").pack(side=tk.RIGHT, padx=10)
+
         # --- Interactive Canvas ---
         self.canvas = tk.Canvas(root, bg="white", cursor="cross")
         self.canvas.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -183,8 +186,35 @@ class TSPSolverApp:
                     fill="darkorange"
                 )
 
+    # --- Clipboard Export ---
+    def export_matrix_to_clipboard(self):
+        """Calculates the NxN weight matrix and copies it to the clipboard."""
+        rows = []
+        for i in range(NUM_POINTS):
+            row_dists = []
+            for j in range(NUM_POINTS):
+                dist = self.get_distance(self.points[i], self.points[j])
+                row_dists.append(f"{dist:.2f}")
+            # Join columns with a comma for easy pasting into Excel/CSV
+            rows.append(",".join(row_dists))
+        
+        matrix_string = "\n".join(rows)
+
+        # Push to system clipboard
+        self.root.clipboard_clear()
+        self.root.clipboard_append(matrix_string)
+        self.root.update()  # Required on some OS to keep clipboard contents after function exits
+
+        # Give the user visual feedback
+        toast = self.canvas.create_text(
+            self.canvas.winfo_width() / 2, 20, 
+            text="Weight Matrix Copied to Clipboard!", 
+            font=("Arial", 11, "bold"), fill="green"
+        )
+        self.root.after(2000, lambda: self.canvas.delete(toast))
+
+
     # --- Mouse Event Handlers ---
-    
     def on_press(self, event):
         """Selects the point clicked by the user for dragging."""
         self.dragged_idx = None
