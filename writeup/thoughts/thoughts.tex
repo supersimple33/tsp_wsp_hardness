@@ -330,6 +330,16 @@ There may be a way to deterministically say which of the two cases will occur ba
     If $s > 1$ then all optimal Hamiltonian paths must satisfy this property.
 \end{corollary}
 
+\begin{lem}\label{lem:set_transition_multidigraph_decomposition}
+    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+    Then there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ such that the set transition multidigraph  induced by the path can be decomposed into a set of edge-disjoint simple directed cycles and if $A_i \neq A_j$ then a single directed simple path from $A_i$ to $A_j$ also edge-disjoint from the simple cycles.
+    If $s > 1$ then all optimal Hamiltonian paths must satisfy this property.
+\end{lem}
+\begin{proof}
+    Follows from \Cref{defn:set_transition_multidigraph,cor:set_transition_multidigraph_reduction}.
+    %See Veblen's Theorem \autocite{veblenApplicationModularEquations1912}.
+\end{proof}
+
 \subsubsection{Triple Pairwise Separation}
 
 \begin{thm}\label{thm:triple_wsp_path_ac}
