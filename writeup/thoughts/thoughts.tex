@@ -5,6 +5,8 @@
 \usepackage{algorithm,algpseudocodex}
 \usepackage{cleveref}
 \usepackage[section]{placeins}
+\usepackage[perpage,bottom,multiple]{footmisc}
+\usepackage{footnotebackref}
 %\usepackage{draftwatermark}
 %\SetWatermarkScale{8}
 %\SetWatermarkText{\normalfont{DRAFT}}
@@ -337,6 +339,92 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{corollary}
 
 \subsubsection{Triple Pairwise Separation}
+
+\begin{thm}\label{thm:triple_wsp_path_ac}
+    Let $P = A \cup B \cup C$ be a set of points where $A,B,C$ are pairwise $s$-well-separated with $s \geq 1.5$. 
+    Then there exists an optimal Hamiltonian path which starts on a point $a' \in A$ and ends on a point $c' \in C$ and must have only two or three edges connecting the three sets.
+    Furthermore if $s > 1.5$ then all optimal solutions must satisfy this property.
+\end{thm}
+\begin{proof}
+    Consider some optimal Hamiltonian path over $P$ with endpoints $a' \in A$ and $c' \in C$.
+    It follows from \Cref{cor:set_transition_multidigraph_reduction} that the set transition multidigraph induced by this path can be reduced to a simple digraph.
+
+    A simple digraph over three nodes can have at most six edges.
+    If the digraph has six edges then all three nodes are balanced and this would violate \Cref{lem:set_transition_multidigraph_degree}.
+    It can also be noted that $B$ must be balanced and therefore must have $deg^+(B) = deg^-(B) \in \{0,1,2\}$.
+
+    \textbf{Case 1:} $\deg^+(B) = \deg^-(B) = 2$. % ab ba bc cb ac   ab bc ca ac
+    Then there are one edge in each direction between $A$ and $B$ and one edge in each direction between $B$ and $C$.
+    Then the fifth edge must be from $A$ to $C$.
+    It subsequently follows that the following three cases are the only valid eulerian walks through the digraph:
+    \begin{enumerate}
+        \item $A \to B \to C \to B \to A \to C$
+        \item $A \to B \to A \to C \to B \to C$
+        \item $A \to C \to B \to A \to B \to C$
+    \end{enumerate}
+    We can then consider each edge from the perspective of the Hamiltonian path over $P$ and label them as follows $(a_1, b_1), (b_2, a_2), (c_1, b_3), (b_4, c_2), (a_3, c_3)$ where $a_i \in A$, $b_i \in B$, and $c_i \in C$.
+    
+    \textbf{Case 1a:} The first walk then corresponds to the following Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_4 \to c_2 \leadsto c_1 \to b_3 \leadsto b_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c'$$
+    We could then consider a new Hamiltonian path over $P$ where we cut the edges $(a_1, b_1), (c_1, b_3), (a_3, c_3)$ and replace them with $(a_1, a_3), (b_3, b_1), (c_1, c_3)$ resulting in a new Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to a_3 \leadsto a_2 \to b_2 \leadsto b_3 \to b_1 \leadsto b_4 \to c_2 \leadsto c_1 \to c_3 \leadsto c'$$
+
+    \textbf{Case 1b:} The second walk then corresponds to the following Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c_1 \to b_3 \leadsto b_4 \to c_2 \leadsto c'$$
+    We could then consider a new Hamiltonian path over $P$ where we cut the edges $(a_1, b_1), (a_3, c_3), (b_4, c_2)$ and replace them with $(a_1, a_3), (b_1, b_4), (c_3, c_2)$ resulting in a new Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to a_3 \leadsto a_2 \to b_2 \leadsto b_1 \to b_4 \leadsto b_3 \to c_1 \leadsto c_3 \to c_2 \leadsto c'$$
+
+    \textbf{Case 1c:} The third walk then corresponds to the following Hamiltonian path over $P$:
+    $$a' \leadsto a_3 \to c_3 \leadsto c_1 \to b_3 \leadsto b_2 \to a_2 \leadsto a_1 \to b_1 \leadsto b_4 \to c_2 \leadsto c'$$
+    We could then consider a new Hamiltonian path over $P$ where we cut the edges $(a_3, c_3), (b_2, a_2), (b_4, c_2)$ and replace them with $(a_3, a_2), (b_4, b_2), (c_3, c_2)$ resulting in a new Hamiltonian path over $P$:
+    $$a' \leadsto a_3 \to a_2 \leadsto a_1 \to b_1 \leadsto b_4 \to b_2 \leadsto b_3 \to c_1 \leadsto c_3 \to c_2 \leadsto c'$$
+
+    Then by \Cref{thm:fundamental_thm_wsp} it follows that across each case the current Hamiltonian path over $P$ could not possibly be optimal.\footnote{
+        Assuming that the original Hamiltonian path was optimal each case implies that $s \leq 1$ which is a contradiction.
+        \begin{enumerate}
+            \item $|a_1 b_1| + |c_1 b_3| + |a_3 c_3| \leq |a_1 a_3| + |b_3 b_1| + |c_1 c_3| \leq \frac{1}{s} (|a_1 b_1| + |c_1 b_3| + |a_3 c_3|)$
+            \item $|a_1 b_1| + |a_3 c_3| + |b_4 c_2| \leq |a_1 a_3| + |b_1 b_4| + |c_3 c_2| \leq \frac{1}{s} (|a_1 b_1| + |a_3 c_3| + |b_4 c_2|)$
+            \item $|a_3 c_3| + |b_2 a_2| + |b_4 c_2| \leq |a_3 a_2| + |b_4 b_2| + |c_3 c_2| \leq \frac{1}{s} (|a_3 c_3| + |b_2 a_2| + |b_4 c_2|)$
+        \end{enumerate}
+    }
+
+    \textbf{Case 2:} $\deg^+(B) = \deg^-(B) = 1$. % ab ba ac
+    There are only two valid simple digraphs under this case which have four edges: $(A,B), (B,C), (C,A), (A,C)$ and $(A,C), (C,A), (A,B), (B,C)$.
+    
+    \textbf{Case 2a:} The first digraph corresponds to the following Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to c_3 \leadsto c'$$
+    We could then consider a new Hamiltonian path over $P$ where we cut the edges $(c_2, a_2), (a_3, c_3), (a_1, b_1)$ and replace them with $(a_1, a_2), (a_3, b_1), (c_2, c_3)$ resulting in a new Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to a_2 \leadsto a_3 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to c_3 \leadsto c'$$
+    It then follows from \Cref{thm:fundamental_thm_wsp} that if $s = 1.5$ then the new Hamiltonian path is also optimal and if $s > 1.5$ then the original Hamiltonian path could not possibly be optimal as that would require $s \leq 1.5$.\footnote{Consider the following analysis:
+        \begin{align*}
+            |c_2 a_2| + |a_3 c_3| + |a_1 b_1| &\leq |a_1 a_2| + |a_3 b_1| + |c_2 c_3| \\
+            &\leq |a_1 a_2| + |a_3 a_1| + |a_1 b_1| + |c_2 c_3| \\
+            \implies |c_2 a_2| + |a_3 c_3| &\leq |a_1 a_2| + |a_3 a_1| + 0.5 |c_2 c_3| + 0.5 |c_2 c_3| \\
+            &\leq \frac{1}{s} |c_2 a_2| + \frac{1}{s} |a_3 c_3| + \frac{1}{2s} |c_2 c_3| + \frac{1}{2s} |c_2 c_3| \\
+            &= \frac{1.5}{s} (|c_2 a_2| + |a_3 c_3| + |c_2 c_3|) \\
+            \implies s &\leq 1.5
+        \end{align*}
+    }
+
+    \textbf{Case 2b:} The second digraph corresponds to the following Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to c_1 \leadsto c_2 \to a_2 \leadsto a_3 \to b_1 \leadsto b_2 \to c_3 \leadsto c'$$
+    We could then consider a new Hamiltonian path over $P$ where we cut the edges $(a_1, c_1), (c_2, a_2), (b_2, c_3)$ and replace them with $(a_1, a_2), (b_2, c_1), (c_2, c_3)$ resulting in a new Hamiltonian path over $P$:
+    $$a' \leadsto a_1 \to a_2 \leadsto a_3 \to b_1 \leadsto b_2 \to c_1 \leadsto c_2 \to c_3 \leadsto c'$$
+    It then follows from \Cref{thm:fundamental_thm_wsp} that if $s = 1.5$ then the new Hamiltonian path is also optimal and if $s > 1.5$ then the original Hamiltonian path could not possibly be optimal as that would require $s \leq 1.5$.\footnote{Consider the following analysis:
+        \begin{align*}
+            |a_1 c_1| + |c_2 a_2| + |b_2 c_3| &\leq |a_1 a_2| + |b_2 c_1| + |c_2 c_3| \\
+            &\leq |a_1 a_2| + |b_2 c_3| + |c_3 c_1| + |c_2 c_3| \\
+            \implies |a_1 c_1| + |c_2 a_2| &\leq |a_1 a_2| + |c_3 c_1| + |c_2 c_3| \\
+            &= 0.5 |a_1 a_2| + 0.5 |a_1 a_2| + |c_3 c_1| + |c_2 c_3| \\
+            &\leq \frac{1}{2s} |a_1 c_1| + \frac{1}{2s} |c_2 a_2| + \frac{1}{s} |a_1 c_1| + \frac{1}{s} |c_2 a_2| \\
+            &= \frac{1.5}{s} (|a_1 c_1| + |c_2 a_2|) \\
+            \implies s &\leq 1.5
+        \end{align*}
+    }
+
+    It therefore follows that if $s \geq 1.5$ then there exists an optimal Hamiltonian path which starts on a point $a' \in A$ and ends on a point $c' \in C$ and must have only two or three edges connecting the three sets.
+    Futhermore if $s > 1.5$ then all optimal solutions must satisfy this property.
+\end{proof}
 
 \input{../MSThesis/theorems/triple_wsp_path_aa.tex}
 \input{../MSThesis/theorems/triple_wsp_tsp.tex} % cor
