@@ -5,7 +5,7 @@
 \usepackage{algorithm,algpseudocodex}
 \usepackage{cleveref}
 \usepackage[section]{placeins}
-\usepackage[perpage,bottom,multiple]{footmisc}
+\usepackage[perpage,bottom,multiple,hang]{footmisc}
 \usepackage{footnotebackref}
 %\usepackage{draftwatermark}
 %\SetWatermarkScale{8}
@@ -316,19 +316,11 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 \subsubsection{Structural Lemmas}
 
-\begin{defn}
+\begin{defn}\label{defn:set_transition_multidigraph}
     Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
-    We define the \textbf{Set Transition Multidigraph} $G = (V,E)$ induced by some Hamiltonian path over $P$ to be the simple multidigraph where $V = \{A_1, A_2, \ldots, A_n\}$ and there is an edge from $A_i$ to $A_j$ for every time the Hamiltonian path over $P$ transitions from a point in $A_i$ and to a point in $A_j$ for $i \neq j$.
+    We define the unique \textbf{Set Transition Multidigraph} $G = (V,E)$ induced by some Hamiltonian path over $P$ to be the simple (eulerian or semi-eulerian)multidigraph where $V = \{A_1, A_2, \ldots, A_n\}$ and there is an edge from $A_i$ to $A_j$ for every time the Hamiltonian path over $P$ transitions from a point in $A_i$ and to a point in $A_j$ for $i \neq j$.
+    Futhermore, we define the unique \textbf{Induced Eulerian Walk} to be the walk through $G$ which follows the edges of $G$ in the order that they are traversed by the Hamiltonian path over $P$ as it transitions between the sets in $\ACollection$.
 \end{defn}
-
-\begin{lem}\label{lem:set_transition_multidigraph_degree}
-    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
-    Consider some hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
-    Then every node in the set transition multidigraph $G$ induced by this Hamiltonian path is balanced except if $i \neq j$ in which case $A_i$ has one more outgoing edge than incoming edge and $A_j$ has one more incoming edge than outgoing edge.
-\end{lem}
-\begin{proof}
-    \emph{Trivial}
-\end{proof}
 
 \input{../MSThesis/theorems/direct_k_wsp_path.tex}
 
@@ -350,7 +342,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     It follows from \Cref{cor:set_transition_multidigraph_reduction} that the set transition multidigraph induced by this path can be reduced to a simple digraph.
 
     A simple digraph over three nodes can have at most six edges.
-    If the digraph has six edges then all three nodes are balanced and this would violate \Cref{lem:set_transition_multidigraph_degree}.
+    If the digraph has six edges then all three nodes are balanced and thus could not be a semi-Eulerian digraph as required.
     It can also be noted that $B$ must be balanced and therefore must have $deg^+(B) = deg^-(B) \in \{0,1,2\}$.
 
     \textbf{Case 1:} $\deg^+(B) = \deg^-(B) = 2$. % ab ba bc cb ac   ab bc ca ac
@@ -431,21 +423,24 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 \subsubsection{Generalization to \texorpdfstring{$k$}{k} pairwise separation}
 
-\begin{thm}
-    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
-    Then there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ such that the set transition multidigraph  induced by the 
-\end{thm}
 
-ABAB!!!
+\begin{lem}\label{lem:direct_k_wsp_path}
+    Let $P = \bigcup_{i=1}^n A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1.5$ (and $n \geq 3$).
+    Then there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where its induced Eulerian walk over the set 
+\end{lem}
+\begin{proof}
+    
+\end{proof}
 
-ABCA***
 
-ABCBA****
 
-ABCACBA!!!!!
-
-ABACB???
-
+%\begin{proof}
+%    Consider the induced Eulerian walk of some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+%    Suppose the two parallel paths start on a vertex $A \in \ACollection$ and end on a vertex $C \in \ACollection$ where one path is of length one and the other is of length two.
+%    Let the intermediate vertex on the length two path be $B \in \ACollection$.
+%    WLOG assume the length one path is traversed first in the Eulerian walk.
+%    We will label the following edges in the Hamiltonian path over $P$ as follows $(a_1, c_1), (a_2, b_1), (b_2, c_2)$ where $a_i \in A$, $b_i \in B$, and $c_i \in C$ each corresponding to the edges in the induced Eulerian walk.
+%\end{proof}
 
 
 \section{Algorithms}
@@ -481,6 +476,16 @@ ABACB???
     Consider $A=\{0,1\}$ and $B=\{0.5,1.5\}$. 
     The diameter of each set is 1 and distance between the two sets is 0.5 making them 0.5-well-separated.
     However the optimal TSP tour on $A \cup B$ is $0 \to 0.5 \to 1 \to 1.5 \to 0$ which would contradict \Cref{cor:wsp_tsp} if it applied for $s \leq 0.5$.
+\end{proof}
+
+\begin{lem}[Was deemed to simple]
+    Let $P = \bigcup_i A_i$ be a set of points where the elements of $\ACollection = \{A_1, A_2, \ldots, A_n\}$ are all pairwise $s$-well-separated with $s \geq 1$ (and $n \geq 2$).
+    Consider some hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Then every node in the set transition multidigraph $G$ induced by this Hamiltonian path is balanced except if $i \neq j$ in which case $A_i$ has one more outgoing edge than incoming edge and $A_j$ has one more incoming edge than outgoing edge.
+\end{lem}
+\begin{proof}
+    \emph{Trivial.}
+    Follows immediately from being Eulerian if $A_i = A_j$ or semi-Eulerian if $A_i \neq A_j$.
 \end{proof}
 
 \section{Dead ends}
