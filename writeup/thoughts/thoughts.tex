@@ -337,7 +337,7 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{lem}
 \begin{proof}
     Follows from \Cref{defn:set_transition_multidigraph,cor:set_transition_multidigraph_reduction}.
-    %See Veblen's Theorem \autocite{veblenApplicationModularEquations1912}.
+    %See Veblen's Theorem \autocite{veblenApplicationModularEquations1912}. TODO
 \end{proof}
 
 \subsubsection{Triple Pairwise Separation}
@@ -433,13 +433,48 @@ There may be a way to deterministically say which of the two cases will occur ba
 
 \subsubsection{Generalization to \texorpdfstring{$k$}{k} pairwise separation}
 
-
-\begin{lem}\label{lem:direct_k_wsp_path}
-    Let $P = \bigcup_{i=1}^n A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1.5$ (and $n \geq 3$).
-    Then there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where its induced Eulerian walk over the set 
-\end{lem}
+\begin{thm}
+    Let $P = \bigcup_{i=1}^n A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1.0$ (and $n \geq 3$).
+    Then there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where its induced set transition multidigraph $G$ never contains two directed simple cycles which are symmetric with respect to each other.
+\end{thm}
 \begin{proof}
+    Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
+    Suppose that the set transition digraph $G$ induced by this path contains two directed cycles which are symmetric with respect to each other.
+
+    Consider two symmetric cycles label one $C_1$ and the other $C_2$.
+    Let the sequence of sets traversed in $C_1$ be $A_{k_1} \to A_{k_2} \to \dots \to A_{k_m} \to A_{k_1}$.
+    By symmetry, $C_2$ traverses in reverse order: $A_{k_1} \to A_{k_m} \to \dots \to A_{k_2} \to A_{k_1}$.
+
+    Let $E_1 = \{e_1, e_2, \dots, e_m\}$ be the specific edges in the Hamiltonian path that induce the cycle $C_1$, where each $e_i$ corresponds to a transition from a point in $A_{k_i}$ to a point in $A_{k_{i+1}}$ (with indices modulo $m$).
+    Similarly, let $E_2 = \{e'_1, e'_2, \dots, e'_m\}$ be the edges inducing $C_2$, where each $e'_i$ corresponds to a transition from a point in $A_{k_{i+1}}$ to a point in $A_{k_i}$.
+    We can define a combination of the two sets $E = \{\{e_1, e'_1\}, \{e_2, e'_2\}, \dots, \{e_m, e'_m\}\}$.
+    Next we will consider removing any permutation of $m$ edges from the Hamiltonian path where we remove exactly one edge from each pair in $E$.
+    This will break the Hamiltonia path into $m+1$ disjoint subpaths.
+    We can then replace the deleted edge from each $i$th pair with a new set-internal edge which connects $u$ and $z$ where $u$ is the endpoint of the deleted edge in the $i$th pair which belongs to $A_{k_i}$ and $z$ is the endpoint of the deleted edge in the $i-1$th pair which belongs to $A_{k_i}$ we will label this new edge as $e^*_i$.
+
+    Notice that for any of the $2^m$ possible permutations of deletions, the degree of every vertex in $P$ remains exactly as it was in the original Hamiltonian path $H$.
+    Specifically, the endpoints $a'$ and $a''$ retain a degree of 1, and all other internal vertices retain a degree of 2.
+    Because these degrees are perfectly preserved, any resulting graph from our deletion and replacement scheme must consist of exactly one path (from $a'$ to $a''$) and $c \geq 0$ disjoint cycles.
     
+    There must exist at least one permutation of deletions such that the resulting graphcontains no cycles.
+    This can be shown by construction.
+    Consider some $P^*$ which contains at least one disjoint cycle and a path $R$ from $a'$ to $a''$ which contains at least one edge in $E$.\footnote{This can be formed by choosing any permutation which include the first edge in $E$ which is encountered in the path from $a'$ to $a''$.}
+    Since there is at least one cycle $R$ must not contain every point in $P$.
+    We can then traverse $R$ from $a'$ to $a''$ and note the last edge from $E$ which is encountered.
+    If this edge was of the form $e_i$ then we can delete it and replace it with $e'_i$ and if it was of the form $e'_i$ then we can delete it and replace it with $e_i$.
+    This forms a new valid permutation.
+    The new path $R'$ from $a'$ to $a''$ of this new permutation must contain strictly more new intra-set edges of the form $e^*_i$ than $R$ did since the last edge from $E$ in $R$ was replaced with an intra-set edge of the form $e^*_i$.
+    We can then repeat this process until we have a path from $a'$ to $a''$ which contains all of the edges of the form $e^*_i$ and thus contains no cycles and thus is a valid Hamiltonian path over $P$.
+    Let this new Hamiltonian path be $H^*$.
+
+
+    Let $e_i^{kept}$ be the edge from the pair $(e_i, e'_i)$ which was kept in $H^*$ and let $e_i^{deleted}$ be the edge from the pair $(e_i, e'_i)$ which was deleted in $H^*$.
+    Since $H$ was a optimal Hamiltonian path over $P$ it follows that $|H| \leq |H^*|$ and thus $\sum_{i=1}^m (|e_i| + |e'_i|) \leq \sum_{i=1}^m (|e_i^*| + |e_i^{kept}|)$ which can be rearranged to $\sum_{i=1}^m |e_i^{deleted}| \leq \sum_{i=1}^m |e_i^*|$.
+    Since every set is pairwise $s$-well-separated with $s \geq 1$ it follows from \Cref{thm:fundamental_thm_wsp} that $\forall i \in \{1, \dots, m\}, |e_i^*| \leq \frac{1}{s} |e_i|, \frac{1}{s} |e'_i|$.
+    Therefore $\sum_{i=1}^m |e_i^{deleted}| \leq \sum_{i=1}^m |e_i^*| \leq \frac{1}{s} \sum_{i=1}^m |e_i^{deleted}|$ which implies that $s \leq 1$.
+    If $s > 1$ then this is a contradiction and thus no optimal Hamiltonian path over $P$ can have a set transition multidigraph which contains two directed simple cycles which are symmetric with respect to each other.
+    If $s = 1$ then this implies that the newest Hamiltonian path $H^*$ is also optimal.
+    It then follows by construction that since $H^*$ contains strictly fewer symmetric simple cycles than $H$ that we can repeat this process until we have an optimal Hamiltonian path over $P$ which contains no symmetric simple cycles in its set transition multidigraph.
 \end{proof}
 
 
