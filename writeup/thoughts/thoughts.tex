@@ -456,19 +456,40 @@ There may be a way to deterministically say which of the two cases will occur ba
     Specifically, the endpoints $a'$ and $a''$ retain a degree of 1, and all other internal vertices retain a degree of 2.
     Because these degrees are perfectly preserved, any resulting graph from our deletion and replacement scheme must consist of exactly one path (from $a'$ to $a''$) and $c \geq 0$ disjoint cycles.
     
-    There must exist at least one permutation of deletions such that the resulting graphcontains no cycles.
+    Let $\GraphSet$ be the set of all $2^m$ possible permutations.
+    It can be noted that for every graph in $\GraphSet$, the degree of every vertex is exactly two except for the endpoints $a'$ and $a''$ which have degree one (the same as the original Hamiltonian path).
+    It subsequently follows that each graph in $\GraphSet$ is formed of a single path $R$ from $a'$ to $a''$ and $c \geq 1$ cycles (all disjoint from each other and the path).
+    There must exist at least one permutation of deletions such that the resulting graph contains no cycles.
     This can be shown by construction.
-    Consider some $P^*$ which contains at least one disjoint cycle and a path $R$ from $a'$ to $a''$ which contains at least one edge in $E$.\footnote{This can be formed by choosing any permutation which include the first edge in $E$ which is encountered in the path from $a'$ to $a''$.}
-    Since there is at least one cycle $R$ must not contain every point in $P$.
-    We can then traverse $R$ from $a'$ to $a''$ and note the last edge from $E$ which is encountered.
-    If this edge was of the form $e_i$ then we can delete it and replace it with $e'_i$ and if it was of the form $e'_i$ then we can delete it and replace it with $e_i$.
-    This forms a new valid permutation.
-    The new path $R'$ from $a'$ to $a''$ of this new permutation must contain strictly more new intra-set edges of the form $e^*_i$ than $R$ did since the last edge from $E$ in $R$ was replaced with an intra-set edge of the form $e^*_i$.
-    We can then repeat this process until we have a path from $a'$ to $a''$ which contains all of the edges of the form $e^*_i$ and thus contains no cycles and thus is a valid Hamiltonian path over $P$.
-    Let this new Hamiltonian path be $H^*$.
+    Let $G_{old}$ be a graph in $\GraphSet$ which contains at least one cycle.
 
+    Define $\hat{e_i}$ to be the edge from the pair $(e_i, e'_i)$ which is present in $G_{old}$ and $\tilde{e_i}$ to be the edge from the pair $(e_i, e'_i)$ which is not present in $G_{old}$.
+    Note that $R$ must contain at least one intra-set edge of the form $e^*_i$ for some $i \in \{1, \dots, m\}$ since it would otherwise be impossible to connect the endpoints $a'$ and $a''$ and also must not contain every intra-set edge of the form $e^*_i$ for some $i \in \{1, \dots, m\}$ since it would otherwise be impossible to have any cycles in the graph.
+    Thus there must exist at least one pair $(e^*_i, e^*_{i+1})$ such that $e^*_i \in R$ and $e^*_{i+1} \notin R$.
+    Let $Z$ be the distinct cycle in $G_{old}$ which contains $e^*_{i+1}$.
+    Let $Y$ be the distinct component in $G_{old}$ which contains $\hat{e_i}$.
+    Then we can consider creating a new graph $G_{new} \in \GraphSet$ where we swap the deleted and kept edges in the $i$th inter-set pair such that $\hat{e_i}$ is deleted and $\tilde{e_i}$ is kept.
+    
+    Let $a,b \in A_{k_i}$ be the endpoints of $e^*_i$ and let $c,d \in A_{k_{i+1}}$ be the endpoints of $e^*_{i+1}$.
+    Furthermore let $u \in A_{k_i}$ and $v \in A_{k_{i+1}}$ be the endpoints of $\hat{e_i}$.
+    Finally let $b,d$ be the endpoints of $\tilde{e_i}$ (this is the case as one endpoint from $e^*_i$ and one endpoint from $e^*_{i+1}$ must be used to form $\tilde{e_i}$).
+    Then it follows that $G_{new}$ is formed by removing the edges $(a,b),(c,d),(u,v)$ and adding the edges $(b,d),(a,u),(c,v)$.
 
-    Let $e_i^{kept}$ be the edge from the pair $(e_i, e'_i)$ which was kept in $H^*$ and let $e_i^{deleted}$ be the edge from the pair $(e_i, e'_i)$ which was deleted in $H^*$.
+    After the additions and deletions the affected components $\{R, Z, Y\}$ are partitioned into exactly four disjoint connected subpaths, which we denote $\PathSet = \{P_1, P_2, P_3, P_4\}$. 
+    This count of four subpaths holds universally regardless of whether $Y = R$, $Y = Z$, or all three components are distinct:
+    \begin{itemize}
+        \item \textbf{If $Y \neq R$ and $Y \neq Z$:} Deleting one edge from $R$ yields $2$ subpaths, while deleting one edge from each cycle $Z$ and $Y$ opens each into $1$ subpath.
+        \item \textbf{If $Y = R$:} Deleting two edges from $R$ yields $3$ subpaths, while deleting one edge from $Z$ opens it into $1$ subpath.
+        \item \textbf{If $Y = Z$:} Deleting one edge from $R$ yields $2$ subpaths, while deleting two edges from $Z$ splits it into $2$ subpaths.
+    \end{itemize}
+    Let $\mathcal{H}$ be the auxiliary component graph whose vertex set is $\mathcal{P}$, where an edge $(P_i, P_j)$ exists if an edge from $\{(a,u), (b,d), (c,v)\}$ connects an endpoint in $P_i$ to an endpoint in a different subpath $P_j$.
+    For each of the cut edges $(a,b),(c,d),(u,v)$, the two endpoints of the cut edge end up in different subpaths in $\mathcal{P}$.
+    Therefore, each of the three added edges $(a,u),(b,d),(c,v)$ connects two different subpaths in $\mathcal{P}$.
+    Furthermore, no two edges are the same since they each contain two endpoints out of the four which were originally on the same deleted edge but must now be in different subpaths.
+    Thus $\mathcal{H}$ is a simple graph with $4$ vertices and $3$ edges, which is necessarily connected.
+    It follows that in $G_{new}$, each of $R,Y,Z$ have been merged into a single path from $a'$ to $a''$ thus strictly reducing the number of disjoint cycles in the graph by at least one without affecting any other components in the graph.
+    It thus follows that there exists a graph $H^* \in \GraphSet$ which is a Hamiltonian path over $P$.
+
     Since $H$ was a optimal Hamiltonian path over $P$ it follows that $|H| \leq |H^*|$ and thus $\sum_{i=1}^m (|e_i| + |e'_i|) \leq \sum_{i=1}^m (|e_i^*| + |e_i^{kept}|)$ which can be rearranged to $\sum_{i=1}^m |e_i^{deleted}| \leq \sum_{i=1}^m |e_i^*|$.
     Since every set is pairwise $s$-well-separated with $s \geq 1$ it follows from \Cref{thm:fundamental_thm_wsp} that $\forall i \in \{1, \dots, m\}, |e_i^*| \leq \frac{1}{s} |e_i|, \frac{1}{s} |e'_i|$.
     Therefore $\sum_{i=1}^m |e_i^{deleted}| \leq \sum_{i=1}^m |e_i^*| \leq \frac{1}{s} \sum_{i=1}^m |e_i^{deleted}|$ which implies that $s \leq 1$.
