@@ -30,6 +30,8 @@
 \newcommand{\BigLength}{\mathcal{L}}
 \newcommand{\Cover}{\mathcal{C}}
 \newcommand{\ACollection}{\mathcal{A}}
+\newcommand{\GraphSet}{\mathcal{G}}
+\newcommand{\PathSet}{\mathcal{P}}
 
 \newcommand{\dist}{\delta}
 %\newcommand{\dist}{\mathcal{d}}
@@ -436,6 +438,7 @@ There may be a way to deterministically say which of the two cases will occur ba
 \begin{thm}
     Let $P = \bigcup_{i=1}^n A_i$ be a set of points where $A_1, A_2, \ldots, A_n$ are all pairwise $s$-well-separated with $s \geq 1.0$ (and $n \geq 3$).
     Then there exists an optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$ where its induced set transition multidigraph $G$ never contains two directed simple cycles which are symmetric with respect to each other.
+    Furthermore if $s > 1.0$ then all optimal Hamiltonian paths must satisfy this property.
 \end{thm}
 \begin{proof}
     Consider some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
@@ -451,15 +454,11 @@ There may be a way to deterministically say which of the two cases will occur ba
     Next we will consider removing any permutation of $m$ edges from the Hamiltonian path where we remove exactly one edge from each pair in $E$.
     This will break the Hamiltonia path into $m+1$ disjoint subpaths.
     We can then replace the deleted edge from each $i$th pair with a new set-internal edge which connects $u$ and $z$ where $u$ is the endpoint of the deleted edge in the $i$th pair which belongs to $A_{k_i}$ and $z$ is the endpoint of the deleted edge in the $i-1$th pair which belongs to $A_{k_i}$ we will label this new edge as $e^*_i$.
-
-    Notice that for any of the $2^m$ possible permutations of deletions, the degree of every vertex in $P$ remains exactly as it was in the original Hamiltonian path $H$.
-    Specifically, the endpoints $a'$ and $a''$ retain a degree of 1, and all other internal vertices retain a degree of 2.
-    Because these degrees are perfectly preserved, any resulting graph from our deletion and replacement scheme must consist of exactly one path (from $a'$ to $a''$) and $c \geq 0$ disjoint cycles.
     
     Let $\GraphSet$ be the set of all $2^m$ possible permutations.
     It can be noted that for every graph in $\GraphSet$, the degree of every vertex is exactly two except for the endpoints $a'$ and $a''$ which have degree one (the same as the original Hamiltonian path).
     It subsequently follows that each graph in $\GraphSet$ is formed of a single path $R$ from $a'$ to $a''$ and $c \geq 1$ cycles (all disjoint from each other and the path).
-    There must exist at least one permutation of deletions such that the resulting graph contains no cycles.
+    There must exist at least one permutation of deletions such that the resulting graph contains no cycles (it is a Hamiltonian path).
     This can be shown by construction.
     Let $G_{old}$ be a graph in $\GraphSet$ which contains at least one cycle.
 
@@ -475,7 +474,7 @@ There may be a way to deterministically say which of the two cases will occur ba
     Finally let $b,d$ be the endpoints of $\tilde{e_i}$ (this is the case as one endpoint from $e^*_i$ and one endpoint from $e^*_{i+1}$ must be used to form $\tilde{e_i}$).
     Then it follows that $G_{new}$ is formed by removing the edges $(a,b),(c,d),(u,v)$ and adding the edges $(b,d),(a,u),(c,v)$.
 
-    After the additions and deletions the affected components $\{R, Z, Y\}$ are partitioned into exactly four disjoint connected subpaths, which we denote $\PathSet = \{P_1, P_2, P_3, P_4\}$. 
+    After the deletions the affected components $\{R, Z, Y\}$ are partitioned into exactly four disjoint connected subpaths, which we denote $\PathSet = \{P_1, P_2, P_3, P_4\}$. 
     This count of four subpaths holds universally regardless of whether $Y = R$, $Y = Z$, or all three components are distinct:
     \begin{itemize}
         \item \textbf{If $Y \neq R$ and $Y \neq Z$:} Deleting one edge from $R$ yields $2$ subpaths, while deleting one edge from each cycle $Z$ and $Y$ opens each into $1$ subpath.
@@ -486,7 +485,8 @@ There may be a way to deterministically say which of the two cases will occur ba
     For each of the cut edges $(a,b),(c,d),(u,v)$, the two endpoints of the cut edge end up in different subpaths in $\mathcal{P}$.
     Therefore, each of the three added edges $(a,u),(b,d),(c,v)$ connects two different subpaths in $\mathcal{P}$.
     Furthermore, no two edges are the same since they each contain two endpoints out of the four which were originally on the same deleted edge but must now be in different subpaths.
-    Thus $\mathcal{H}$ is a simple graph with $4$ vertices and $3$ edges, which is necessarily connected.
+    Since $G_{new} \in \GraphSet$ there must exist a path from $a'$ to $a''$ in $G_{new}$ and thus there must exist a path in $\mathcal{H}$ from the subpath containing $a'$ to the subpath containing $a''$.
+    Thus $\mathcal{H}$ is a simple graph with $4$ vertices and $3$ edges, which is necessarily connected due to the previous facts and that every vertex in $G_{new}$ has degree two except for $a'$ and $a''$ which have degree one.
     It follows that in $G_{new}$, each of $R,Y,Z$ have been merged into a single path from $a'$ to $a''$ thus strictly reducing the number of disjoint cycles in the graph by at least one without affecting any other components in the graph.
     It thus follows that there exists a graph $H^* \in \GraphSet$ which is a Hamiltonian path over $P$.
 
@@ -497,16 +497,6 @@ There may be a way to deterministically say which of the two cases will occur ba
     If $s = 1$ then this implies that the newest Hamiltonian path $H^*$ is also optimal.
     It then follows by construction that since $H^*$ contains strictly fewer symmetric simple cycles than $H$ that we can repeat this process until we have an optimal Hamiltonian path over $P$ which contains no symmetric simple cycles in its set transition multidigraph.
 \end{proof}
-
-
-
-%\begin{proof}
-%    Consider the induced Eulerian walk of some optimal Hamiltonian path over $P$ which starts at $a' \in A_i$ and ends at $a'' \in A_j$.
-%    Suppose the two parallel paths start on a vertex $A \in \ACollection$ and end on a vertex $C \in \ACollection$ where one path is of length one and the other is of length two.
-%    Let the intermediate vertex on the length two path be $B \in \ACollection$.
-%    WLOG assume the length one path is traversed first in the Eulerian walk.
-%    We will label the following edges in the Hamiltonian path over $P$ as follows $(a_1, c_1), (a_2, b_1), (b_2, c_2)$ where $a_i \in A$, $b_i \in B$, and $c_i \in C$ each corresponding to the edges in the induced Eulerian walk.
-%\end{proof}
 
 
 \section{Algorithms}
