@@ -1,6 +1,6 @@
 import numpy as np
 
-def generate_points(n_inner=5, n_outer=5, k=2, s=1.0):
+def generate_points(n_inner=3, n_outer=3, k=2, s=3.0):
     """
     Generates an inner cloud of points and well-separated outer points.
     k: Number of dimensions.
@@ -135,7 +135,7 @@ def run_simulation(trials=100, k=2, seed=42):
     
     for i in range(trials):
         # Generate configurations (5 inner, 5 outer minimum)
-        points, n_inner = generate_points(n_inner=5, n_outer=5, k=k, s=1.0)
+        points, n_inner = generate_points(k=k)
         
         start_idx = 0                  # First point in inner cloud
         end_idx = len(points) - 1      # Last point in outer cloud
@@ -169,4 +169,4 @@ def run_simulation(trials=100, k=2, seed=42):
         print(f"Result: {violations} paths violated the condition.")
 
 if __name__ == "__main__":
-    run_simulation(trials=10000, k=2, seed=44)
+    run_simulation(trials=100000, k=2, seed=44)
