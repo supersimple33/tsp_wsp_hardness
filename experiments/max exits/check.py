@@ -1,6 +1,6 @@
 import numpy as np
 
-def generate_points(n_inner=3, n_outer=3, k=2, s=3.0):
+def generate_points(k, n_inner=5, n_outer=5, s=1.0):
     """
     Generates an inner cloud of points and well-separated outer points.
     k: Number of dimensions.
@@ -148,7 +148,7 @@ def run_simulation(trials=100, k=2, seed=42):
         max_exits_seen = max(max_exits_seen, exits)
         
         # Report violations with exact coordinates
-        if exits > 2:
+        if exits > 3:
             violations += 1
             print(f"Trial {i+1}: VIOLATION! Exited {exits} times.")
             print(f"Path sequence (by index): {path}")
@@ -169,4 +169,4 @@ def run_simulation(trials=100, k=2, seed=42):
         print(f"Result: {violations} paths violated the condition.")
 
 if __name__ == "__main__":
-    run_simulation(trials=100000, k=2, seed=44)
+    run_simulation(trials=100_000, k=3, seed=44)
