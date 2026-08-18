@@ -8,47 +8,73 @@ def set_seed(seed):
     np.random.seed(seed)
 
 @njit
-def generate_points(k, n_inner=4, n_outer=4, s=0.25):
+def generate_points(k, n_inner=4, n_outer=4, s=1.0):
     """
     Generates an inner cloud of points and well-separated outer points.
     k: Number of dimensions.
-    s: Minimum separation distance.
+    s: Separation multiplier relative to maximum inner distance.
+    All points are generated within a ball of radius 2.
     """
     n_total = n_inner + n_outer
-    # Pre-allocate array for speed instead of appending to lists
-    points = np.zeros((n_total, k), dtype=np.float64)
+    points = np.zeros((n_total, k), dtype=np.float32)
     
-    # 1. Generate inner cloud (A1)
-    for i in range(n_inner):
-        v = np.random.normal(0.0, 1.0, k)
-        norm_v = np.linalg.norm(v)
-        if norm_v == 0.0:  # Edge case protection
-            v = np.zeros(k)
-            v[0] = 1.0
-            norm_v = 1.0
-        v /= norm_v # Project to unit surface
-        r = (np.random.uniform(0.0, 1.0)**(1.0/k)) * 0.5 # Scale by radius
-        points[i] = v * r
-    
-    # 2. Generate outer points (A2 ... An)
-    R_bound = max(5.0, s * n_outer) # Search space radius
-    count = n_inner
-    
-    while count < n_total:
-        p = np.random.uniform(-R_bound, R_bound, k)
-        
-        # Check separation constraint
-        valid = True
-        for j in range(count):
-            if np.linalg.norm(p - points[j]) < s:
-                valid = False
-                break
-                
-        if valid:
-            points[count] = p
-            count += 1
+    while True:
+        # 1. Generate inner cloud (A1) within a ball of radius 2
+        for i in range(n_inner):
+            v = np.random.normal(0.0, 1.0, k)
+            norm_v = np.linalg.norm(v)
+            if norm_v == 0.0:  # Edge case protection
+                v = np.zeros(k)
+                v[0] = 1.0
+                norm_v = 1.0
+            v /= norm_v # Project to unit surface
+            r = (np.random.uniform(0.0, 1.0)**(1.0/k)) * 2.0 # Scale by radius 2
+            points[i] = v * r
             
-    return points, n_inner
+        # 2. Calculate the maximum distance between any pair of inner points
+        max_inner_dist = 0.0
+        for i in range(n_inner):
+            for j in range(i + 1, n_inner):
+                d = np.linalg.norm(points[i] - points[j])
+                if d > max_inner_dist:
+                    max_inner_dist = d
+                    
+        # The required minimum separation distance to outer points
+        min_separation = s * max_inner_dist
+        
+        # 3. Generate outer points within the same ball of radius 2
+        count = n_inner
+        attempts = 0
+        max_attempts = 5000 # Prevent infinite loop if layout is too constrained
+        
+        while count < n_total and attempts < max_attempts:
+            attempts += 1
+            
+            # Generate candidate outer point
+            v = np.random.normal(0.0, 1.0, k)
+            norm_v = np.linalg.norm(v)
+            if norm_v == 0.0:
+                v = np.zeros(k)
+                v[0] = 1.0
+                norm_v = 1.0
+            v /= norm_v
+            r = (np.random.uniform(0.0, 1.0)**(1.0/k)) * 2.0
+            p = v * r
+            
+            # Check condition: must be at least `min_separation` away from ALL inner points
+            valid = True
+            for j in range(n_inner):
+                if np.linalg.norm(p - points[j]) < min_separation:
+                    valid = False
+                    break
+                    
+            if valid:
+                points[count] = p
+                count += 1
+                
+        # If we successfully found enough outer points, break and return
+        if count == n_total:
+            return points, n_inner
 
 @njit
 def solve_optimal_hamiltonian_path(points, start_idx, end_idx):
@@ -181,4 +207,4 @@ def run_simulation(trials=100, k=2, seed=42, max_exits=2):
         print(f"Result: {violations} paths violated the condition.")
 
 if __name__ == "__main__":
-    run_simulation(trials=100_000_000, k=3, seed=4, max_exits=3)
+    run_simulation(trials=1_000_000, k=2, seed=4, max_exits=3)
