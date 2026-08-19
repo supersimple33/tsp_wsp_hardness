@@ -18,7 +18,7 @@ def calc_dist(p1, p2):
     return math.sqrt(d)
 
 @njit(fastmath=True)
-def generate_points(k, n_inner=4, n_outer=4, s=1.0):
+def generate_points(k, n_inner, n_outer, s):
     n_total = n_inner + n_outer
     points = np.zeros((n_total, k), dtype=np.float32)
     
@@ -191,17 +191,22 @@ def run_simulation_batch(batch_size, k, n_inner, n_outer, s, base_seed, batch_of
         
     return points_out, paths_out, exits_out, n_inner
 
-def run_simulation(trials=1_000_000, k=2, seed=4, max_exits=3, batch_size=10_000):
+def run_simulation(
+        trials, 
+        k, 
+        seed, 
+        max_exits, 
+        s, 
+        n_inner,
+        n_outer, 
+        batch_size=5_000
+):
     print(f"Running {trials} trials in k={k} dimensions (Seed: {seed})...")
     print("Testing if any path exits the inner cloud more than twice.\n")
     print("Compiling Numba functions (the progress bar will pause briefly at 0%)...\n")
     
     max_exits_seen = 0
     violations = 0
-    
-    n_inner = 4
-    n_outer = 4
-    s = 1.0
     
     num_batches = (trials + batch_size - 1) // batch_size
     
@@ -251,4 +256,4 @@ def run_simulation(trials=1_000_000, k=2, seed=4, max_exits=3, batch_size=10_000
         print(f"Result: {violations} paths violated the condition.")
 
 if __name__ == "__main__":
-    run_simulation(trials=1_000_000, k=2, seed=4, max_exits=3)
+    run_simulation(trials=1_000_000, k=2, seed=4, max_exits=3, s=1.5, n_inner=4, n_outer=4)
