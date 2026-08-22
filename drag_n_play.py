@@ -1,20 +1,18 @@
 import tkinter as tk
 import math
 import itertools
+import random
 
 # 1. Define your exact mathematical points here
-STARTING_POINTS = [
-(-0.5443, -0.3362),
-(-1.2518, -1.5293),
-(-0.1841, -0.5928),
-(1.4999, -1.2143),
-(0.5417, -0.1889),
-(0.5128, 1.5859),
-(-0.4579, 0.2871),
-(-1.5554, 1.1592),
-]
+STARTING_POINTS = None
 
-NUM_POINTS = len(STARTING_POINTS)
+NUM_POINTS = 8
+# --- Configuration Logic ---
+if STARTING_POINTS is not None:
+    NUM_POINTS = len(STARTING_POINTS)
+else:
+    # Generate NUM_POINTS random coordinates in a reasonable math range
+    STARTING_POINTS = [(random.uniform(-2.0, 2.0), random.uniform(-2.0, 2.0)) for _ in range(NUM_POINTS)]
 
 class TSPSolverApp:
     def __init__(self, root):
@@ -40,7 +38,7 @@ class TSPSolverApp:
         self.canvas = tk.Canvas(root, bg="white", cursor="cross")
         self.canvas.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # 2. Scale mathematical coordinates to fit the GUI canvas
+        # 3. Scale mathematical coordinates to fit the GUI canvas
         self.points = []
         min_x = min(p[0] for p in STARTING_POINTS)
         max_x = max(p[0] for p in STARTING_POINTS)
