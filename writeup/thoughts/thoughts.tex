@@ -40,6 +40,32 @@
 \DeclareMathOperator{\diam}{diam}
 \DeclareMathOperator{\degr}{deg}
 
+% MARK: Patches % TODO: make a package out of this?
+
+\makeatletter
+\providecommand{\BackrefFootnoteTag}{}
+\newcounter{mathfoot@count}
+
+\newcommand{\mathfootnote}[1]{%
+  \ifmeasuring@\else
+    \stepcounter{mathfoot@count}%
+    \footnotemark
+    \g@addto@macro\mathfoot@list{%
+      \stepcounter{footnote}%
+      \footnotetext{#1}%
+    }%
+  \fi
+}
+
+\newcommand{\flushmathfootnotes}{%
+  \addtocounter{footnote}{-\value{mathfoot@count}}%
+  \mathfoot@list
+  \global\let\mathfoot@list\@empty
+  \setcounter{mathfoot@count}{0}%
+}
+\let\mathfoot@list\@empty
+\makeatother
+
 \begin{document}
 \maketitle
 
