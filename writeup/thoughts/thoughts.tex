@@ -40,31 +40,6 @@
 \DeclareMathOperator{\diam}{diam}
 \DeclareMathOperator{\degr}{deg}
 
-% MARK: Patches % TODO: make a package out of this?
-
-\makeatletter
-\providecommand{\BackrefFootnoteTag}{}
-\newcounter{mathfoot@count}
-
-\newcommand{\mathfootnote}[1]{%
-  \ifmeasuring@\else
-    \stepcounter{mathfoot@count}%
-    \footnotemark
-    \g@addto@macro\mathfoot@list{%
-      \stepcounter{footnote}%
-      \footnotetext{#1}%
-    }%
-  \fi
-}
-
-\newcommand{\flushmathfootnotes}{%
-  \addtocounter{footnote}{-\value{mathfoot@count}}%
-  \mathfoot@list
-  \global\let\mathfoot@list\@empty
-  \setcounter{mathfoot@count}{0}%
-}
-\let\mathfoot@list\@empty
-\makeatother
 
 \begin{document}
 \maketitle
@@ -523,6 +498,51 @@ There may be a way to deterministically say which of the two cases will occur ba
     If $s = 1$ then this implies that the newest Hamiltonian path $H^*$ is also optimal.
     It then follows by construction that since $H^*$ contains strictly fewer symmetric simple cycles than $H$ that we can repeat this process until we have an optimal Hamiltonian path over $P$ which contains no symmetric simple cycles in its set transition multidigraph.
 \end{proof}
+
+\begin{thm}
+    For all $k>= 2$ and $s \geq 1$ there exists two sets of $k$ points $I$ and $O$ such that all points form a metric and all points in $I$ are at most 1 unit away from each other and all points in $O$ are at least $s$ units away from any point in $I$ and there exists an optimal Hamiltonian path over $I \cup O$ which starts at a point in $I$ and ends at a point in $O$ which alternates between points in $I$ and $O$.
+\end{thm}
+\begin{proof}
+    We can construct a metric space with $k$ points in $I$ and $k$ points in $O$ as follows:
+    Let $\dist(i_a, i_b) = 1$ for all $i_a, i_b \in I$ where $i_a \neq i_b$.
+    Let $\dist(i_a, o_b) = s$ for all $i_a \in I$ and $o_b \in O$.
+    Let $\dist(o_a, o_b) = 2s$ for all $o_a, o_b \in O$ where $o_a \neq o_b$.
+    This space clearly satisifies positivity and symmetry.
+    To show that it satisfies the triangle inequality we can consider all possible combinations of three points:
+    \begin{alignat*}{4}
+        \bullet\quad & i_a, i_b, i_c \in I:       &\quad \dist(i_a, i_b) + \dist(i_b, i_c) &{}= 1  + 1  &&\geq 1  &&{}= \dist(i_a, i_c) \\
+        \bullet\quad & i_a, i_b \in I, o_c \in O: &\quad \dist(i_a, i_b) + \dist(i_b, o_c) &{}= 1  + s  &&\geq s  &&{}= \dist(i_a, o_c) \\
+        \bullet\quad & i_a \in I, o_b, o_c \in O: &\quad \dist(i_a, o_b) + \dist(o_b, o_c) &{}= s  + 2s &&\geq s  &&{}= \dist(i_a, o_c) \\
+        \bullet\quad & o_a, o_b, o_c \in O:       &\quad \dist(o_a, o_b) + \dist(o_b, o_c) &{}= 2s + 2s &&\geq 2s &&{}= \dist(o_a, o_c)
+    \end{alignat*}
+    Thus the space is a metric.
+
+    Consider some Hamiltonian path $P$ over $I \cup O$ which starts at a point in $I$ and ends at a point in $O$.
+    Let $x$ be the number of edges in the path which connect two points in $I$.
+    Let $y$ be the number of edges in the path which connect two points in $O$.
+    Let $z$ be the number of edges in the path which connect a point in $I$ to a point in $O$ or vice versa.
+    First note that the sum of the degrees of all $I$ nodes must be $2(k-1) + 1 = 2k - 1$ and the same will follow for $O$ nodes.
+    Then it follows that $2x + z = 2k - 1$ and $2y + z = 2k - 1$ since each intra-set edge contributes $2$ to the sum of degrees and each inter-set edge contributes $1$ to the sum of degrees.
+    Then it follows that $2x + z = 2y + z$ and thus $x = y$.
+    Also note that $z = 2k - 1 - 2x$.
+
+    Thus the length of the path $P$ can be expressed as:
+    \begin{align*}
+        |P| &= x(1) + y(2s) + z(s) \\
+        &= x(1) + x(2s) + z(s)\text{ since $x = y$} \\
+        &= x(1) + x(2s) + (2k - 1 - 2x)(s)\text{ since $z = 2k - 1 - 2x$} \\
+        &= x + 2xs + (2k - 1)s - 2xs \\
+        &= x + (2k - 1)s.
+    \end{align*}
+    The length of the path is minimized when $x = 0$ and thus $y = 0$ and $z = 2k - 1$.
+    This implies that the optimal Hamiltonian path over $I \cup O$ must alternate between points in $I$ and $O$.
+\end{proof}
+
+\begin{corollary}
+    Let $s \geq 1$, $n \geq 3$, and $k \leq n$.
+    There exists a point set $P = \bigcup_{i=1}^n A_i$ in a metric space, where the subsets $A_1, \ldots, A_n$ are pairwise $s$-well-separated, such that every optimal Hamiltonian path on $P$ from $a' \in A_i$ to $a'' \in A_j$ induces a set transition multidigraph containing a node $A_l$ with in-degree and out-degree at least $k$.
+\end{corollary}
+% In euclidean space this may not be the case
 
 
 \section{Algorithms}
