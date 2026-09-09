@@ -4,7 +4,24 @@ import itertools
 import random
 
 # 1. Define your exact mathematical points here
-STARTING_POINTS = None
+#STARTING_POINTS = [
+#(0.0000, 0.0000),
+#(-3.0415, -6.1782),
+#(-1.4550, 0.3954),
+#(0.1033, 0.9037),
+#(0.5625, 6.2370),
+#(-1.4280, 1.3681),
+#]
+STARTING_POINTS = [
+(0.0000, 0.0000),
+(7.2544, -8.9463),
+(5.1237, 3.3330),
+(0.5451, 2.3238),
+(-0.7575, 0.4231),
+(-4.9591, 0.9409),
+(-8.3949, 8.2196),
+(0.1790, 2.9082),
+]
 
 NUM_POINTS = 8
 # --- Configuration Logic ---

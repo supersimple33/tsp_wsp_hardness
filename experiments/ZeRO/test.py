@@ -19,15 +19,13 @@ def calc_dist(p1, p2):
 @njit(fastmath=True)
 def generate_points(k, s):
     # Indices mapping: 
-    # 0, 1 -> G1 (2-point group)
-    # 2, 3 -> G2 (2-point group)
-    # 4 -> G3 (1-point group)
-    # 5 -> G4 (1-point group)
-    points = np.zeros((6, k), dtype=np.float32)
+    # 0, 1 -> G1 (2-point group, clustered within radius 1)
+    # 2, 3 -> G2 (2-point group, clustered within radius 1)
+    # 4, 5 -> G3 (2-point group, unconstrained internally, >= S from G1 & G2)
+    # 6, 7 -> G4 (2-point group, unconstrained internally, >= S from G1 & G2)
+    points = np.zeros((8, k), dtype=np.float32)
     temp_p = np.zeros(k, dtype=np.float32)
     
-    # Scale bounds dynamically based on S to guarantee we have enough volume
-    # to quickly find valid configurations.
     scale = 4.0 * s + 2.0 
     
     while True:
@@ -82,50 +80,41 @@ def generate_points(k, s):
                 break
         if not valid: continue
         
-        # 5. Place P4 (G3: 1-point group), must be >= S from G1, G2
-        valid = False
-        for _ in range(500):
-            for d in range(k):
-                temp_p[d] = np.random.uniform(-scale, scale)
-            ok = True
-            for j in range(4):
-                if calc_dist(temp_p, points[j]) < s:
-                    ok = False
-                    break
-            if ok:
+        # 5. Place Points 4, 5 (G3) and 6, 7 (G4)
+        # Only required to be >= S from G1 (0, 1) and G2 (2, 3)
+        failed = False
+        for p_idx in range(4, 8):
+            pt_placed = False
+            for _ in range(500):
                 for d in range(k):
-                    points[4, d] = temp_p[d]
-                valid = True
-                break
-        if not valid: continue
-        
-        # 6. Place P5 (G4: 1-point group), must be >= S from G1, G2, G3
-        valid = False
-        for _ in range(500):
-            for d in range(k):
-                temp_p[d] = np.random.uniform(-scale, scale)
-            ok = True
-            for j in range(5):
-                if calc_dist(temp_p, points[j]) < s:
-                    ok = False
+                    temp_p[d] = np.random.uniform(-scale, scale)
+                
+                # Check separation only against points in G1 and G2
+                ok = True
+                for j in range(4):
+                    if calc_dist(temp_p, points[j]) < s:
+                        ok = False
+                        break
+                if ok:
+                    for d in range(k):
+                        points[p_idx, d] = temp_p[d]
+                    pt_placed = True
                     break
-            if ok:
-                for d in range(k):
-                    points[5, d] = temp_p[d]
-                valid = True
+            if not pt_placed:
+                failed = True
                 break
-        if not valid: continue
+        if failed: continue
         
-        # Survived all pruning!
         return points
 
 def get_permutations():
-    """Precomputes all Hamiltonian path permutations."""
-    # Start: Any point in G1 (0, 1). End: Any point in G2 (2, 3)
+    """Precomputes all Hamiltonian path permutations for 8 nodes."""
+    # Start: Any point in G1 (0, 1). End: Any point in G2 (2, 3).
+    # Remaining 6 middle nodes permuted (2 * 2 * 6! = 2,880 paths).
     perms = []
     for start_node in [0, 1]:
         for end_node in [2, 3]:
-            middle_nodes = [i for i in range(6) if i != start_node and i != end_node]
+            middle_nodes = [i for i in range(8) if i != start_node and i != end_node]
             for p in itertools.permutations(middle_nodes):
                 perms.append((start_node,) + p + (end_node,))
                 
@@ -133,7 +122,7 @@ def get_permutations():
 
 @njit(fastmath=True)
 def solve_optimal_hamiltonian_path(points, perms):
-    n = 6
+    n = 8
     dist = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
         for j in range(i + 1, n):
@@ -164,12 +153,11 @@ def solve_optimal_hamiltonian_path(points, perms):
 def is_flagged(path):
     """
     Checks if there are 2 disjoint subpaths from G1 to G2.
-    Since the path starts in G1 and ends in G2, this exclusively happens 
-    when the sequence of visits to the two groups is exactly G1 -> G2 -> G1 -> G2.
+    Scans the 8-node path for the exact visit sequence G1 -> G2 -> G1 -> G2.
     """
     g_seq = np.zeros(4, dtype=np.int32)
     idx = 0
-    for i in range(6):
+    for i in range(8):
         node = path[i]
         if node == 0 or node == 1:
             g_seq[idx] = 0
@@ -178,7 +166,6 @@ def is_flagged(path):
             g_seq[idx] = 1
             idx += 1
             
-    # Check if the sequence corresponds to [G1, G2, G1, G2]
     if g_seq[0] == 0 and g_seq[1] == 1 and g_seq[2] == 0 and g_seq[3] == 1:
         return True
     return False
@@ -209,7 +196,6 @@ def run_simulation_batch(batch_size, k, s, base_seed, batch_offset, perms):
     for i in range(batch_size):
         if flags_out[i] == 1:
             violations += 1
-            # Save the first one we find to output its coordinates
             if best_local_idx == -1:
                 best_local_idx = i
                 
@@ -220,13 +206,13 @@ def run_simulation_batch(batch_size, k, s, base_seed, batch_offset, perms):
         worst_path, worst_cost = solve_optimal_hamiltonian_path(worst_points, perms)
         return violations, worst_points, worst_path, worst_global_idx + 1
         
-    dummy_points = np.zeros((6, k), dtype=np.float32)
-    dummy_path = np.zeros(6, dtype=np.int32)
+    dummy_points = np.zeros((8, k), dtype=np.float32)
+    dummy_path = np.zeros(8, dtype=np.int32)
     return violations, dummy_points, dummy_path, -1
 
-def run_simulation(trials, k, seed, s, batch_size=5_000):
+def run_simulation(trials, k, seed, s, batch_size=2_000):
     print(f"Running {trials:,} trials in {k} dimensions (Seed: {seed}, S={s})...")
-    print(f"Testing for disjoint subpaths from G1 to G2.")
+    print("Testing for disjoint subpaths from G1 to G2 across 8 total points.")
     print("Compiling Numba functions (the progress bar will pause briefly at 0%)...\n")
     
     total_flags = 0
@@ -246,7 +232,6 @@ def run_simulation(trials, k, seed, s, batch_size=5_000):
         if b_violations > 0:
             total_flags += b_violations
             
-            # Print the detailed layout of only the FIRST flagged occurrence to avoid console spam.
             if not flag_logged:
                 flag_logged = True
                 
@@ -260,8 +245,8 @@ def run_simulation(trials, k, seed, s, batch_size=5_000):
                 for step_num, p_idx in enumerate(b_path):
                     if p_idx in [0, 1]: group = "G1 (2-pt)"
                     elif p_idx in [2, 3]: group = "G2 (2-pt)"
-                    elif p_idx == 4: group = "G3 (1-pt)"
-                    else: group = "G4 (1-pt)"
+                    elif p_idx in [4, 5]: group = "G3 (2-pt)"
+                    else: group = "G4 (2-pt)"
                     
                     coords = ", ".join([f"{c:.4f}" for c in b_points[p_idx]])
                     report.append(f"  Step {step_num + 1}: Index {p_idx} [{group}] -> ({coords})")
@@ -277,5 +262,4 @@ def run_simulation(trials, k, seed, s, batch_size=5_000):
         print(f"Result: Flagged condition occurred {total_flags:,} times.")
 
 if __name__ == "__main__":
-    # Adjust inputs heavily depending on how large you want your spacing "S" or dimensional density
-    run_simulation(trials=100_000_000, k=2, seed=41, s=1.5)
+    run_simulation(trials=10_000_000_000, k=2, seed=17, s=3.0)
