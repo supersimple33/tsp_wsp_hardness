@@ -1,3 +1,14 @@
+"""
+Objective: Test the hypothesis that for 4 groups of points (G1, G2, G3, G4)
+the optimal hamiltonian path from a point in G1 to a point in G2 will never
+have two disjoint subpaths that connect G1 and G2. (ie the following is 
+impossible: G1 -> G3 -> G2 ->  G1 -> G4 -> G2).
+Given the distance of any two points within G1 is at most one and the distance
+between any two points in G2 is at most one. And the distance between a point
+within G1 and any outside point is at least :math:`s`, and the distance between a point
+within G2 and any outside point is at least :math:`s`.
+"""
+
 import numpy as np
 from numba import njit, prange
 from tqdm import tqdm
@@ -280,4 +291,4 @@ def run_simulation(trials, k=2, seed=17, s=3.0, batch_size=50_000):
         print(f"Result: Flagged condition occurred {total_flags:,} times.")
 
 if __name__ == "__main__":
-    run_simulation(trials=10_000_000_000, k=2, seed=17, s=3.0, batch_size=20_000)
+    run_simulation(trials=100_000_000, k=2, seed=18, s=2.5, batch_size=20_000)
