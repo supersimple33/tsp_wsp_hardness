@@ -1,12 +1,13 @@
 """
-Objective: Test the hypothesis that for 4 groups of points (G1, G2, G3, G4)
+Objective: Test the hypothesis that for 3 groups of points (G1, G2, G3)
 the optimal hamiltonian path from a point in G1 to a point in G2 will never
 have two disjoint subpaths that connect G1 and G2. (ie the following is 
-impossible: G1 -> G3 -> G2 ->  G1 -> G4 -> G2).
+impossible: G1 -> G2 ->  G1 -> G3 -> G2).
 Given the distance of any two points within G1 is at most one and the distance
 between any two points in G2 is at most one. And the distance between a point
 within G1 and any outside point is at least :math:`s`, and the distance between a point
-within G2 and any outside point is at least :math:`s`.
+within G2 and any outside point is at least :math:`s`. Importantly points in G3 can be
+arbitrarily close to each other.
 """
 
 import numpy as np
@@ -48,11 +49,11 @@ def next_uniform(state, low, high):
 @njit(fastmath=True)
 def generate_points_2d(points, s, s_sq, scale, state):
     while True:
-        # P0 at origin
+        # P0 at origin (G1)
         points[0, 0] = 0.0
         points[0, 1] = 0.0
         
-        # P1 in unit disk around P0 (polar sampling)
+        # P1 in unit disk around P0 (G1)
         state, u1 = next_f32(state)
         state, u2 = next_f32(state)
         r = np.float32(math.sqrt(u1))
@@ -60,7 +61,7 @@ def generate_points_2d(points, s, s_sq, scale, state):
         points[1, 0] = r * np.float32(math.cos(theta))
         points[1, 1] = r * np.float32(math.sin(theta))
         
-        # P2: >= S from P0 and P1
+        # P2: >= S from P0 and P1 (G2)
         valid = False
         for _ in range(500):
             state, px = next_uniform(state, -scale, scale)
@@ -76,7 +77,7 @@ def generate_points_2d(points, s, s_sq, scale, state):
                 break
         if not valid: continue
         
-        # P3 in unit disk around P2, >= S from P0 and P1
+        # P3 in unit disk around P2, >= S from P0 and P1 (G2)
         valid = False
         for _ in range(500):
             state, u1 = next_f32(state)
@@ -96,7 +97,7 @@ def generate_points_2d(points, s, s_sq, scale, state):
                 break
         if not valid: continue
         
-        # P4..P7: >= S from G1 (0, 1) and G2 (2, 3)
+        # P4..P7: >= S from G1 (0, 1) and G2 (2, 3) (G3 - Arbitrarily close to each other allowed)
         failed = False
         for p_idx in range(4, 8):
             placed = False
@@ -134,7 +135,7 @@ def fill_dist_matrix_2d(points, dist):
             dist[j, i] = d
 
 
-# --- 3. Branch-and-Bound TSP Search (Replaces 2,880 iterations) ---
+# --- 3. Branch-and-Bound TSP Search ---
 
 @njit(fastmath=True, inline='always')
 def search_pair(s, t, other_g1, other_g2, dist, best_cost, best_is_flagged):
@@ -255,7 +256,7 @@ def log_flagged_trial(seed, global_idx, s):
         "Coordinates in path order:"
     ]
     for step_num, p_idx in enumerate(best_path):
-        group = "G1" if p_idx in [0, 1] else ("G2" if p_idx in [2, 3] else ("G3" if p_idx in [4, 5] else "G4"))
+        group = "G1" if p_idx in [0, 1] else ("G2" if p_idx in [2, 3] else "G3")
         report.append(f"  Step {step_num + 1}: Index {p_idx} [{group}] -> ({pts[p_idx, 0]:.4f}, {pts[p_idx, 1]:.4f})")
     report.append("-" * 40)
     tqdm.write("\n".join(report))
@@ -291,4 +292,4 @@ def run_simulation(trials, k=2, seed=17, s=3.0, batch_size=50_000):
         print(f"Result: Flagged condition occurred {total_flags:,} times.")
 
 if __name__ == "__main__":
-    run_simulation(trials=100_000_000, k=2, seed=18, s=2.5, batch_size=20_000)
+    run_simulation(trials=100_000_000, k=2, seed=18, s=1.5, batch_size=20_000)
