@@ -1,3 +1,12 @@
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#     "numba>=0.67.0",
+#     "numpy>=2.5.3",
+#     "tqdm>=4.70.0",
+# ]
+# ///
+
 """
 Objective: Test the hypothesis that for 3 groups of points (G1, G2, G3)
 the optimal hamiltonian path from a point in G1 to a point in G2 will never
