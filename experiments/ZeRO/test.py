@@ -469,8 +469,10 @@ def run_simulation(trials=100_000, n_g3=4, s=1.5, seed=18, batch_size=20_000, ch
     return total_global_flags, total_any_flags
 
 
-def run_sweep(s_values, trials_per_s=50_000, n_g3=4, seed=18, batch_size=20_000):
+def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, seed=18, batch_size=20_000):
     """Sweeps multiple values of s to locate the empirical transition threshold."""
+    if s_values is None:
+        s_values = [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5]
     print("=" * 60)
     print(f"Starting parameter sweep over s: {s_values}")
     print(f"Trials per s = {trials_per_s:,}, G3 size = {n_g3}, Seed = {seed}")
@@ -508,18 +510,39 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Test the hypothesis that an optimal Hamiltonian path from G1 to G2 never contains two disjoint subpaths connecting G1 and G2."
     )
-    parser.add_argument("--trials", type=int, default=100_000_000, help="Number of Monte Carlo trials (default: 100,000)")
-    parser.add_argument("--s", type=float, default=2.0, help="Separation factor s (default: 1.5)")
-    parser.add_argument("--n-g3", type=int, default=1, help="Number of points in G3 (default: 4)")
-    parser.add_argument("--seed", type=int, default=11, help="PRNG base seed (default: 18)")
-    parser.add_argument("--batch-size", type=int, default=50_000, help="Numba parallel batch size (default: 20,000)")
-    parser.add_argument("--mode", choices=["both", "global", "any_pair"], default="any_pair", help="Reporting mode (default: both)")
-    parser.add_argument("--sweep", action="store_true", help="Run a sweep over separation factor s values")
+    parser.add_argument("--trials", type=int, default=100_000_000, help="Number of Monte Carlo trials (default: 100,000,000)")
+    parser.add_argument("--s", type=float, default=2.75, help="Separation factor s (default: 2.75)")
+    parser.add_argument("--n-g3", type=int, default=3, help="Number of points in G3 (default: 3)")
+    parser.add_argument("--seed", type=int, default=11, help="PRNG base seed (default: 11)")
+    parser.add_argument("--batch-size", type=int, default=100_000, help="Numba parallel batch size (default: 100,000)")
+    parser.add_argument("--mode", choices=["both", "global", "any_pair"], default="any_pair", help="Reporting mode (default: any_pair)")
+    parser.add_argument(
+        "--sweep", 
+        nargs="*", 
+        type=float, 
+        default=None, 
+        metavar="S",
+        help="Run a sweep over separation factor s values. Can optionally specify custom values: --sweep 1.5 2.0 2.5 3.0 (defaults to [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5] if flag is passed with no arguments)"
+    )
+    parser.add_argument(
+        "--s-range",
+        nargs=3,
+        type=float,
+        default=None,
+        metavar=("START", "STOP", "STEP"),
+        help="Sweep s values generated via START, STOP, STEP (e.g. --s-range 1.5 3.0 0.25)"
+    )
     
     args = parser.parse_args()
     
-    if args.sweep:
-        s_range = [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5]
+    if args.sweep is not None or args.s_range is not None:
+        if args.s_range is not None:
+            start, stop, step = args.s_range
+            s_range = [round(float(x), 4) for x in np.arange(start, stop + step * 0.5, step)]
+        elif len(args.sweep) > 0:
+            s_range = args.sweep
+        else:
+            s_range = [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5]
         run_sweep(s_values=s_range, trials_per_s=args.trials, n_g3=args.n_g3, seed=args.seed, batch_size=args.batch_size)
     else:
         run_simulation(
