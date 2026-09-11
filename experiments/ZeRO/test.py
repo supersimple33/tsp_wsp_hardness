@@ -478,7 +478,7 @@ def run_simulation(trials=100_000, n_g3=4, s=1.5, seed=18, batch_size=20_000, ch
     return total_global_flags, total_any_flags
 
 
-def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, seed=18, batch_size=20_000):
+def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, seed=18, batch_size=20_000, check_mode="both"):
     """Sweeps multiple values of s to locate the empirical transition threshold."""
     if s_values is None:
         s_values = [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5]
@@ -496,7 +496,7 @@ def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, seed=18, batch_size=20
             s=s_val,
             seed=seed,
             batch_size=batch_size,
-            check_mode="both"
+            check_mode=check_mode
         )
         results.append((s_val, g_flags, a_flags))
         
@@ -552,7 +552,7 @@ if __name__ == "__main__":
             s_range = args.sweep
         else:
             s_range = [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5]
-        run_sweep(s_values=s_range, trials_per_s=args.trials, n_g3=args.n_g3, seed=args.seed, batch_size=args.batch_size)
+        run_sweep(s_values=s_range, trials_per_s=args.trials, n_g3=args.n_g3, seed=args.seed, batch_size=args.batch_size, check_mode=args.mode)
     else:
         run_simulation(
             trials=args.trials,
