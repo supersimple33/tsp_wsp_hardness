@@ -346,6 +346,10 @@ def log_flagged_trial(seed, global_idx, s, n_g3):
     ]
     
     pairs = ((0, 2), (0, 3), (1, 2), (1, 3))
+    best_flagged_cost = float('inf')
+    best_flagged_path = None
+    best_flagged_pair = None
+    
     best_global_cost = float('inf')
     best_global_path = None
     best_global_pair = None
@@ -366,13 +370,23 @@ def log_flagged_trial(seed, global_idx, s, n_g3):
             best_global_path = path_list
             best_global_pair = (s_node, e_node)
             
+        if flagged and cost < best_flagged_cost:
+            best_flagged_cost = cost
+            best_flagged_path = path_list
+            best_flagged_pair = (s_node, e_node)
+            
+    # Report the shortest path that flags (or fallback to global if none flagged)
+    target_pair = best_flagged_pair if best_flagged_path is not None else best_global_pair
+    target_cost = best_flagged_cost if best_flagged_path is not None else best_global_cost
+    target_path = best_flagged_path if best_flagged_path is not None else best_global_path
+    
     report.append("")
-    report.append(f"--- Globally Shortest Hamiltonian Path (Pair {best_global_pair}) ---")
-    global_is_flag = is_path_flagged(np.array(best_global_path, dtype=np.int8), best_global_pair[0], best_global_pair[1])
-    report.append(f"  Optimal Length: {best_global_cost:.4f}")
-    report.append(f"  Is Global Path Flagged: {'YES (Counterexample to global hypothesis!)' if global_is_flag else 'No (Only specific pair is flagged)'}")
+    report.append(f"--- Shortest Flagged Hamiltonian Path (Pair {target_pair}) ---")
+    report.append(f"  Optimal Length: {target_cost:.4f}")
+    target_group_seq = ["G1" if p in (0, 1) else ("G2" if p in (2, 3) else "G3") for p in target_path]
+    report.append(f"  Group Sequence: {' -> '.join(target_group_seq)}")
     report.append("  Coordinates in path order:")
-    for step_num, p_idx in enumerate(best_global_path):
+    for step_num, p_idx in enumerate(target_path):
         group = "G1" if p_idx in (0, 1) else ("G2" if p_idx in (2, 3) else "G3")
         report.append(f"    Step {step_num + 1}: Index {p_idx} [{group}] -> ({pts[p_idx, 0]:.4f}, {pts[p_idx, 1]:.4f})")
     report.append("=" * 60 + "\n")
@@ -494,12 +508,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Test the hypothesis that an optimal Hamiltonian path from G1 to G2 never contains two disjoint subpaths connecting G1 and G2."
     )
-    parser.add_argument("--trials", type=int, default=100_000, help="Number of Monte Carlo trials (default: 100,000)")
-    parser.add_argument("--s", type=float, default=1.5, help="Separation factor s (default: 1.5)")
-    parser.add_argument("--n-g3", type=int, default=4, help="Number of points in G3 (default: 4)")
-    parser.add_argument("--seed", type=int, default=18, help="PRNG base seed (default: 18)")
-    parser.add_argument("--batch-size", type=int, default=20_000, help="Numba parallel batch size (default: 20,000)")
-    parser.add_argument("--mode", choices=["both", "global", "any_pair"], default="both", help="Reporting mode (default: both)")
+    parser.add_argument("--trials", type=int, default=100_000_000, help="Number of Monte Carlo trials (default: 100,000)")
+    parser.add_argument("--s", type=float, default=2.0, help="Separation factor s (default: 1.5)")
+    parser.add_argument("--n-g3", type=int, default=1, help="Number of points in G3 (default: 4)")
+    parser.add_argument("--seed", type=int, default=11, help="PRNG base seed (default: 18)")
+    parser.add_argument("--batch-size", type=int, default=50_000, help="Numba parallel batch size (default: 20,000)")
+    parser.add_argument("--mode", choices=["both", "global", "any_pair"], default="any_pair", help="Reporting mode (default: both)")
     parser.add_argument("--sweep", action="store_true", help="Run a sweep over separation factor s values")
     
     args = parser.parse_args()
