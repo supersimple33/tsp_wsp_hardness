@@ -305,14 +305,58 @@ def evaluate_all_pairs(dist):
     return flag_mask
 
 
+@njit(fastmath=True, inline='always')
+def compute_separation_ratio(d_mat):
+    """
+    Computes the effective separation ratio:
+      r = min(s1 / d1, s2 / d2)
+    where:
+      d1 = dist(P0, P1) = diam(G1)
+      d2 = dist(P2, P3) = diam(G2)
+      s1 = min dist(G1, outside)
+      s2 = min dist(G2, outside)
+    """
+    n_total = d_mat.shape[0]
+    d1 = d_mat[0, 1]
+    d2 = d_mat[2, 3]
+    if d1 < 1e-6:
+        d1 = np.float32(1e-6)
+    if d2 < 1e-6:
+        d2 = np.float32(1e-6)
+        
+    s1 = np.float32(1e30)
+    for v in range(2, n_total):
+        if d_mat[0, v] < s1:
+            s1 = d_mat[0, v]
+        if d_mat[1, v] < s1:
+            s1 = d_mat[1, v]
+            
+    s2 = np.float32(1e30)
+    for v in range(0, 2):
+        if d_mat[2, v] < s2:
+            s2 = d_mat[2, v]
+        if d_mat[3, v] < s2:
+            s2 = d_mat[3, v]
+    for v in range(4, n_total):
+        if d_mat[2, v] < s2:
+            s2 = d_mat[2, v]
+        if d_mat[3, v] < s2:
+            s2 = d_mat[3, v]
+            
+    r1 = s1 / d1
+    r2 = s2 / d2
+    return min(r1, r2)
+
+
 # ==============================================================================
 # 4. Parallel Simulation Batch Engine
 # ==============================================================================
 
 @njit(parallel=True, fastmath=True)
 def compute_flags_batch(batch_size, n_g3, k, s, base_seed, batch_offset):
-    """Processes a batch of trials in parallel across CPU cores."""
+    """Processes a batch of trials in parallel across CPU cores, tracking separation ratios r = min(s1/d1, s2/d2)."""
     flags_out = np.zeros(batch_size, dtype=np.int8)
+    ratios_out = np.zeros(batch_size, dtype=np.float32)
     n_total = 4 + n_g3
     s_sq = np.float32(s * s)
     scale = np.float32(4.0 * s + 2.0)
@@ -327,9 +371,12 @@ def compute_flags_batch(batch_size, n_g3, k, s, base_seed, batch_offset):
         state = generate_points_kd(pts, n_g3, k, s, s_sq, scale, state)
         fill_dist_matrix_kd(pts, d_mat, k)
         
-        flags_out[i] = evaluate_all_pairs(d_mat)
+        flag = evaluate_all_pairs(d_mat)
+        flags_out[i] = flag
+        if flag != 0:
+            ratios_out[i] = compute_separation_ratio(d_mat)
         
-    return flags_out
+    return flags_out, ratios_out
 
 
 # ==============================================================================
@@ -352,10 +399,11 @@ def regenerate_trial_instance(seed, global_idx, s, n_g3, k):
     return pts, d_mat
 
 
-def log_flagged_trial(seed, global_idx, s, n_g3, k):
+def log_flagged_trial(seed, global_idx, s, n_g3, k, ratio=None):
     """
     Reconstructs and thoroughly reports on a counterexample trial.
-    Validates all metric constraints and prints the optimal paths for all pairs.
+    Validates all metric constraints, displays the separation ratio r = min(s1/d1, s2/d2),
+    and prints the optimal paths for all pairs.
     """
     n_total = 4 + n_g3
     pts, d_mat = regenerate_trial_instance(seed, global_idx, s, n_g3, k)
@@ -366,18 +414,24 @@ def log_flagged_trial(seed, global_idx, s, n_g3, k):
     min_d_g1_out = min(d_mat[u, v] for u in (0, 1) for v in range(2, n_total))
     min_d_g2_out = min(d_mat[u, v] for u in (2, 3) for v in (0, 1) + tuple(range(4, n_total)))
     
+    r1 = min_d_g1_out / d_g1 if d_g1 > 1e-6 else float('inf')
+    r2 = min_d_g2_out / d_g2 if d_g2 > 1e-6 else float('inf')
+    computed_r = min(r1, r2)
+    eff_r = ratio if ratio is not None else computed_r
+    
     report = [
         "",
         "=" * 60,
-        f"🚨 COUNTEREXAMPLE FOUND! Trial {global_idx + 1:,} (Seed: {seed})",
+        f"🚨 COUNTEREXAMPLE FOUND! Trial {global_idx + 1:,} (Seed: {seed}) [Separation Ratio r = {eff_r:.4f}]",
         "=" * 60,
         f"Separation parameter s = {s:.4f}, Dimension k = {k}, G3 size = {n_g3}, Total points = {n_total}",
         "",
         "--- Metric Constraint Checks ---",
-        f"  diam(G1) = dist(P0, P1) = {d_g1:.4f} <= 1.0 : {'VALID' if d_g1 <= 1.0001 else 'INVALID'}",
-        f"  diam(G2) = dist(P2, P3) = {d_g2:.4f} <= 1.0 : {'VALID' if d_g2 <= 1.0001 else 'INVALID'}",
-        f"  min dist(G1, outside)   = {min_d_g1_out:.4f} >= s : {'VALID' if min_d_g1_out >= s - 1e-4 else 'INVALID'}",
-        f"  min dist(G2, outside)   = {min_d_g2_out:.4f} >= s : {'VALID' if min_d_g2_out >= s - 1e-4 else 'INVALID'}",
+        f"  diam(G1) = dist(P0, P1) = {d_g1:.4f} (d1) <= 1.0 : {'VALID' if d_g1 <= 1.0001 else 'INVALID'}",
+        f"  diam(G2) = dist(P2, P3) = {d_g2:.4f} (d2) <= 1.0 : {'VALID' if d_g2 <= 1.0001 else 'INVALID'}",
+        f"  min dist(G1, outside)   = {min_d_g1_out:.4f} (s1) >= s : {'VALID' if min_d_g1_out >= s - 1e-4 else 'INVALID'}",
+        f"  min dist(G2, outside)   = {min_d_g2_out:.4f} (s2) >= s : {'VALID' if min_d_g2_out >= s - 1e-4 else 'INVALID'}",
+        f"  Separation ratio r = min(s1/d1, s2/d2) = min({min_d_g1_out:.4f}/{d_g1:.4f}, {min_d_g2_out:.4f}/{d_g2:.4f}) = min({r1:.4f}, {r2:.4f}) = {eff_r:.4f}",
         "",
         "--- Optimal Hamiltonian Paths for All 4 Endpoint Pairs ---"
     ]
@@ -455,7 +509,8 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
     
     total_global_flags = 0
     total_any_flags = 0
-    first_flag_logged = False
+    best_ratio = -1.0
+    best_trial_idx = -1
     
     num_batches = (trials + batch_size - 1) // batch_size
     start_time = time.time()
@@ -464,7 +519,7 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
         current_batch_size = min(batch_size, trials - batch_idx * batch_size)
         batch_offset = batch_idx * batch_size
         
-        flags = compute_flags_batch(current_batch_size, n_g3, k, s, seed, batch_offset)
+        flags, ratios = compute_flags_batch(current_batch_size, n_g3, k, s, seed, batch_offset)
         
         global_flags = int(np.sum(flags & 1))
         any_flags = int(np.sum((flags & 2) >> 1))
@@ -472,22 +527,24 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
         total_global_flags += global_flags
         total_any_flags += any_flags
         
-        # Log details for the first observed violation
-        if not first_flag_logged:
-            condition = False
-            if check_mode == "global" and global_flags > 0:
-                first_local_idx = int(np.argmax(flags & 1))
-                condition = True
-            elif check_mode in ("any_pair", "both") and any_flags > 0:
-                first_local_idx = int(np.argmax((flags & 2) >> 1))
-                condition = True
-            elif check_mode == "both" and global_flags > 0:
-                first_local_idx = int(np.argmax(flags & 1))
-                condition = True
-                
-            if condition:
-                first_flag_logged = True
-                log_flagged_trial(seed, batch_offset + first_local_idx, s, n_g3, k)
+        # Determine violation mask according to check_mode
+        if check_mode == "global":
+            viol_mask = (flags & 1) != 0
+        elif check_mode == "any_pair":
+            viol_mask = ((flags & 2) >> 1) != 0
+        else: # "both"
+            viol_mask = (flags != 0)
+            
+        if np.any(viol_mask):
+            viol_indices = np.where(viol_mask)[0]
+            batch_max_local = viol_indices[np.argmax(ratios[viol_indices])]
+            batch_max_ratio = float(ratios[batch_max_local])
+            
+            # If this batch contains a violation with a new greatest separation ratio r, log it!
+            if batch_max_ratio > best_ratio:
+                best_ratio = batch_max_ratio
+                best_trial_idx = batch_offset + batch_max_local
+                log_flagged_trial(seed, best_trial_idx, s, n_g3, k, ratio=best_ratio)
                 
     elapsed = time.time() - start_time
     rate = trials / elapsed if elapsed > 0 else 0
@@ -498,6 +555,8 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
     print(f"Results:")
     print(f"  - Globally optimal path flagged:  {total_global_flags:,} times ({100 * total_global_flags / trials:.4f}%)")
     print(f"  - Any endpoint pair path flagged: {total_any_flags:,} times ({100 * total_any_flags / trials:.4f}%)")
+    if best_trial_idx >= 0:
+        print(f"  - Greatest separation ratio r = min(s1/d1, s2/d2): {best_ratio:.4f} (Trial {best_trial_idx + 1:,})")
     
     if total_any_flags == 0 and total_global_flags == 0:
         print("Conclusion: Hypothesis holds! No disjoint subpaths connecting G1 and G2 were observed.")
@@ -505,7 +564,7 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
         print("Conclusion: Hypothesis DISPROVED for this configuration! Disjoint subpaths were observed.")
     print("-" * 50)
     
-    return total_global_flags, total_any_flags
+    return total_global_flags, total_any_flags, best_ratio
 
 
 def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, k=2, seed=18, batch_size=20_000, check_mode="both"):
@@ -520,7 +579,7 @@ def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, k=2, seed=18, batch_si
     results = []
     for s_val in s_values:
         print(f"\n--- Testing s = {s_val:.2f} ---")
-        g_flags, a_flags = run_simulation(
+        g_flags, a_flags, b_ratio = run_simulation(
             trials=trials_per_s,
             n_g3=n_g3,
             k=k,
@@ -529,17 +588,18 @@ def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, k=2, seed=18, batch_si
             batch_size=batch_size,
             check_mode=check_mode
         )
-        results.append((s_val, g_flags, a_flags))
+        results.append((s_val, g_flags, a_flags, b_ratio))
         
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 76)
     print("SWEEP SUMMARY TABLE")
-    print("=" * 60)
-    print(f"{'s':>6} | {'Global Flags':>14} | {'Any Pair Flags':>16} | {'Status':>12}")
-    print("-" * 60)
-    for s_val, g_flags, a_flags in results:
+    print("=" * 76)
+    print(f"{'s':>6} | {'Global Flags':>14} | {'Any Pair Flags':>16} | {'Max Ratio r':>13} | {'Status':>12}")
+    print("-" * 76)
+    for s_val, g_flags, a_flags, b_ratio in results:
         status = "VIOLATION" if a_flags > 0 else "HOLDS"
-        print(f"{s_val:6.2f} | {g_flags:14,d} | {a_flags:16,d} | {status:>12}")
-    print("=" * 60)
+        ratio_str = f"{b_ratio:13.4f}" if b_ratio >= 0 else f"{'N/A':>13}"
+        print(f"{s_val:6.2f} | {g_flags:14,d} | {a_flags:16,d} | {ratio_str} | {status:>12}")
+    print("=" * 76)
 
 
 # ==============================================================================
@@ -552,8 +612,8 @@ if __name__ == "__main__":
     )
     parser.add_argument("-k", "--k", type=int, default=3, help="Number of spatial dimensions (default: 2)")
     parser.add_argument("--trials", type=int, default=100_000_000, help="Number of Monte Carlo trials (default: 100,000,000)")
-    parser.add_argument("--s", type=float, default=2.75, help="Separation factor s (default: 2.75)")
-    parser.add_argument("--n-g3", type=int, default=3, help="Number of points in G3 (default: 3)")
+    parser.add_argument("--s", type=float, default=2.0, help="Separation factor s (default: 2.75)")
+    parser.add_argument("--n-g3", type=int, default=2, help="Number of points in G3 (default: 3)")
     parser.add_argument("--seed", type=int, default=111, help="PRNG base seed (default: 11)")
     parser.add_argument("--batch-size", type=int, default=100_000, help="Numba parallel batch size (default: 100,000)")
     parser.add_argument("--mode", choices=["both", "global", "any_pair"], default="any_pair", help="Reporting mode (default: any_pair)")
