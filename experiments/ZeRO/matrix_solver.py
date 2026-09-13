@@ -1,29 +1,22 @@
 import numpy as np
 
 # ==============================================================================
-# Fill in your 6x6 lower triangular matrix values here:
-#   Row 1: distances from node 1 to [0]
-#   Row 2: distances from node 2 to [0, 1]
-#   Row 3: distances from node 3 to [0, 1, 2]
-#   Row 4: distances from node 4 to [0, 1, 2, 3]
-#   Row 5: distances from node 5 to [0, 1, 2, 3, 4]
+# Parameterized 6x6 Lower Triangular Matrix
+# Set separation parameter s (the theoretical maximum is s < 3.0 in metric space)
 # ==============================================================================
-
-S = 1.8
-
-S2 = S*10
+s = 2.999
 
 LOWER_TRIANGULAR = [
     # to: 0
     [1.0],                          # Node 1 (G1)
     # to: 0     1
-    [S, S],                     # Node 2 (G2)
+    [s, s],                         # Node 2 (G2)
     # to: 0     1     2
-    [S, S, 1.0],                # Node 3 (G2)
-    # to: 0     1     2     3
-    [S2, S2+1, S2, S2+1],           # Node 4 (G3)
-    # to: 0     1     2     3     4
-    [S2, S2, S2, S2, 2*S2],      # Node 5 (G3)
+    [s, s, 1.0],                    # Node 3 (G2)
+    # to: 0     1        2     3
+    [s, s + 1.0, s, s + 1.0],       # Node 4 (G3)
+    # to: 0        1     2        3     4
+    [s + 1.0, s, s + 1.0, s, 2 * s + 1.0],  # Node 5 (G3)
 ]
 
 
