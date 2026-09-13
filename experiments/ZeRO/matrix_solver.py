@@ -1,34 +1,58 @@
 import numpy as np
 
 # ==============================================================================
-# Parameterized 6x6 Lower Triangular Matrix
-# Set separation parameter s (the theoretical maximum is s < 3.0 in metric space)
+# Parameterized 5x5 Lower Triangular Matrix (|G1|=2, |G2|=2, |G3|=1)
+#   G1 = {0, 1}, G2 = {2, 3}, G3 = {4}
+#   Theoretical maximum is s < 1.5 in metric space
 # ==============================================================================
-s = 2.999
+s = 1.95
 
 LOWER_TRIANGULAR = [
     # to: 0
     [1.0],                          # Node 1 (G1)
     # to: 0     1
-    [s, s],                         # Node 2 (G2)
+    [s,   s],                       # Node 2 (G2)
     # to: 0     1     2
-    [s, s, 1.0],                    # Node 3 (G2)
-    # to: 0     1        2     3
-    [s, s + 1.0, s, s + 1.0],       # Node 4 (G3)
-    # to: 0        1     2        3     4
-    [s + 1.0, s, s + 1.0, s, 2 * s + 1.0],  # Node 5 (G3)
+    [s,   s,   1.0],                # Node 3 (G2)
+    # to: 0        1     2     3
+    [s + 0.5, s,   s,   s + 1.0],   # Node 4 (G3)
 ]
 
 
 def build_matrix(tri):
-    """Builds symmetric 6x6 matrix from lower triangular list."""
-    n = 6
+    """Builds symmetric N x N matrix from lower triangular list."""
+    n = len(tri) + 1
     dist = np.zeros((n, n), dtype=float)
     for r_idx, row in enumerate(tri):
-        i = r_idx + 1  # Node 1 to 5
+        i = r_idx + 1
         for j, val in enumerate(row):
             dist[i, j] = dist[j, i] = float(val)
     return dist
+
+
+def get_groups(n):
+    """Returns group definitions based on matrix size."""
+    if n == 8:
+        return (0, 1, 2), (3, 4, 5), (6, 7)
+    elif n == 7:
+        return (0, 1, 2), (3, 4), (5, 6)
+    elif n == 5:
+        return (0, 1), (2, 3), (4,)
+    else:
+        return (0, 1), (2, 3), (4, 5)
+
+
+def group(node, g1, g2, g3):
+    return "G1" if node in g1 else ("G2" if node in g2 else "G3")
+
+
+def is_flagged(path, s, e, g1, g2):
+    """Checks for disjoint subpaths G1 -> G2 -> G1 -> G2."""
+    other_g2 = [x for x in g2 if x != e]
+    rem_g1 = [x for x in g1 if x != s]
+    pos_g2_min = min(path.index(x) for x in other_g2)
+    pos_g1_max = max(path.index(x) for x in rem_g1)
+    return pos_g2_min < pos_g1_max
 
 
 def held_karp_path(dist, start, end):
@@ -103,17 +127,6 @@ def held_karp_tsp(dist):
     return list(reversed(path)) + [0], min_cost
 
 
-def is_flagged(path, s, e):
-    """Checks for disjoint subpaths: s (G1) ... G2 ... G1 ... e (G2)."""
-    other_g1 = 1 if s == 0 else 0
-    other_g2 = 3 if e == 2 else 2
-    return path.index(other_g2) < path.index(other_g1)
-
-
-def group(node):
-    return "G1" if node in (0, 1) else ("G2" if node in (2, 3) else "G3")
-
-
 def check_triangle_inequality(dist):
     n = len(dist)
     violations = []
@@ -127,12 +140,14 @@ def check_triangle_inequality(dist):
 
 def main():
     dist = build_matrix(LOWER_TRIANGULAR)
+    n = len(dist)
+    g1, g2, g3 = get_groups(n)
     
-    print("--- 6x6 Distance Matrix ---")
-    headers = [f"{i}({group(i)})" for i in range(6)]
+    print(f"--- {n}x{n} Distance Matrix (G1={g1}, G2={g2}, G3={g3}) ---")
+    headers = [f"{i}({group(i, g1, g2, g3)})" for i in range(n)]
     print(f"{'':>7} " + " ".join(f"{h:>8}" for h in headers))
-    for i in range(6):
-        print(f"{headers[i]:>7} " + " ".join(f"{dist[i, j]:8.2f}" for j in range(6)))
+    for i in range(n):
+        print(f"{headers[i]:>7} " + " ".join(f"{dist[i, j]:8.2f}" for j in range(n)))
 
     violations = check_triangle_inequality(dist)
     if violations:
@@ -141,11 +156,12 @@ def main():
         print("\n✓ Triangle inequality holds.")
 
     print("\n--- ZeRO Hypothesis Paths (G1 -> G2) ---")
-    for s, e in [(0, 2), (0, 3), (1, 2), (1, 3)]:
+    pairs = [(s, e) for s in g1 for e in g2]
+    for s, e in pairs:
         path, cost = held_karp_path(dist, s, e)
-        flagged = is_flagged(path, s, e)
+        flagged = is_flagged(path, s, e, g1, g2)
         flag_str = "🚨 FLAGGED (disjoint G1/G2 subpaths)" if flagged else "✓ Normal"
-        group_str = " -> ".join(group(x) for x in path)
+        group_str = " -> ".join(group(x, g1, g2, g3) for x in path)
         print(f"Pair ({s}, {e}): length = {cost:.3f} [{flag_str}]")
         print(f"  Path:   {path}")
         print(f"  Groups: {group_str}")
