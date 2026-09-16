@@ -2,16 +2,8 @@ import itertools
 import math
 
 # The 8 points mapped by their index
-points = {
-    0: (-0.1951, 0.5742),
-    1: (0.4465, 0.9571),
-    2: (-0.4828, -0.0679),
-    3: (0.5953, -0.4092),
-    4: (1.7428, 0.3848),
-    5: (-1.0539, 1.6879),
-    6: (0.4866, -1.8278),
-    7: (-1.8723, -0.5382)
-}
+points = dict(enumerate(
+[(232, 265), (104, 400), (296, 294), (600, 364), (427, 249), (422, 50), (247, 195), (50, 97)]))
 
 def calculate_euclidean_distance(p1, p2):
     """Calculates the Euclidean distance between two points."""

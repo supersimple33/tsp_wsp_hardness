@@ -255,4 +255,5 @@ def run_simulation(trials, k, seed, max_exits, s, n_inner, n_outer, batch_size=5
         print(f"Result: {total_violations} paths violated the condition.")
 
 if __name__ == "__main__":
-    run_simulation(trials=1_000_000, k=2, seed=4, max_exits=3, s=1.5, n_inner=4, n_outer=4)
+    run_simulation(trials=1_000_000, k=2, seed=1, max_exits=2, s=3.0, n_inner=3, n_outer=3)
+
