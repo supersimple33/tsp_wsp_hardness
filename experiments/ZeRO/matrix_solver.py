@@ -1,11 +1,11 @@
 import numpy as np
 
 # ==============================================================================
-# Parameterized 5x5 Lower Triangular Matrix (|G1|=2, |G2|=2, |G3|=1)
-#   G1 = {0, 1}, G2 = {2, 3}, G3 = {4}
-#   Theoretical maximum is s < 1.5 in metric space
+# Parameterized 6x6 Lower Triangular Matrix (|G1|=2, |G2|=2, |G3|=2)
+#   G1 = {0, 1}, G2 = {2, 3}, G3 = {4, 5}
+#   Theoretical maximum is s < 3.0 in metric space
 # ==============================================================================
-s = 1.95
+s = 3.01
 
 LOWER_TRIANGULAR = [
     # to: 0
@@ -14,9 +14,54 @@ LOWER_TRIANGULAR = [
     [s,   s],                       # Node 2 (G2)
     # to: 0     1     2
     [s,   s,   1.0],                # Node 3 (G2)
-    # to: 0        1     2     3
-    [s + 0.5, s,   s,   s + 1.0],   # Node 4 (G3)
+    # to: 0     1        2     3
+    [s,   s + 1.0, s,   s + 1.0],   # Node 4 (G3)
+    # to: 0        1     2        3     4
+    [s + 1.0, s,   s + 1.0, s,   2 * s + 1.0],  # Node 5 (G3)
 ]
+
+
+def get_preset_matrix(preset_name, s_val):
+    """Returns lower triangular matrix for named presets."""
+    if preset_name in ("5", "5pt"):
+        # |G1|=2, |G2|=2, |G3|=1 (bound: s < 1.5)
+        return [
+            [1.0],
+            [s_val, s_val],
+            [s_val, s_val, 1.0],
+            [s_val + 0.5, s_val, s_val, s_val + 1.0],
+        ]
+    elif preset_name in ("6", "6pt"):
+        # |G1|=2, |G2|=2, |G3|=2 (bound: s < 3.0)
+        return [
+            [1.0],
+            [s_val, s_val],
+            [s_val, s_val, 1.0],
+            [s_val, s_val + 1.0, s_val, s_val + 1.0],
+            [s_val + 1.0, s_val, s_val + 1.0, s_val, 2 * s_val + 1.0],
+        ]
+    elif preset_name in ("7_g3", "7pt_g3"):
+        # |G1|=2, |G2|=2, |G3|=3 (bound: s < 3.0)
+        return [
+            [1.0],
+            [s_val, s_val],
+            [s_val, s_val, 1.0],
+            [s_val, s_val + 1.0, s_val, s_val + 1.0],
+            [s_val + 1.0, s_val, s_val + 1.0, s_val, 2 * s_val + 1.0],
+            [s_val, s_val + 1.0, s_val, s_val + 1.0, 0.0, 2 * s_val + 1.0],
+        ]
+    elif preset_name in ("7_g1", "7pt_g1"):
+        # |G1|=3, |G2|=2, |G3|=2 (bound: s < 3.0)
+        return [
+            [0.1],
+            [1.0, 1.0],
+            [s_val, s_val, s_val],
+            [s_val, s_val, s_val, 1.0],
+            [s_val, s_val, s_val + 1.0, s_val + 1.0, s_val],
+            [s_val + 1.0, s_val + 1.0, s_val, s_val, s_val + 1.0, 2 * s_val + 1.0],
+        ]
+    else:
+        raise ValueError(f"Unknown preset: {preset_name}")
 
 
 def build_matrix(tri):
@@ -138,8 +183,10 @@ def check_triangle_inequality(dist):
     return violations
 
 
-def main():
-    dist = build_matrix(LOWER_TRIANGULAR)
+def main(tri=None):
+    if tri is None:
+        tri = LOWER_TRIANGULAR
+    dist = build_matrix(tri)
     n = len(dist)
     g1, g2, g3 = get_groups(n)
     
@@ -156,15 +203,23 @@ def main():
         print("\n✓ Triangle inequality holds.")
 
     print("\n--- ZeRO Hypothesis Paths (G1 -> G2) ---")
-    pairs = [(s, e) for s in g1 for e in g2]
-    for s, e in pairs:
-        path, cost = held_karp_path(dist, s, e)
-        flagged = is_flagged(path, s, e, g1, g2)
+    pairs = [(s_node, e_node) for s_node in g1 for e_node in g2]
+    any_flagged = False
+    for s_node, e_node in pairs:
+        path, cost = held_karp_path(dist, s_node, e_node)
+        flagged = is_flagged(path, s_node, e_node, g1, g2)
+        if flagged:
+            any_flagged = True
         flag_str = "🚨 FLAGGED (disjoint G1/G2 subpaths)" if flagged else "✓ Normal"
         group_str = " -> ".join(group(x, g1, g2, g3) for x in path)
-        print(f"Pair ({s}, {e}): length = {cost:.3f} [{flag_str}]")
+        print(f"Pair ({s_node}, {e_node}): length = {cost:.3f} [{flag_str}]")
         print(f"  Path:   {path}")
         print(f"  Groups: {group_str}")
+
+    if any_flagged:
+        print("\n💥 RESULT: HYPOTHESIS BROKEN! Disjoint subpaths G1 -> G2 -> G1 -> G2 are optimal.")
+    else:
+        print("\n✓ RESULT: Hypothesis holds. No disjoint subpaths observed.")
 
     tour, tour_cost = held_karp_tsp(dist)
     print("\n--- Closed TSP Tour ---")
@@ -173,4 +228,17 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Exact Held-Karp solver for ZeRO metric matrices.")
+    parser.add_argument("--s", type=float, default=None, help="Separation factor s (default: value of s in script)")
+    parser.add_argument("--preset", choices=["5", "6", "7_g3", "7_g1"], default=None, help="Preset matrix (5, 6, 7_g3, 7_g1)")
+    args = parser.parse_args()
+    
+    if args.preset is not None or args.s is not None:
+        p = args.preset if args.preset is not None else "6"
+        s_val = args.s if args.s is not None else s
+        tri = get_preset_matrix(p, s_val)
+        print(f"Running Preset '{p}' with s = {s_val:.4f}\n")
+        main(tri)
+    else:
+        main(LOWER_TRIANGULAR)
