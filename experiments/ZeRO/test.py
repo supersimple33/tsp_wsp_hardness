@@ -117,54 +117,94 @@ def dist_sq_pts(points, i, j, k):
 
 
 @njit(fastmath=True)
-def generate_points_kd(points, n_g3, k, s, s_sq, scale, state):
+def generate_points_kd(points, n_g1, n_g2, n_g3, k, s, s_sq, scale, state):
     """
     Generates k-dimensional coordinates for:
-      - G1 = {0, 1}: diam(G1) <= 1.0 (P0 at origin, P1 in unit ball)
-      - G2 = {2, 3}: diam(G2) <= 1.0 (P2 >= s from G1, P3 in unit ball around P2 >= s from G1)
-      - G3 = {4 .. 3+n_g3}: all points >= s from G1 and G2 (arbitrarily close to each other)
+      - G1 = {0 .. n_g1-1}: diam(G1) <= 1.0 (P0 at origin, others in unit ball with pairwise dist <= 1.0)
+      - G2 = {n_g1 .. n_g1+n_g2-1}: diam(G2) <= 1.0 (all >= s from G1, pairwise dist <= 1.0)
+      - G3 = {n_g1+n_g2 .. n_total-1}: all points >= s from G1 and G2 (arbitrarily close to each other)
     """
-    n_total = 4 + n_g3
+    n_total = n_g1 + n_g2 + n_g3
     while True:
         # P0 at origin (G1)
         for d in range(k):
             points[0, d] = 0.0
         
-        # P1 in unit ball around P0 (G1)
-        state = sample_unit_ball_point(points, 1, 0, k, state)
+        # P1 .. P(n_g1-1) in unit ball around P0, diam(G1) <= 1.0
+        failed = False
+        for p_idx in range(1, n_g1):
+            placed = False
+            for _ in range(500):
+                state = sample_unit_ball_point(points, p_idx, 0, k, state)
+                ok = True
+                for j in range(1, p_idx):
+                    if dist_sq_pts(points, p_idx, j, k) > np.float32(1.0):
+                        ok = False
+                        break
+                if ok:
+                    placed = True
+                    break
+            if not placed:
+                failed = True
+                break
+        if failed:
+            continue
         
-        # P2: First point of G2 (must be >= s from P0 and P1)
+        # P(n_g1): First point of G2 (must be >= s from all G1 points)
+        p_g2_start = n_g1
         valid = False
         for _ in range(500):
             for d in range(k):
                 state, val = next_uniform(state, -scale, scale)
-                points[2, d] = val
-            if dist_sq_pts(points, 2, 0, k) >= s_sq and dist_sq_pts(points, 2, 1, k) >= s_sq:
+                points[p_g2_start, d] = val
+            ok = True
+            for u in range(n_g1):
+                if dist_sq_pts(points, p_g2_start, u, k) < s_sq:
+                    ok = False
+                    break
+            if ok:
                 valid = True
                 break
         if not valid:
             continue
         
-        # P3: Second point of G2 (in unit ball around P2, and >= s from G1)
-        valid = False
-        for _ in range(500):
-            state = sample_unit_ball_point(points, 3, 2, k, state)
-            if dist_sq_pts(points, 3, 0, k) >= s_sq and dist_sq_pts(points, 3, 1, k) >= s_sq:
-                valid = True
-                break
-        if not valid:
-            continue
-        
-        # P4 .. P(3+n_g3): G3 points (must be >= s from G1 and G2)
+        # P(n_g1+1) .. P(n_g1+n_g2-1): remaining points of G2
+        # (in unit ball around P(n_g1), pairwise dist <= 1.0 in G2, and >= s from G1)
         failed = False
-        for p_idx in range(4, n_total):
+        for p_idx in range(n_g1 + 1, n_g1 + n_g2):
+            placed = False
+            for _ in range(500):
+                state = sample_unit_ball_point(points, p_idx, p_g2_start, k, state)
+                ok = True
+                for v in range(n_g1, p_idx):
+                    if dist_sq_pts(points, p_idx, v, k) > np.float32(1.0):
+                        ok = False
+                        break
+                if not ok:
+                    continue
+                for u in range(n_g1):
+                    if dist_sq_pts(points, p_idx, u, k) < s_sq:
+                        ok = False
+                        break
+                if ok:
+                    placed = True
+                    break
+            if not placed:
+                failed = True
+                break
+        if failed:
+            continue
+        
+        # P(n_g1+n_g2) .. P(n_total-1): G3 points (must be >= s from G1 and G2)
+        failed = False
+        for p_idx in range(n_g1 + n_g2, n_total):
             placed = False
             for _ in range(500):
                 for d in range(k):
                     state, val = next_uniform(state, -scale, scale)
                     points[p_idx, d] = val
                 ok = True
-                for j in range(4):
+                for j in range(n_g1 + n_g2):
                     if dist_sq_pts(points, p_idx, j, k) < s_sq:
                         ok = False
                         break
@@ -248,54 +288,59 @@ def held_karp_optimal_path(dist, start_node, end_node):
     return path, dp[full_mask, end_node]
 
 @njit(fastmath=True, inline='always')
-def is_path_flagged(path, s_node, e_node):
-    """
+def is_path_flagged(path, s_node, e_node, n_g1, n_g2):
+    r"""
     Checks if the path contains two disjoint subpaths connecting G1 and G2.
-    For G1={0, 1} and G2={2, 3}, with path starting at s_node in G1 and ending
-    at e_node in G2:
-      - The other G1 node is other_g1 = 1 if s_node == 0 else 0
-      - The other G2 node is other_g2 = 3 if e_node == 2 else 2
+    For path starting at s_node in G1 and ending at e_node in G2:
+      G1 nodes: 0 .. n_g1 - 1
+      G2 nodes: n_g1 .. n_g1 + n_g2 - 1
     Two disjoint subpaths connecting G1 and G2 exist if and only if
-    other_g2 appears BEFORE other_g1 in the path:
-      s_node (G1) ... other_g2 (G2) ... other_g1 (G1) ... e_node (G2)
+    some intermediate G2 node (in G2 \ {e_node}) appears BEFORE
+    some intermediate G1 node (in G1 \ {s_node}):
+      s_node (G1) ... v (G2) ... u (G1) ... e_node (G2)
     """
-    other_g1 = 1 if s_node == 0 else 0
-    other_g2 = 3 if e_node == 2 else 2
-    pos_g1 = -1
-    pos_g2 = -1
+    if n_g1 < 2 or n_g2 < 2:
+        return False
+
+    pos_min_g2 = 100000
+    pos_max_g1 = -1
     n = len(path)
     for i in range(n):
-        if path[i] == other_g1:
-            pos_g1 = i
-        elif path[i] == other_g2:
-            pos_g2 = i
-    return pos_g2 < pos_g1
+        node = path[i]
+        if node < n_g1:
+            if node != s_node and i > pos_max_g1:
+                pos_max_g1 = i
+        elif node < n_g1 + n_g2:
+            if node != e_node and i < pos_min_g2:
+                pos_min_g2 = i
+
+    return pos_min_g2 < pos_max_g1
 
 @njit(fastmath=True)
-def evaluate_all_pairs(dist):
+def evaluate_all_pairs(dist, n_g1, n_g2):
     """
-    Evaluates optimal Hamiltonian paths for all 4 start/end pairs:
-      (0, 2), (0, 3), (1, 2), (1, 3).
+    Evaluates optimal Hamiltonian paths for all n_g1 * n_g2 start/end pairs:
+      s_node in 0 .. n_g1 - 1, e_node in n_g1 .. n_g1 + n_g2 - 1.
     Returns packed flags:
       bit 0 (1): global_flagged (the single overall shortest path is flagged)
       bit 1 (2): any_pair_flagged (at least one pair's optimal path is flagged)
     """
-    pairs = ((0, 2), (0, 3), (1, 2), (1, 3))
     global_min_cost = np.float32(1e30)
     global_is_flagged = False
     any_pair_is_flagged = False
     
-    for s_node, e_node in pairs:
-        path, cost = held_karp_optimal_path(dist, s_node, e_node)
-        flagged = is_path_flagged(path, s_node, e_node)
-        
-        if flagged:
-            any_pair_is_flagged = True
+    for s_node in range(n_g1):
+        for e_node in range(n_g1, n_g1 + n_g2):
+            path, cost = held_karp_optimal_path(dist, s_node, e_node)
+            flagged = is_path_flagged(path, s_node, e_node, n_g1, n_g2)
             
-        if cost < global_min_cost:
-            global_min_cost = cost
-            global_is_flagged = flagged
-            
+            if flagged:
+                any_pair_is_flagged = True
+                
+            if cost < global_min_cost:
+                global_min_cost = cost
+                global_is_flagged = flagged
+                
     flag_mask = np.int8(0)
     if global_is_flagged:
         flag_mask |= np.int8(1)
@@ -306,43 +351,49 @@ def evaluate_all_pairs(dist):
 
 
 @njit(fastmath=True, inline='always')
-def compute_separation_ratio(d_mat):
+def compute_separation_ratio(d_mat, n_g1, n_g2):
     """
     Computes the effective separation ratio:
       r = min(s1 / d1, s2 / d2)
     where:
-      d1 = dist(P0, P1) = diam(G1)
-      d2 = dist(P2, P3) = diam(G2)
+      d1 = diam(G1) = max dist(u, v) for u, v in G1
+      d2 = diam(G2) = max dist(u, v) for u, v in G2
       s1 = min dist(G1, outside)
       s2 = min dist(G2, outside)
     """
     n_total = d_mat.shape[0]
-    d1 = d_mat[0, 1]
-    d2 = d_mat[2, 3]
-    if d1 < 1e-6:
-        d1 = np.float32(1e-6)
-    if d2 < 1e-6:
-        d2 = np.float32(1e-6)
-        
+    
+    # diam(G1)
+    d1 = np.float32(1e-6)
+    for u in range(n_g1):
+        for v in range(u + 1, n_g1):
+            if d_mat[u, v] > d1:
+                d1 = d_mat[u, v]
+                
+    # diam(G2)
+    d2 = np.float32(1e-6)
+    for u in range(n_g1, n_g1 + n_g2):
+        for v in range(u + 1, n_g1 + n_g2):
+            if d_mat[u, v] > d2:
+                d2 = d_mat[u, v]
+                
+    # min dist(G1, outside)
     s1 = np.float32(1e30)
-    for v in range(2, n_total):
-        if d_mat[0, v] < s1:
-            s1 = d_mat[0, v]
-        if d_mat[1, v] < s1:
-            s1 = d_mat[1, v]
-            
+    for u in range(n_g1):
+        for v in range(n_g1, n_total):
+            if d_mat[u, v] < s1:
+                s1 = d_mat[u, v]
+                
+    # min dist(G2, outside)
     s2 = np.float32(1e30)
-    for v in range(0, 2):
-        if d_mat[2, v] < s2:
-            s2 = d_mat[2, v]
-        if d_mat[3, v] < s2:
-            s2 = d_mat[3, v]
-    for v in range(4, n_total):
-        if d_mat[2, v] < s2:
-            s2 = d_mat[2, v]
-        if d_mat[3, v] < s2:
-            s2 = d_mat[3, v]
-            
+    for u in range(n_g1, n_g1 + n_g2):
+        for v in range(0, n_g1):
+            if d_mat[u, v] < s2:
+                s2 = d_mat[u, v]
+        for v in range(n_g1 + n_g2, n_total):
+            if d_mat[u, v] < s2:
+                s2 = d_mat[u, v]
+                
     r1 = s1 / d1
     r2 = s2 / d2
     return min(r1, r2)
@@ -353,11 +404,11 @@ def compute_separation_ratio(d_mat):
 # ==============================================================================
 
 @njit(parallel=True, fastmath=True)
-def compute_flags_batch(batch_size, n_g3, k, s, base_seed, batch_offset):
+def compute_flags_batch(batch_size, n_g1, n_g2, n_g3, k, s, base_seed, batch_offset):
     """Processes a batch of trials in parallel across CPU cores, tracking separation ratios r = min(s1/d1, s2/d2)."""
     flags_out = np.zeros(batch_size, dtype=np.int8)
     ratios_out = np.zeros(batch_size, dtype=np.float32)
-    n_total = 4 + n_g3
+    n_total = n_g1 + n_g2 + n_g3
     s_sq = np.float32(s * s)
     scale = np.float32(4.0 * s + 2.0)
     
@@ -368,13 +419,13 @@ def compute_flags_batch(batch_size, n_g3, k, s, base_seed, batch_offset):
         pts = np.empty((n_total, k), dtype=np.float32)
         d_mat = np.empty((n_total, n_total), dtype=np.float32)
         
-        state = generate_points_kd(pts, n_g3, k, s, s_sq, scale, state)
+        state = generate_points_kd(pts, n_g1, n_g2, n_g3, k, s, s_sq, scale, state)
         fill_dist_matrix_kd(pts, d_mat, k)
         
-        flag = evaluate_all_pairs(d_mat)
+        flag = evaluate_all_pairs(d_mat, n_g1, n_g2)
         flags_out[i] = flag
         if flag != 0:
-            ratios_out[i] = compute_separation_ratio(d_mat)
+            ratios_out[i] = compute_separation_ratio(d_mat, n_g1, n_g2)
         
     return flags_out, ratios_out
 
@@ -384,35 +435,48 @@ def compute_flags_batch(batch_size, n_g3, k, s, base_seed, batch_offset):
 # ==============================================================================
 
 @njit(fastmath=True)
-def regenerate_trial_instance(seed, global_idx, s, n_g3, k):
+def regenerate_trial_instance(seed, global_idx, s, n_g1, n_g2, n_g3, k):
     """
     Reconstructs the exact instance within Numba to match the PRNG bit operations.
     """
-    n_total = 4 + n_g3
+    n_total = n_g1 + n_g2 + n_g3
     s_sq = np.float32(s * s)
     scale = np.float32(4.0 * s + 2.0)
     state = get_prng_state(seed, global_idx)
     pts = np.empty((n_total, k), dtype=np.float32)
     d_mat = np.empty((n_total, n_total), dtype=np.float32)
-    generate_points_kd(pts, n_g3, k, s, s_sq, scale, state)
+    generate_points_kd(pts, n_g1, n_g2, n_g3, k, s, s_sq, scale, state)
     fill_dist_matrix_kd(pts, d_mat, k)
     return pts, d_mat
 
 
-def log_flagged_trial(seed, global_idx, s, n_g3, k, ratio=None):
+def log_flagged_trial(seed, global_idx, s, n_g1, n_g2, n_g3, k, ratio=None):
     """
     Reconstructs and thoroughly reports on a counterexample trial.
     Validates all metric constraints, displays the separation ratio r = min(s1/d1, s2/d2),
     and prints the optimal paths for all pairs.
     """
-    n_total = 4 + n_g3
-    pts, d_mat = regenerate_trial_instance(seed, global_idx, s, n_g3, k)
+    n_total = n_g1 + n_g2 + n_g3
+    pts, d_mat = regenerate_trial_instance(seed, global_idx, s, n_g1, n_g2, n_g3, k)
     
     # Verify metric constraints
-    d_g1 = np.linalg.norm(pts[0] - pts[1])
-    d_g2 = np.linalg.norm(pts[2] - pts[3])
-    min_d_g1_out = min(d_mat[u, v] for u in (0, 1) for v in range(2, n_total))
-    min_d_g2_out = min(d_mat[u, v] for u in (2, 3) for v in (0, 1) + tuple(range(4, n_total)))
+    d_g1 = 1e-6
+    for u in range(n_g1):
+        for v in range(u + 1, n_g1):
+            dist_uv = float(np.linalg.norm(pts[u] - pts[v]))
+            if dist_uv > d_g1:
+                d_g1 = dist_uv
+                
+    d_g2 = 1e-6
+    for u in range(n_g1, n_g1 + n_g2):
+        for v in range(u + 1, n_g1 + n_g2):
+            dist_uv = float(np.linalg.norm(pts[u] - pts[v]))
+            if dist_uv > d_g2:
+                d_g2 = dist_uv
+                
+    min_d_g1_out = min(float(d_mat[u, v]) for u in range(n_g1) for v in range(n_g1, n_total))
+    outside_g2 = list(range(0, n_g1)) + list(range(n_g1 + n_g2, n_total))
+    min_d_g2_out = min(float(d_mat[u, v]) for u in range(n_g1, n_g1 + n_g2) for v in outside_g2)
     
     r1 = min_d_g1_out / d_g1 if d_g1 > 1e-6 else float('inf')
     r2 = min_d_g2_out / d_g2 if d_g2 > 1e-6 else float('inf')
@@ -424,19 +488,27 @@ def log_flagged_trial(seed, global_idx, s, n_g3, k, ratio=None):
         "=" * 60,
         f"🚨 COUNTEREXAMPLE FOUND! Trial {global_idx + 1:,} (Seed: {seed}) [Separation Ratio r = {eff_r:.4f}]",
         "=" * 60,
-        f"Separation parameter s = {s:.4f}, Dimension k = {k}, G3 size = {n_g3}, Total points = {n_total}",
+        f"Separation parameter s = {s:.4f}, Dimension k = {k}",
+        f"Groups: G1 ({n_g1} pts), G2 ({n_g2} pts), G3 ({n_g3} pts) -> Total = {n_total}",
         "",
         "--- Metric Constraint Checks ---",
-        f"  diam(G1) = dist(P0, P1) = {d_g1:.4f} (d1) <= 1.0 : {'VALID' if d_g1 <= 1.0001 else 'INVALID'}",
-        f"  diam(G2) = dist(P2, P3) = {d_g2:.4f} (d2) <= 1.0 : {'VALID' if d_g2 <= 1.0001 else 'INVALID'}",
+        f"  diam(G1) = {d_g1:.4f} (d1) <= 1.0 : {'VALID' if d_g1 <= 1.0001 else 'INVALID'}",
+        f"  diam(G2) = {d_g2:.4f} (d2) <= 1.0 : {'VALID' if d_g2 <= 1.0001 else 'INVALID'}",
         f"  min dist(G1, outside)   = {min_d_g1_out:.4f} (s1) >= s : {'VALID' if min_d_g1_out >= s - 1e-4 else 'INVALID'}",
         f"  min dist(G2, outside)   = {min_d_g2_out:.4f} (s2) >= s : {'VALID' if min_d_g2_out >= s - 1e-4 else 'INVALID'}",
         f"  Separation ratio r = min(s1/d1, s2/d2) = min({min_d_g1_out:.4f}/{d_g1:.4f}, {min_d_g2_out:.4f}/{d_g2:.4f}) = min({r1:.4f}, {r2:.4f}) = {eff_r:.4f}",
         "",
-        "--- Optimal Hamiltonian Paths for All 4 Endpoint Pairs ---"
+        f"--- Optimal Hamiltonian Paths for All {n_g1 * n_g2} Endpoint Pairs ---"
     ]
     
-    pairs = ((0, 2), (0, 3), (1, 2), (1, 3))
+    def get_group(p):
+        if p < n_g1:
+            return "G1"
+        elif p < n_g1 + n_g2:
+            return "G2"
+        else:
+            return "G3"
+            
     best_flagged_cost = float('inf')
     best_flagged_path = None
     best_flagged_pair = None
@@ -445,27 +517,28 @@ def log_flagged_trial(seed, global_idx, s, n_g3, k, ratio=None):
     best_global_path = None
     best_global_pair = None
     
-    for s_node, e_node in pairs:
-        path, cost = held_karp_optimal_path(d_mat, s_node, e_node)
-        flagged = is_path_flagged(path, s_node, e_node)
-        path_list = [int(p) for p in path]
-        group_seq = ["G1" if p in (0, 1) else ("G2" if p in (2, 3) else "G3") for p in path_list]
-        
-        status = "FLAGGED (G1 -> G2 -> G1 -> G2 subpaths)" if flagged else "Normal (unflagged)"
-        report.append(f"  Pair ({s_node}, {e_node}): Length = {cost:.4f} [{status}]")
-        report.append(f"    Path:   {path_list}")
-        report.append(f"    Groups: {' -> '.join(group_seq)}")
-        
-        if cost < best_global_cost:
-            best_global_cost = cost
-            best_global_path = path_list
-            best_global_pair = (s_node, e_node)
+    for s_node in range(n_g1):
+        for e_node in range(n_g1, n_g1 + n_g2):
+            path, cost = held_karp_optimal_path(d_mat, s_node, e_node)
+            flagged = is_path_flagged(path, s_node, e_node, n_g1, n_g2)
+            path_list = [int(p) for p in path]
+            group_seq = [get_group(p) for p in path_list]
             
-        if flagged and cost < best_flagged_cost:
-            best_flagged_cost = cost
-            best_flagged_path = path_list
-            best_flagged_pair = (s_node, e_node)
+            status = "FLAGGED (G1 -> G2 -> G1 -> G2 subpaths)" if flagged else "Normal (unflagged)"
+            report.append(f"  Pair ({s_node}, {e_node}): Length = {cost:.4f} [{status}]")
+            report.append(f"    Path:   {path_list}")
+            report.append(f"    Groups: {' -> '.join(group_seq)}")
             
+            if cost < best_global_cost:
+                best_global_cost = cost
+                best_global_path = path_list
+                best_global_pair = (s_node, e_node)
+                
+            if flagged and cost < best_flagged_cost:
+                best_flagged_cost = cost
+                best_flagged_path = path_list
+                best_flagged_pair = (s_node, e_node)
+                
     # Report the shortest path that flags (or fallback to global if none flagged)
     target_pair = best_flagged_pair if best_flagged_path is not None else best_global_pair
     target_cost = best_flagged_cost if best_flagged_path is not None else best_global_cost
@@ -474,11 +547,11 @@ def log_flagged_trial(seed, global_idx, s, n_g3, k, ratio=None):
     report.append("")
     report.append(f"--- Shortest Flagged Hamiltonian Path (Pair {target_pair}) ---")
     report.append(f"  Optimal Length: {target_cost:.4f}")
-    target_group_seq = ["G1" if p in (0, 1) else ("G2" if p in (2, 3) else "G3") for p in target_path]
+    target_group_seq = [get_group(p) for p in target_path]
     report.append(f"  Group Sequence: {' -> '.join(target_group_seq)}")
     report.append("  Coordinates in path order:")
     for step_num, p_idx in enumerate(target_path):
-        group = "G1" if p_idx in (0, 1) else ("G2" if p_idx in (2, 3) else "G3")
+        group = get_group(p_idx)
         coord_str = ", ".join(f"{pts[p_idx, d]:.4f}" for d in range(k))
         report.append(f"    Step {step_num + 1}: Index {p_idx} [{group}] -> ({coord_str})")
     report.append("=" * 60 + "\n")
@@ -489,20 +562,20 @@ def log_flagged_trial(seed, global_idx, s, n_g3, k, ratio=None):
 # 6. Main Simulation Runner & Parameter Sweep
 # ==============================================================================
 
-def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_000, check_mode="both"):
+def run_simulation(trials=100_000, n_g1=2, n_g2=2, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_000, check_mode="both"):
     """
     Executes the Monte Carlo test across the specified number of trials.
     
     check_mode options:
-      - 'global': Flagged only if the single overall shortest path among all 4 pairs is flagged.
-      - 'any_pair': Flagged if any of the 4 endpoint pairs has a flagged optimal path.
+      - 'global': Flagged only if the single overall shortest path among all pairs is flagged.
+      - 'any_pair': Flagged if any of the endpoint pairs has a flagged optimal path.
       - 'both': Track and report both conditions.
     """
-    n_total = 4 + n_g3
+    n_total = n_g1 + n_g2 + n_g3
     print(f"Running {trials:,} trials in {k}D Euclidean space:")
     print(f"  - Separation factor s = {s}")
     print(f"  - Dimension k = {k}")
-    print(f"  - Groups: G1 (2 points), G2 (2 points), G3 ({n_g3} points) -> Total {n_total} points")
+    print(f"  - Groups: G1 ({n_g1} points), G2 ({n_g2} points), G3 ({n_g3} points) -> Total {n_total} points")
     print(f"  - Random seed = {seed}, Batch size = {batch_size:,}")
     print(f"  - Reporting mode = '{check_mode}'")
     print("Solving exact optimal Hamiltonian paths via Held-Karp DP...\n")
@@ -519,7 +592,7 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
         current_batch_size = min(batch_size, trials - batch_idx * batch_size)
         batch_offset = batch_idx * batch_size
         
-        flags, ratios = compute_flags_batch(current_batch_size, n_g3, k, s, seed, batch_offset)
+        flags, ratios = compute_flags_batch(current_batch_size, n_g1, n_g2, n_g3, k, s, seed, batch_offset)
         
         global_flags = int(np.sum(flags & 1))
         any_flags = int(np.sum((flags & 2) >> 1))
@@ -544,7 +617,7 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
             if batch_max_ratio > best_ratio:
                 best_ratio = batch_max_ratio
                 best_trial_idx = batch_offset + batch_max_local
-                log_flagged_trial(seed, best_trial_idx, s, n_g3, k, ratio=best_ratio)
+                log_flagged_trial(seed, best_trial_idx, s, n_g1, n_g2, n_g3, k, ratio=best_ratio)
                 
     elapsed = time.time() - start_time
     rate = trials / elapsed if elapsed > 0 else 0
@@ -567,13 +640,13 @@ def run_simulation(trials=100_000, n_g3=4, k=2, s=1.5, seed=18, batch_size=20_00
     return total_global_flags, total_any_flags, best_ratio
 
 
-def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, k=2, seed=18, batch_size=20_000, check_mode="both"):
+def run_sweep(s_values=None, trials_per_s=50_000, n_g1=2, n_g2=2, n_g3=4, k=2, seed=18, batch_size=20_000, check_mode="both"):
     """Sweeps multiple values of s to locate the empirical transition threshold."""
     if s_values is None:
         s_values = [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5]
     print("=" * 60)
     print(f"Starting parameter sweep over s: {s_values}")
-    print(f"Trials per s = {trials_per_s:,}, Dimension k = {k}, G3 size = {n_g3}, Seed = {seed}")
+    print(f"Trials per s = {trials_per_s:,}, Dimension k = {k}, Groups: G1={n_g1}, G2={n_g2}, G3={n_g3}, Seed = {seed}")
     print("=" * 60 + "\n")
     
     results = []
@@ -581,6 +654,8 @@ def run_sweep(s_values=None, trials_per_s=50_000, n_g3=4, k=2, seed=18, batch_si
         print(f"\n--- Testing s = {s_val:.2f} ---")
         g_flags, a_flags, b_ratio = run_simulation(
             trials=trials_per_s,
+            n_g1=n_g1,
+            n_g2=n_g2,
             n_g3=n_g3,
             k=k,
             s=s_val,
@@ -610,11 +685,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Test the hypothesis that an optimal Hamiltonian path from G1 to G2 never contains two disjoint subpaths connecting G1 and G2."
     )
-    parser.add_argument("-k", "--k", type=int, default=3, help="Number of spatial dimensions (default: 2)")
-    parser.add_argument("--trials", type=int, default=100_000_000, help="Number of Monte Carlo trials (default: 100,000,000)")
-    parser.add_argument("--s", type=float, default=2.0, help="Separation factor s (default: 2.75)")
-    parser.add_argument("--n-g3", type=int, default=2, help="Number of points in G3 (default: 3)")
-    parser.add_argument("--seed", type=int, default=111, help="PRNG base seed (default: 11)")
+    parser.add_argument("-k", "--k", type=int, default=2, help="Number of spatial dimensions (default: 3)")
+    parser.add_argument("--trials", type=int, default=10_000_000, help="Number of Monte Carlo trials (default: 100,000,000)")
+    parser.add_argument("--s", type=float, default=2.0, help="Separation factor s (default: 2.0)")
+    parser.add_argument("--n-g1", type=int, default=3, help="Number of points in G1 (default: 2)")
+    parser.add_argument("--n-g2", type=int, default=3, help="Number of points in G2 (default: 2)")
+    parser.add_argument("--n-g3", type=int, default=2, help="Number of points in G3 (default: 2)")
+    parser.add_argument("--seed", type=int, default=224, help="PRNG base seed (default: 111)")
     parser.add_argument("--batch-size", type=int, default=100_000, help="Numba parallel batch size (default: 100,000)")
     parser.add_argument("--mode", choices=["both", "global", "any_pair"], default="any_pair", help="Reporting mode (default: any_pair)")
     parser.add_argument(
@@ -638,6 +715,8 @@ if __name__ == "__main__":
     
     if args.k < 1:
         parser.error("Number of spatial dimensions k must be >= 1.")
+    if args.n_g1 < 1 or args.n_g2 < 1 or args.n_g3 < 1:
+        parser.error("Group sizes --n-g1, --n-g2, and --n-g3 must be >= 1.")
     
     if args.sweep is not None or args.s_range is not None:
         if args.s_range is not None:
@@ -647,10 +726,12 @@ if __name__ == "__main__":
             s_range = args.sweep
         else:
             s_range = [1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.5]
-        run_sweep(s_values=s_range, trials_per_s=args.trials, n_g3=args.n_g3, k=args.k, seed=args.seed, batch_size=args.batch_size, check_mode=args.mode)
+        run_sweep(s_values=s_range, trials_per_s=args.trials, n_g1=args.n_g1, n_g2=args.n_g2, n_g3=args.n_g3, k=args.k, seed=args.seed, batch_size=args.batch_size, check_mode=args.mode)
     else:
         run_simulation(
             trials=args.trials,
+            n_g1=args.n_g1,
+            n_g2=args.n_g2,
             n_g3=args.n_g3,
             k=args.k,
             s=args.s,

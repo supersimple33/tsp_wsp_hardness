@@ -69,6 +69,20 @@ Let G1 = {0, 1}, G2 = {2, 3}, G3 = {4, 5}. Start at 0, end at 3.
 
 ---
 
+### 3. Case |G3| = 3 (N = 7 points) => s < 3.0 (The Center Bottleneck)
+Why doesn't adding a 3rd point to G3 allow a 3rd "wing" and push $s$ higher?
+
+- **The Center Capacity**: In G1 and G2 combined, there are only **4 center nodes**: $\{0, 1, 2, 3\}$.
+- **Wing Entry/Exit**: Every separate wing of G3 requires a round trip from the center:
+  $$(\text{center node}) \xrightarrow{\ge s} (\text{G3 wing}) \xrightarrow{\ge s} (\text{center node})$$
+- Each wing consumes **2 distinct center nodes** (one to leave the center, one upon return).
+- With only 4 center nodes total, the tour can make at most:
+  $$\text{Max Wings} = \lfloor 4 / 2 \rfloor = 2 \text{ wings}$$
+- A 3rd separate wing would require at least 6 center nodes ($|G_1| + |G_2| \ge 6$).
+- Therefore, any 3rd point in G3 must simply cluster into one of the two existing wings. The external edges remain the same ($5s$), and the bound remains **$s < 3.0$**.
+
+---
+
 ## Ready-to-Use Matrix Templates (Lower Triangular)
 
 ### 5-Point Setup (G1={0,1}, G2={2,3}, G3={4}) for s < 1.5
@@ -102,6 +116,26 @@ LOWER_TRIANGULAR = [
     [s,   s + 1.0, s,   s + 1.0],   # Node 4 (G3)
     # to: 0        1     2        3     4
     [s + 1.0, s,   s + 1.0, s,   2 * s + 1.0],  # Node 5 (G3)
+]
+```
+
+### 7-Point Setup (G1={0,1}, G2={2,3}, G3={4,5,6}) for s < 3.0
+```python
+s = 2.85  # any s up to ~2.99
+
+LOWER_TRIANGULAR = [
+    # to: 0
+    [1.0],                          # Node 1 (G1)
+    # to: 0     1
+    [s,   s],                       # Node 2 (G2)
+    # to: 0     1     2
+    [s,   s,   1.0],                # Node 3 (G2)
+    # to: 0        1        2     3
+    [s,       s + 1.0, s,       s + 1.0],       # Node 4 (G3, Wing 1)
+    # to: 0        1        2     3        4
+    [s + 1.0, s,       s + 1.0, s,       2*s+1], # Node 5 (G3, Wing 2)
+    # to: 0        1        2     3        4    5
+    [s,       s + 1.0, s,       s + 1.0, 0.0, 2*s+1], # Node 6 (G3, Wing 1)
 ]
 ```
 
