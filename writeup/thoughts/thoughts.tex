@@ -544,6 +544,30 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{corollary}
 % In euclidean space this may not be the case
 
+% ZeRO fails theorem
+\begin{thm}
+    For all $s \geq 1$ there exists a point set $P = \bigcup_{A_i \in \ACollection} A_i$ with $|\ACollection| \geq 5$ in a metric space, where the subsets $A_1, \ldots, A_n$ are pairwise $s$-well-separated, such that every optimal Hamiltonian path on $P$ from some $a' \in A_i$ to some $a'' \in A_j$ induces a set transition multidigraph containing two disjoint paths from $A_i$ to $A_j$.
+\end{thm}
+\begin{proof}
+    Consider the following distance matrix for some $s \geq 1$:
+    $$\begin{bmatrix}
+        0 & & & & & & \\
+        1 & 0 & & & & & \\
+        s & s & 0 & & & & \\
+        s & s & 1 & 0 & & & \\
+        s & s + 1 & s & s + 1 & 0 & & \\
+        s + 1 & s & s & s + 1 & 2s & 0 & \\
+        s + 1 & s & s + 1 & s & 2s + 1 & 2s & 0
+    \end{bmatrix}$$
+    Let $A_1 = \{0, 1\}$, $A_2 = \{2, 3\}$, $A_3 = \{4\}$, $A_4 = \{5\}$, and $A_5 = \{6\}$.
+    Notice that the distance matrix is symmetric and satisfies the triangle inequality and thus forms a metric space.
+    The sets $A_1, A_2, A_3, A_4, A_5$ are pairwise $s$-well-separated since the distance between any two sets is at least $s$ and the diameter of each set is at most $1$.
+    From node $0$ to node $3$ the unique optimal hamiltonian path is
+    $$0 \xrightarrow{\; s \;} 4 \xrightarrow{\; s \;} 2 \xrightarrow{\; s \;} 5 \xrightarrow{\; s \;} 1 \xrightarrow{\; s \;} 6 \xrightarrow{\; s \;} 3.$$
+    Thus the total cost of the optimal hamiltonian path is $6s$ and the induced set transition multidigraph contains two disjoint paths from $A_1$ to $A_2$: $A_1 \to A_3 \to A_2$ and $A_1 \to A_5 \to A_2$.
+\end{proof}
+% May not be true in euclidean space
+
 
 \section{Algorithms}
 
