@@ -7,28 +7,25 @@ import numpy as np
 # ==============================================================================
 s = 10.01
 
+
 LOWER_TRIANGULAR = [
     # to: 0
-    [1.0],                                                              # Node 1 (G1)
+    [1.0],                                              # Node 1 (G1)
     # to: 0     1
-    [1.0, 1.0],                                                         # Node 2 (G1)
+    [s,   s],                                           # Node 2 (G2)
     # to: 0     1     2
-    [s,   s,   s],                                                      # Node 3 (G2)
-    # to: 0     1     2     3
-    [s,   s,   s,   1.0],                                               # Node 4 (G2)
-    # to: 0     1     2     3     4
-    [s,   s,   s,   1.0, 1.0],                                          # Node 5 (G2)
-    # to: 0     1        2        3     4        5
-    [s,   s + 1.0, s + 1.0, s,   s + 1.0, s + 1.0],                     # Node 6 (G3 Wing 1)
-    # to: 0        1     2        3        4     5        6
-    [s + 1.0, s,   s + 1.0, s + 1.0, s,   s + 1.0, 2*s + 1.0],          # Node 7 (G3 Wing 2)
-    # to: 0        1        2     3        4        5     6        7
-    [s + 1.0, s + 1.0, s,   s + 1.0, s + 1.0, s,   2*s + 1.0, 2*s + 1.0], # Node 8 (G3 Wing 3)
+    [s,   s,   1.0],                                    # Node 3 (G2)
+    # to: 0        1        2        3
+    [s,       s + 1.0, s,       s + 1.0],               # Node 4 (G3 Wing 1)
+    # to: 0        1        2        3        4
+    [s + 1.0, s,       s,       s + 1.0, 2 * s],        # Node 5 (G3 Wing 2)
+    # to: 0        1        2        3        4        5
+    [s + 1.0, s,       s + 1.0, s,       2*s + 1, 2 * s], # Node 6 (G3 Wing 3)
 ]
 
 
 def get_preset_matrix(preset_name, s_val):
-    """Returns lower triangular matrix for named presets."""
+    """Returns lower triangular matrix and group definitions for named presets."""
     if preset_name in ("5", "5pt"):
         # |G1|=2, |G2|=2, |G3|=1 (bound: s < 1.5)
         return [
@@ -36,7 +33,7 @@ def get_preset_matrix(preset_name, s_val):
             [s_val, s_val],
             [s_val, s_val, 1.0],
             [s_val + 0.5, s_val, s_val, s_val + 1.0],
-        ]
+        ], ((0, 1), (2, 3), (4,))
     elif preset_name in ("6", "6pt"):
         # |G1|=2, |G2|=2, |G3|=2 (bound: s < 3.0)
         return [
@@ -45,17 +42,17 @@ def get_preset_matrix(preset_name, s_val):
             [s_val, s_val, 1.0],
             [s_val, s_val + 1.0, s_val, s_val + 1.0],
             [s_val + 1.0, s_val, s_val + 1.0, s_val, 2 * s_val + 1.0],
-        ]
-    elif preset_name in ("7_g3", "7pt_g3"):
-        # |G1|=2, |G2|=2, |G3|=3 (bound: s < 3.0)
+        ], ((0, 1), (2, 3), (4, 5))
+    elif preset_name in ("7_g3", "7pt_g3", "7"):
+        # |G1|=2, |G2|=2, |G3|=3 (3-wing pivot setup, breaks for arbitrary s >= 3.0!)
         return [
             [1.0],
             [s_val, s_val],
             [s_val, s_val, 1.0],
             [s_val, s_val + 1.0, s_val, s_val + 1.0],
-            [s_val + 1.0, s_val, s_val + 1.0, s_val, 2 * s_val + 1.0],
-            [s_val, s_val + 1.0, s_val, s_val + 1.0, 0.0, 2 * s_val + 1.0],
-        ]
+            [s_val + 1.0, s_val, s_val, s_val + 1.0, 2 * s_val],
+            [s_val + 1.0, s_val, s_val + 1.0, s_val, 2 * s_val + 1.0, 2 * s_val],
+        ], ((0, 1), (2, 3), (4, 5, 6))
     elif preset_name in ("7_g1", "7pt_g1"):
         # |G1|=3, |G2|=2, |G3|=2 (bound: s < 3.0)
         return [
@@ -65,7 +62,7 @@ def get_preset_matrix(preset_name, s_val):
             [s_val, s_val, s_val, 1.0],
             [s_val, s_val, s_val + 1.0, s_val + 1.0, s_val],
             [s_val + 1.0, s_val + 1.0, s_val, s_val, s_val + 1.0, 2 * s_val + 1.0],
-        ]
+        ], ((0, 1, 2), (3, 4), (5, 6))
     elif preset_name in ("9", "9pt"):
         # |G1|=3, |G2|=3, |G3|=3 (3-wing setup, breaks for arbitrary s > 2.0!)
         return [
@@ -77,7 +74,7 @@ def get_preset_matrix(preset_name, s_val):
             [s_val, s_val + 1.0, s_val + 1.0, s_val, s_val + 1.0, s_val + 1.0],  # Node 6 (G3 Wing 1)
             [s_val + 1.0, s_val, s_val + 1.0, s_val + 1.0, s_val, s_val + 1.0, 2 * s_val + 1.0],  # Node 7 (G3 Wing 2)
             [s_val + 1.0, s_val + 1.0, s_val, s_val + 1.0, s_val + 1.0, s_val, 2 * s_val + 1.0, 2 * s_val + 1.0],  # Node 8 (G3 Wing 3)
-        ]
+        ], ((0, 1, 2), (3, 4, 5), (6, 7, 8))
     else:
         raise ValueError(f"Unknown preset: {preset_name}")
 
@@ -203,12 +200,15 @@ def check_triangle_inequality(dist):
     return violations
 
 
-def main(tri=None):
+def main(tri=None, groups=None):
     if tri is None:
         tri = LOWER_TRIANGULAR
     dist = build_matrix(tri)
     n = len(dist)
-    g1, g2, g3 = get_groups(n)
+    if groups is None:
+        g1, g2, g3 = get_groups(n)
+    else:
+        g1, g2, g3 = groups
     
     print(f"--- {n}x{n} Distance Matrix (G1={g1}, G2={g2}, G3={g3}) ---")
     headers = [f"{i}({group(i, g1, g2, g3)})" for i in range(n)]
@@ -251,14 +251,14 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Exact Held-Karp solver for ZeRO metric matrices.")
     parser.add_argument("--s", type=float, default=None, help="Separation factor s (default: value of s in script)")
-    parser.add_argument("--preset", choices=["5", "6", "7_g3", "7_g1", "9"], default=None, help="Preset matrix (5, 6, 7_g3, 7_g1, 9)")
+    parser.add_argument("--preset", choices=["5", "6", "7", "7_g3", "7_g1", "9"], default=None, help="Preset matrix (5, 6, 7, 7_g3, 7_g1, 9)")
     args = parser.parse_args()
     
     if args.preset is not None or args.s is not None:
         p = args.preset if args.preset is not None else "6"
         s_val = args.s if args.s is not None else s
-        tri = get_preset_matrix(p, s_val)
+        tri, groups = get_preset_matrix(p, s_val)
         print(f"Running Preset '{p}' with s = {s_val:.4f}\n")
-        main(tri)
+        main(tri, groups)
     else:
         main(LOWER_TRIANGULAR)
