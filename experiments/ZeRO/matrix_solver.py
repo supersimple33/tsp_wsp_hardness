@@ -23,6 +23,8 @@ LOWER_TRIANGULAR = [
     [s + 1.0, s,       s + 1.0, s,       2*s + 1, 2 * s], # Node 6 (G3 Wing 3)
 ]
 
+GROUPS = ((0, 1), (2, 3), (4, 5, 6))
+
 
 def get_preset_matrix(preset_name, s_val):
     """Returns lower triangular matrix and group definitions for named presets."""
@@ -261,4 +263,4 @@ if __name__ == "__main__":
         print(f"Running Preset '{p}' with s = {s_val:.4f}\n")
         main(tri, groups)
     else:
-        main(LOWER_TRIANGULAR)
+        main(LOWER_TRIANGULAR, groups=GROUPS)
