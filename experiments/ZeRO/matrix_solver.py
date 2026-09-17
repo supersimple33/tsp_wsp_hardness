@@ -5,19 +5,25 @@ import numpy as np
 #   G1 = {0, 1}, G2 = {2, 3}, G3 = {4, 5}
 #   Theoretical maximum is s < 3.0 in metric space
 # ==============================================================================
-s = 3.01
+s = 10.01
 
 LOWER_TRIANGULAR = [
     # to: 0
-    [1.0],                          # Node 1 (G1)
+    [1.0],                                                              # Node 1 (G1)
     # to: 0     1
-    [s,   s],                       # Node 2 (G2)
+    [1.0, 1.0],                                                         # Node 2 (G1)
     # to: 0     1     2
-    [s,   s,   1.0],                # Node 3 (G2)
-    # to: 0     1        2     3
-    [s,   s + 1.0, s,   s + 1.0],   # Node 4 (G3)
-    # to: 0        1     2        3     4
-    [s + 1.0, s,   s + 1.0, s,   2 * s + 1.0],  # Node 5 (G3)
+    [s,   s,   s],                                                      # Node 3 (G2)
+    # to: 0     1     2     3
+    [s,   s,   s,   1.0],                                               # Node 4 (G2)
+    # to: 0     1     2     3     4
+    [s,   s,   s,   1.0, 1.0],                                          # Node 5 (G2)
+    # to: 0     1        2        3     4        5
+    [s,   s + 1.0, s + 1.0, s,   s + 1.0, s + 1.0],                     # Node 6 (G3 Wing 1)
+    # to: 0        1     2        3        4     5        6
+    [s + 1.0, s,   s + 1.0, s + 1.0, s,   s + 1.0, 2*s + 1.0],          # Node 7 (G3 Wing 2)
+    # to: 0        1        2     3        4        5     6        7
+    [s + 1.0, s + 1.0, s,   s + 1.0, s + 1.0, s,   2*s + 1.0, 2*s + 1.0], # Node 8 (G3 Wing 3)
 ]
 
 
@@ -60,6 +66,18 @@ def get_preset_matrix(preset_name, s_val):
             [s_val, s_val, s_val + 1.0, s_val + 1.0, s_val],
             [s_val + 1.0, s_val + 1.0, s_val, s_val, s_val + 1.0, 2 * s_val + 1.0],
         ]
+    elif preset_name in ("9", "9pt"):
+        # |G1|=3, |G2|=3, |G3|=3 (3-wing setup, breaks for arbitrary s > 2.0!)
+        return [
+            [1.0],  # Node 1 (G1)
+            [1.0, 1.0],  # Node 2 (G1)
+            [s_val, s_val, s_val],  # Node 3 (G2)
+            [s_val, s_val, s_val, 1.0],  # Node 4 (G2)
+            [s_val, s_val, s_val, 1.0, 1.0],  # Node 5 (G2)
+            [s_val, s_val + 1.0, s_val + 1.0, s_val, s_val + 1.0, s_val + 1.0],  # Node 6 (G3 Wing 1)
+            [s_val + 1.0, s_val, s_val + 1.0, s_val + 1.0, s_val, s_val + 1.0, 2 * s_val + 1.0],  # Node 7 (G3 Wing 2)
+            [s_val + 1.0, s_val + 1.0, s_val, s_val + 1.0, s_val + 1.0, s_val, 2 * s_val + 1.0, 2 * s_val + 1.0],  # Node 8 (G3 Wing 3)
+        ]
     else:
         raise ValueError(f"Unknown preset: {preset_name}")
 
@@ -77,7 +95,9 @@ def build_matrix(tri):
 
 def get_groups(n):
     """Returns group definitions based on matrix size."""
-    if n == 8:
+    if n == 9:
+        return (0, 1, 2), (3, 4, 5), (6, 7, 8)
+    elif n == 8:
         return (0, 1, 2), (3, 4, 5), (6, 7)
     elif n == 7:
         return (0, 1, 2), (3, 4), (5, 6)
@@ -231,7 +251,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Exact Held-Karp solver for ZeRO metric matrices.")
     parser.add_argument("--s", type=float, default=None, help="Separation factor s (default: value of s in script)")
-    parser.add_argument("--preset", choices=["5", "6", "7_g3", "7_g1"], default=None, help="Preset matrix (5, 6, 7_g3, 7_g1)")
+    parser.add_argument("--preset", choices=["5", "6", "7_g3", "7_g1", "9"], default=None, help="Preset matrix (5, 6, 7_g3, 7_g1, 9)")
     args = parser.parse_args()
     
     if args.preset is not None or args.s is not None:
