@@ -568,6 +568,76 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{proof}
 % May not be true in euclidean space
 
+\subsection{Special Metric Spaces}
+
+\begin{thm}
+    For a point set $P = \bigcup_{i=1}^n A_i$ in a $L_p$ space (with $p \in (1,\infty)$), where the subsets $A_1, \ldots, A_n$ are pairwise $s$-well-separated with $s \geq VAR$, then given some $a' \in A_i$ and $a'' \in A_j$, there exists an optimal Hamiltonian path on $P$ between $a'$ and $a''$ which induces a set transition multidigraph where each node has a maximum in-degree and out-degree of $2$.
+\end{thm}
+\begin{proof}
+    Suppose there exists an optimal Hamiltonian path on $P$ between $a' \in A_i$ and $a'' \in A_j$ which induces a set transition multidigraph where some node has in-degree or out-degree of at least $3$.
+    WLOG assume that the set transition multidigraph has a node $A_k$ with out-degree of at least $3$ (the case for in-degree is symmetric).
+
+    Then there must exist the following edges in order in the Hamiltonian path: $(a_1, b)$, $(c, a_2)$, $(a_3, d)$, $(e, a_4)$, $(a_5, f)$ where $a_i \in A_k$, $b \in A_l$, $c \in A_m$, $d \in A_n$, $e \in A_o$, $f \in A_p$ and the sets $A_k, A_l, A_m, A_n, A_o, A_p$ are pairwise distinct, with the permitted exceptions that $A_m$ may equal $A_l$ and $A_n$ may equal $A_o$.
+    Thus the Hamiltonian path has the following partial structure:
+    $$\dots \to a_1 \to b \leadsto c \to a_2 \leadsto a_3 \to d \leadsto e \to a_4 \leadsto a_5 \to f \to \dots$$
+    We can then create three new Hamiltonian paths based on the original Hamiltonian path by cutting one of the following three pairs of edges: 1. $(a_1, b), (a_3, d)$ 2. $(a_1, b), (a_5, f)$ 3. $(a_3, d), (a_5, f)$ and replacing them with the following edges instead respectively: 1. $(a_1, a_3), (b, d)$ 2. $(a_1, a_5), (b, f)$ 3. $(a_3, a_5), (d, f)$.
+    This yields the following three new Hamiltonian paths with the partial structures:
+    \begin{eqnarray}
+        \dots \to a_1 \to a_3 \leadsto a_2 \to c \leadsto b \to d \leadsto e \to a_4 \leadsto a_5 \to f \to \dots \\
+        \dots \to a_1 \to a_5 \leadsto a_4 \to e \leadsto d \to a_3 \leadsto a_2 \to c \leadsto b \to f \to \dots \\
+        \dots \to a_1 \to b \leadsto c \to a_2 \leadsto a_3 \to a_5 \leadsto a_4 \to e \leadsto d \to f \to \dots
+    \end{eqnarray}
+    Each of these new Hamiltonian paths has a set transition multidigraph where the node $A_k$ has strictly one lesser out-degree than the original Hamiltonian path.
+
+    Since the original Hamiltonian path was optimal, it follows that the following inequalities must hold:
+    \begin{align*}
+        |a_1 b| + |a_3 d| &\leq |a_1 a_3| + |b d| \\
+        |a_1 b| + |a_5 f| &\leq |a_1 a_5| + |b f| \\
+        |a_3 d| + |a_5 f| &\leq |a_3 a_5| + |d f|
+    \end{align*}
+    WLOG assume that $\diam(A_k) = 1$ (otherwise we can scale the space to make it so).
+    Summing these three inequalities yields:
+    \begin{align*}
+        |a_1 b| + |a_3 d| + |a_1 b| + |a_5 f| + |a_3 d| + |a_5 f| &\leq |a_1 a_3| + |b d| + |a_1 a_5| + |b f| + |a_3 a_5| + |d f| \\
+        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq (|a_1 a_3| + |a_1 a_5| + |a_3 a_5|) + (|b d| + |b f| + |d f|) \\
+        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq 3 \cdot \diam(A_k) + (|b d| + |b f| + |d f|) \\
+        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq 3 + (|b d| + |b f| + |d f|)
+    \end{align*}
+
+    Next we must bound from above $P = |b d| + |d f| + |f b|$ the perimeter of the triangle formed by the points $b, d, f$.
+    We define $\vec v_1 = \vec b - \vec a_1$, $\vec v_2 = \vec d - \vec a_3$, and $\vec v_3 = \vec f - \vec a_5$.
+    Then we can note the following:
+    \begin{eqnarray}
+        \vec b - \vec d = (\vec a_1 + \vec v_1) - (\vec a_3 + \vec v_2) = (\vec a_1 - \vec a_3) + (\vec v_1 - \vec v_2) \\
+        \vec d - \vec f = (\vec a_3 + \vec v_2) - (\vec a_5 + \vec v_3) = (\vec a_3 - \vec a_5) + (\vec v_2 - \vec v_3) \\
+        \vec f - \vec b = (\vec a_5 + \vec v_3) - (\vec a_1 + \vec v_1) = (\vec a_5 - \vec a_1) + (\vec v_3 - \vec v_1)
+    \end{eqnarray}
+    By the minkowski inequality we can then note that:
+    \begin{align}
+        \|\vec b - \vec d\|_p &\leq \|\vec a_1 - \vec a_3\|_p + \|\vec v_1 - \vec v_2\|_p \\
+        \|\vec d - \vec f\|_p &\leq \|\vec a_3 - \vec a_5\|_p + \|\vec v_2 - \vec v_3\|_p \\
+        \|\vec f - \vec b\|_p &\leq \|\vec a_5 - \vec a_1\|_p + \|\vec v_3 - \vec v_1\|_p
+    \end{align}
+    Summing these three inequalities yields an upper bound on $P$:
+    \begin{align*}
+        P &\leq (\|\vec a_1 - \vec a_3\|_p + \|\vec a_3 - \vec a_5\|_p + \|\vec a_5 - \vec a_1\|_p) + (\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p) \\
+        &\leq 3 \cdot \diam(A_k) + (\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p) \\
+        &\leq 3 + (\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p)
+    \end{align*}
+
+    Let $C_p$ be the maximum perimeter of a triangle inscribed in a unit circle in the $L_p$ space.
+    $$C_p = \sup\{ \|x - y\|_p + \|y - z\|_p + \|z - x\|_p | \|x\|_p, \|y\|_p, \|z\|_p \leq 1\}$$
+    Let $r = \max\{\|\vec v_1\|_p, \|\vec v_2\|_p, \|\vec v_3\|_p\}$.
+    Then we can note that $\frac{\vec v_1}{r}, \frac{\vec v_2}{r}, \frac{\vec v_3}{r}$ are all contained in the unit circle and thus:
+    $$\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p \leq r \cdot C_p.$$
+    Thus $P \leq 3 + r \cdot C_p$ and thus
+    \begin{align*}
+        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq 3 + (|b d| + |b f| + |d f|) \\
+        &\leq 3 + 3 + r \cdot C_p \\
+        &\leq 6 + r \cdot C_p \\
+        &= 6 + \max\{\|\vec v_1\|_p, \|\vec v_2\|_p, \|\vec v_3\|_p\} \cdot C_p
+    \end{align*}
+\end{proof}
 
 \section{Algorithms}
 
