@@ -571,7 +571,8 @@ There may be a way to deterministically say which of the two cases will occur ba
 \subsection{Special Metric Spaces}
 
 \begin{thm}
-    For a point set $P = \bigcup_{i=1}^n A_i$ in a $L_p$ space (with $p \in (1,\infty)$), where the subsets $A_1, \ldots, A_n$ are pairwise $s$-well-separated with $s \geq VAR$, then given some $a' \in A_i$ and $a'' \in A_j$, there exists an optimal Hamiltonian path on $P$ between $a'$ and $a''$ which induces a set transition multidigraph where each node has a maximum in-degree and out-degree of $2$.
+    For a point set $P = \bigcup_{i=1}^n A_i$ in a $L_p$ space (with $p \in (1,\infty)$), where the subsets $A_1, \ldots, A_n$ are pairwise $s$-well-separated with $s \geq \frac{8}{6-C_p}$, then given some $a' \in A_i$ and $a'' \in A_j$, there exists an optimal Hamiltonian path on $P$ between $a'$ and $a''$ which induces a set transition multidigraph where each node has a maximum in-degree and out-degree of $2$.
+    Furthermore if $s > \frac{8}{6-C_p}$ then all optimal Hamiltonian paths on $P$ between $a'$ and $a''$ must induce a set transition multidigraph where each node has a maximum in-degree and out-degree of $2$.
 \end{thm}
 \begin{proof}
     Suppose there exists an optimal Hamiltonian path on $P$ between $a' \in A_i$ and $a'' \in A_j$ which induces a set transition multidigraph where some node has in-degree or out-degree of at least $3$.
@@ -595,13 +596,10 @@ There may be a way to deterministically say which of the two cases will occur ba
         |a_1 b| + |a_5 f| &\leq |a_1 a_5| + |b f| \\
         |a_3 d| + |a_5 f| &\leq |a_3 a_5| + |d f|
     \end{align*}
-    WLOG assume that $\diam(A_k) = 1$ (otherwise we can scale the space to make it so).
     Summing these three inequalities yields:
     \begin{align*}
         |a_1 b| + |a_3 d| + |a_1 b| + |a_5 f| + |a_3 d| + |a_5 f| &\leq |a_1 a_3| + |b d| + |a_1 a_5| + |b f| + |a_3 a_5| + |d f| \\
-        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq (|a_1 a_3| + |a_1 a_5| + |a_3 a_5|) + (|b d| + |b f| + |d f|) \\
-        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq 3 \cdot \diam(A_k) + (|b d| + |b f| + |d f|) \\
-        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq 3 + (|b d| + |b f| + |d f|)
+        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq (|a_1 a_3| + |a_1 a_5| + |a_3 a_5|) + (|b d| + |b f| + |d f|)
     \end{align*}
 
     Next we must bound from above $P = |b d| + |d f| + |f b|$ the perimeter of the triangle formed by the points $b, d, f$.
@@ -619,25 +617,39 @@ There may be a way to deterministically say which of the two cases will occur ba
         \|\vec f - \vec b\|_p &\leq \|\vec a_5 - \vec a_1\|_p + \|\vec v_3 - \vec v_1\|_p
     \end{align}
     Summing these three inequalities yields an upper bound on $P$:
+    \[
+        P \leq (\|\vec a_1 - \vec a_3\|_p + \|\vec a_3 - \vec a_5\|_p + \|\vec a_5 - \vec a_1\|_p) + (\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p)
+    \]
+
+    We can define $\vec v_{max}$, $\vec v_{mid}$, $\vec v_{min}$ to be the vectors in $\{\vec v_1, \vec v_2, \vec v_3\}$ with the maximum, median, and minimum $L_p$ norm respectively. Let $\vec v_{max} = s_{max} \vec u_{max}$, $\vec v_{mid} = s_{mid} \vec u_{mid}$, and $\vec v_{min} = s_{min} \vec u_{min}$.
+    
+    We can thus note that $v_{mid} = s_{min} \vec u_{mid} + (s_{mid} - s_{min}) \vec u_{mid}$ and $v_{max} = s_{min} \vec u_{max} + (s_{mid} - s_{min}) \vec u_{max} + (s_{max} - s_{mid}) \vec u_{max}$.
+    We define $F(\vec x, \vec y, \vec z) = \|\vec x - \vec y\|_p + \|\vec y - \vec z\|_p + \|\vec z - \vec x\|_p$.
+    Then we can note that:
     \begin{align*}
-        P &\leq (\|\vec a_1 - \vec a_3\|_p + \|\vec a_3 - \vec a_5\|_p + \|\vec a_5 - \vec a_1\|_p) + (\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p) \\
-        &\leq 3 \cdot \diam(A_k) + (\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p) \\
-        &\leq 3 + (\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p)
+        F(\vec v_1, \vec v_2, \vec v_3) &= F(\vec v_{min}, \vec v_{mid}, \vec v_{max}) \\
+        &= F(s_{min} \vec u_{min}, s_{min} \vec u_{mid} + (s_{mid} - s_{min}) \vec u_{mid}, s_{min} \vec u_{max} + (s_{mid} - s_{min}) \vec u_{max} + (s_{max} - s_{mid}) \vec u_{max}) \\
+        &\leq s_{min} F(\vec u_{min}, \vec u_{mid}, \vec u_{max}) + (s_{mid} - s_{min}) F(\vec 0, \vec u_{mid}, \vec u_{max}) + (s_{max} - s_{mid}) F(\vec 0, \vec 0, \vec u_{max}) \\
+        &\leq s_{min} C_p + (s_{mid} - s_{min}) 4 + (s_{max} - s_{mid}) 2 \\
+        &= (C_p - 4) s_{min} + 2 s_{mid} + 2 s_{max}
     \end{align*}
 
-    Let $C_p$ be the maximum perimeter of a triangle inscribed in a unit circle in the $L_p$ space.
-    $$C_p = \sup\{ \|x - y\|_p + \|y - z\|_p + \|z - x\|_p | \|x\|_p, \|y\|_p, \|z\|_p \leq 1\}$$
-    Let $r = \max\{\|\vec v_1\|_p, \|\vec v_2\|_p, \|\vec v_3\|_p\}$.
-    Then we can note that $\frac{\vec v_1}{r}, \frac{\vec v_2}{r}, \frac{\vec v_3}{r}$ are all contained in the unit circle and thus:
-    $$\|\vec v_1 - \vec v_2\|_p + \|\vec v_2 - \vec v_3\|_p + \|\vec v_3 - \vec v_1\|_p \leq r \cdot C_p.$$
-    Thus $P \leq 3 + r \cdot C_p$ and thus
+    WLOG assume $\vec v_{min} = \vec v_1, \vec v_{mid} = \vec v_2, \vec v_{max} = \vec v_3$ (other permutations are symmetric).
+    Thus we have that $2(|a_1 b| + |a_3 d| + |a_5 f|) \leq 2 (|a_1 a_3| + |a_1 a_5| + |a_3 a_5|) + (C_p - 4) |a_1 b| + 2 s_{mid} + 2 s_{max}$.
+    After rearranging this gives 
     \begin{align*}
-        2(|a_1 b| + |a_3 d| + |a_5 f|) &\leq 3 + (|b d| + |b f| + |d f|) \\
-        &\leq 3 + 3 + r \cdot C_p \\
-        &\leq 6 + r \cdot C_p \\
-        &= 6 + \max\{\|\vec v_1\|_p, \|\vec v_2\|_p, \|\vec v_3\|_p\} \cdot C_p
+        (6-C_p) |a_1 b| &\leq 2 (|a_1 a_3| + |a_1 a_5| + |a_3 a_5|) \\
+        &\leq 2 (|a_1 a_3| + |a_1 a_5| + |a_3 a_1| + |a_1 a_5|) \\
+        &\leq 4 (|a_1 a_3| + |a_1 a_5|) \\
+        &\leq 4 (\frac{1}{s} |a_1 b| + \frac{1}{s} |a_1 b|) \\
+        &\leq \frac{8}{s} |a_1 b|
     \end{align*}
+    This implies that $s \leq \frac{8}{6-C_p}$. However, if $s > \frac{8}{6-C_p}$ then this is a contradiction and thus no optimal Hamiltonian path over $P$ can have a set transition multidigraph which contains a node with in-degree or out-degree of at least $3$.
+    If $s = \frac{8}{6-C_p}$ then this implies that the newest Hamiltonian path is also optimal.
+    Since the newest Hamiltonian path has strictly one lesser in-degree or out-degree for the node $A_k$ than the original Hamiltonian path and no other nodes have had their in-degree or out-degree increased, we can repeat this process until we have an optimal Hamiltonian path over $P$ which contains no nodes with in-degree or out-degree of at least $3$.
 \end{proof}
+% There is probably a better bound 
+
 
 \section{Algorithms}
 
