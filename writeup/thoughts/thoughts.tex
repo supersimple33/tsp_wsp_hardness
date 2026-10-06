@@ -500,7 +500,7 @@ There may be a way to deterministically say which of the two cases will occur ba
 \end{proof}
 
 \begin{thm}
-    For all $k>= 2$ and $s \geq 1$ there exists two sets of $k$ points $I$ and $O$ such that all points form a metric and all points in $I$ are at most 1 unit away from each other and all points in $O$ are at least $s$ units away from any point in $I$ and there exists an optimal Hamiltonian path over $I \cup O$ which starts at a point in $I$ and ends at a point in $O$ which alternates between points in $I$ and $O$.
+    For all $k>= 2$ and $s \geq 1$ there exists two sets of $k$ points $I$ and $O$ such that all points form a metric and all points in $I$ are at most 1 unit away from each other and all points in $O$ are at least $s$ units away from any point in $I$ and there exists two points in $I \cup O$ such that any optimal Hamiltonian path between them must alternate between points in $I$ and $O$.
 \end{thm}
 \begin{proof}
     We can construct a metric space with $k$ points in $I$ and $k$ points in $O$ as follows:
@@ -510,10 +510,12 @@ There may be a way to deterministically say which of the two cases will occur ba
     This space clearly satisifies positivity and symmetry.
     To show that it satisfies the triangle inequality we can consider all possible combinations of three points:
     \begin{alignat*}{4}
-        \bullet\quad & i_a, i_b, i_c \in I:       &\quad \dist(i_a, i_b) + \dist(i_b, i_c) &{}= 1  + 1  &&\geq 1  &&{}= \dist(i_a, i_c) \\
-        \bullet\quad & i_a, i_b \in I, o_c \in O: &\quad \dist(i_a, i_b) + \dist(i_b, o_c) &{}= 1  + s  &&\geq s  &&{}= \dist(i_a, o_c) \\
-        \bullet\quad & i_a \in I, o_b, o_c \in O: &\quad \dist(i_a, o_b) + \dist(o_b, o_c) &{}= s  + 2s &&\geq s  &&{}= \dist(i_a, o_c) \\
-        \bullet\quad & o_a, o_b, o_c \in O:       &\quad \dist(o_a, o_b) + \dist(o_b, o_c) &{}= 2s + 2s &&\geq 2s &&{}= \dist(o_a, o_c)
+        \bullet\quad & i_a, i_b, i_c \in I:             &\quad \dist(i_a, i_b) + \dist(i_b, i_c) &{}= 1  + 1  &&\geq 1  &&{}= \dist(i_a, i_c) \\
+        \bullet\quad & i_a, i_c \in I, o_b \in O:       &\quad \dist(i_a, o_b) + \dist(o_b, i_c) &{}= s  + s  &&\geq 1  &&{}= \dist(i_a, i_c) \\
+        \bullet\quad & i_a, i_b \in I, o_c \in O:       &\quad \dist(i_a, i_b) + \dist(i_b, o_c) &{}= 1  + s  &&\geq s  &&{}= \dist(i_a, o_c) \\
+        \bullet\quad & i_a \in I, o_b, o_c \in O:       &\quad \dist(i_a, o_b) + \dist(o_b, o_c) &{}= s  + 2s &&\geq s  &&{}= \dist(i_a, o_c) \\
+        \bullet\quad & i_b \in I, o_a, o_c \in O:       &\quad \dist(o_a, i_b) + \dist(i_b, o_c) &{}= s + s   &&\geq 2s &&{}= \dist(o_a, o_c) \\
+        \bullet\quad & o_a, o_b, o_c \in O:             &\quad \dist(o_a, o_b) + \dist(o_b, o_c) &{}= 2s + 2s &&\geq 2s &&{}= \dist(o_a, o_c)
     \end{alignat*}
     Thus the space is a metric.
 
